@@ -149,7 +149,8 @@
       "stage_refs": [],
       "limitations": [
         "name uncovered boundaries"
-      ]
+      ],
+      "max_stage": "replace-with-S0-through-S7"
     }
   ],
   "contradictions": [],
@@ -166,7 +167,8 @@
         "rollback": "",
         "readback": ""
       }
-    ]
+    ],
+    "authority_grants": []
   },
   "stages": [
     {
@@ -277,5 +279,6 @@
     "scope": "",
     "evidence_refs": []
   },
-  "supersession": null
+  "supersession": null,
+  "related_engagements": []
 }

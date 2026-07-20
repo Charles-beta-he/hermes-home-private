@@ -1,0 +1,121 @@
+{
+  "allowed_blocked_actions": [
+    "read_only_diagnosis",
+    "event_write",
+    "receipt_write",
+    "lease_status"
+  ],
+  "authority": {
+    "credentials": false,
+    "deploy": false,
+    "destructive": false,
+    "external_send": false,
+    "local_safe": true,
+    "payment": false,
+    "push": false
+  },
+  "consecutive_failures": 0,
+  "consumed_event_ids": [],
+  "event_cursor": 17,
+  "failure_budget": 2,
+  "findings": [
+    {
+      "code": "dirty_worktree",
+      "evidence": [
+        "?? \"src/pages/MiningPage/MiningPage 2.tsx\""
+      ],
+      "severity": "block",
+      "unblock_condition": "same owner completes/rolls back or exact ownership is proven"
+    }
+  ],
+  "immutable_receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/project-delivery-runs/a7167894a2294a318164bb10eb7bc96b.json",
+  "inner_slice_eligible": false,
+  "last_tick": {
+    "baseline": [
+      "pnpm run lint: existing baseline 130 errors and 34 warnings in generated dev-dist and unrelated legacy files"
+    ],
+    "branch": "dev",
+    "closure": "Six direct commits merged locally; async null-like REQUEST_CHANGES fixed by e08c694; weak integration-contract REQUEST_CHANGES fixed by e3ab812; final independent APPROVE; no external side effects.",
+    "commits": [
+      "5e83bbe6c3d72cc96f2b7e8a9e26555cd6d9ec73",
+      "c51d845f9443abdc2861d553d7cae9f8b8453bb2",
+      "52c8caeda3a5ef5b5e2b19a098d79c757d35b44c",
+      "8a3875caa1f330b8680f7ce05916411a37369b5c",
+      "78fcf57f204986c8cf1bb863a3a4e47875992221",
+      "1c468ad544b50b2def873c23ba8b0c1193b42e48",
+      "e08c694d8b4bc771fe794286be67eaf47542e20a",
+      "e3ab81211364118cbe1510f15526a5a0d95af950"
+    ],
+    "continuation_packet": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/workflow/continuation-packet-latest.json",
+    "decision_packet": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/workflow/decision-packet-20260713T070140Z.json",
+    "direct_branch": "loop/direct-20260713",
+    "direct_commits": [
+      "5e83bbe6c3d72cc96f2b7e8a9e26555cd6d9ec73",
+      "c51d845f9443abdc2861d553d7cae9f8b8453bb2",
+      "52c8caeda3a5ef5b5e2b19a098d79c757d35b44c",
+      "8a3875caa1f330b8680f7ce05916411a37369b5c",
+      "78fcf57f204986c8cf1bb863a3a4e47875992221",
+      "1c468ad544b50b2def873c23ba8b0c1193b42e48"
+    ],
+    "direct_head": "1c468ad544b50b2def873c23ba8b0c1193b42e48",
+    "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-13-asset-decimal-string-display/verification-result.json",
+    "followup_commits": [
+      "e08c694d8b4bc771fe794286be67eaf47542e20a",
+      "e3ab81211364118cbe1510f15526a5a0d95af950"
+    ],
+    "head": "e3ab81211364118cbe1510f15526a5a0d95af950",
+    "manifest_receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/manifest-quarantine-20260713T063202Z.json",
+    "next_candidates": [
+      "no additional local slice is selected in this closure pass",
+      "push/remote CI/deploy requires exact target authority",
+      "authenticated wallet, device/WebView/PWA runtime, production, order and funds lanes remain evidence-gated"
+    ],
+    "primary_repo_boundary": "local dev ahead origin/dev by 46 commits; no push or deploy performed",
+    "ran_at": "2026-07-13T07:26:54Z",
+    "review": "REQUEST_CHANGES deleg_229fe7b6; REQUEST_CHANGES foreground Hermes review after e08c694 (session id not read back); final APPROVE 20260713_152258_3b176e",
+    "slice": "asset amount decimal-string display plus local direct-branch convergence",
+    "tests": [
+      "asset amount contract: 8/8 PASS",
+      "combined PWA/settings/asset contracts: 18/18 PASS",
+      "pnpm exec tsc --noEmit: PASS",
+      "scoped changed-file ESLint: PASS",
+      "pnpm run verify:pwa: PASS, 12676 modules transformed, PWA contract 5/5, precache 55",
+      "git diff --check origin/dev..HEAD: PASS",
+      "primary and direct worktrees clean"
+    ],
+    "worktree": "/Users/charles/Desktop/folder/work/uaec-react-h5"
+  },
+  "lease": {
+    "acquired_at": "2026-07-20T02:52:06.367547+00:00",
+    "expires_at": "2026-07-20T03:52:06.367547+00:00",
+    "owner": "supervisor",
+    "pid": 43867,
+    "reclaimed_stale_lease": false,
+    "run_id": "a7167894a2294a318164bb10eb7bc96b",
+    "schema": "uaec_project_lease_v1",
+    "target_head": "e684a2428361b840ea4824ea3af63481a162952e"
+  },
+  "max_runtime_seconds": 2700,
+  "no_progress_cycles": 0,
+  "observed_at": "2026-07-20T02:52:06.444216+00:00",
+  "outer_phase": "SAFEPOINT_BLOCKED",
+  "previous_phase": "DRAIN_LOCAL",
+  "project": "uaec-react-h5",
+  "repo": {
+    "ahead_origin_dev": 1,
+    "behind_origin_dev": 0,
+    "branch": "dev",
+    "dirty": true,
+    "dirty_digest": "f663bfa8ecc6dce2bb7890867a51de19ce70d194276ed4eba9a5c9f5ac9ee159",
+    "head": "e684a2428361b840ea4824ea3af63481a162952e",
+    "path": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "status": [
+      "?? \"src/pages/MiningPage/MiningPage 2.tsx\""
+    ]
+  },
+  "run_id": "a7167894a2294a318164bb10eb7bc96b",
+  "runtime_analogy_is_explanatory_only": true,
+  "scheduler_semantics": "polling_transport_with_state_driven_eligibility_not_true_event_dispatch",
+  "schema": "uaec_project_delivery_state_v2",
+  "state_changed": true
+}

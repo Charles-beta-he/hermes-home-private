@@ -55,32 +55,36 @@ The adversarial audit rounds found twenty-five reproducible issues:
 | F18 | an accepted closure could contain only superseded claims and no verified outcome | P1 | accepted closure now requires at least one verified claim |
 | F19 | ready-for-review and waiting-acceptance stages could omit all review artifacts/evidence | P1 | accepted and reviewable stages now require semantic artifacts, evidence and no blockers |
 | F20 | client_acceptance could be accepted while S6 remained not_started | P1 | accepted client records now require S6 accepted |
-| F21 | accepted_by and scope accepted placeholder values | P1 | acceptance identity and scope reject placeholder markers |
-| F22 | superseded closure had no successor/date/reason/evidence invariant | P1 | boundary stage must be superseded and a complete evidence-backed supersession record is required |
-| F23 | enabled actions accepted arbitrary grant_ref strings | P1 | grant_ref must resolve to a registered truth source or artifact |
-| F24 | production acceptance could be supported only by a pilot-scoped claim | P2 | claims declare exact stage_refs and every accepted stage requires a linked verified claim |
+| F21 | accepted_by and scope accepted placeholder values | P1 | exact placeholder tokens such as TBD/TODO/N/A/unknown are rejected without rejecting legitimate qualifiers such as `[US]` |
+| F22 | superseded closure accepted weak free-text successors | P1 | `superseded_by` must resolve to an evidence-backed registered successor engagement with a valid lifecycle state |
+| F23 | enabled actions accepted arbitrary or unrelated registered grant refs | P1 | grant_ref must resolve to a typed authority grant with grantor/date/evidence and matching action/target/scope |
+| F24 | production acceptance could be supported only by a pilot-scoped claim | P1 | verified claims declare `max_stage`; stage_refs beyond that stage are rejected and cannot support accepted stages |
 | F25 | the new reviewable-stage membership check crashed on list/dict status values | P1 | string guard plus malformed-stage-status regression coverage |
+| F26 | integer `contradictions[].claim_refs` caused an uncaught TypeError | P1 | unresolved-claim aggregation now runs only for list refs and has a regression test |
+| F27 | unrelated known sources could serve as public-rights, anonymization or client-acceptance evidence | P2/P1 | those gates now require purpose-specific truth-source types |
+| F28 | verified claims allowed an empty limitations list | P2 | verified claims require a non-empty string limitations list |
+| F29 | immutable candidate GREEN depended on dirty/untracked facts outside the commit | P1 | four exact source snapshots are now included under the test packet and manifests pin their bytes |
 
 A subsequent malformed-type test exposed validator crashes on list/dict values. Type guards and filtered reference handling were added. A seeded 20,000-mutation robustness run then completed with zero validator crashes.
 
-A later two-lane review was replayed rather than trusted by age: its evidence-report lane accepted only the local structural pilot boundary, while its architecture lane found five current P1 false-PASS paths plus one production-claim-linkage P2. All six were reproduced against the then-current tree and repaired as F19–F24. A fresh post-fix independent vote is still required before certification. Remaining advisory items—an executable recovery/event ledger, routing evals, reusable handover templates, deep anonymization scanning and production/S7 adapters—stay outside this local validator pilot and prevent production certification.
+A later two-lane review was replayed rather than trusted by age: its evidence-report lane accepted only the local structural pilot boundary, while its architecture lane found five current false-PASS/crash paths. The first amendment commit was then independently rejected again because placeholder, successor, grant and claim-stage semantics remained too weak and because GREEN depended on bytes outside the immutable commit. Those findings were reproduced and hardened as F21–F29. A fresh post-fix independent vote is still required before certification. Remaining advisory items—an executable recovery/event ledger, routing evals, reusable handover templates, deep anonymization scanning and production/S7 adapters—remain outside this local validator pilot and prevent production certification.
 
 ## Multi-dimensional result matrix
 
 | Dimension | Result | Evidence | Remaining boundary |
 |---|---|---|---|
 | Syntax and executable entry point | PASS | `py_compile`; CLI exit contract exercised | no package/CLI distribution |
-| Unit behavior | PASS | 39 tests, all passing | standard-library unittest only |
+| Unit behavior | PASS | 48 tests, all passing in the latest worktree run | standard-library unittest only; final commit-bound rerun required |
 | Input robustness | PASS | seeded 20,000 field mutations, zero crashes | not a formal parser proof |
 | Missing/corrupt input | PASS | missing and malformed JSON return exit 2 | no JSON Schema publication yet |
-| Claim/evidence integrity | PASS | unknown IDs rejected; verified claims require evidence and stage_refs; accepted stages require a linked verified claim | semantic truth still requires human/domain verification |
+| Claim/evidence integrity | PASS | unknown IDs rejected; verified claims require evidence, limitations, stage_refs and max_stage; accepted stages require an eligible linked claim | semantic truth still requires human/domain verification |
 | Artifact integrity | PASS | accepted-stage IDs resolve and required S0–S7 semantic artifact types are enforced | remote/logical artifact URIs are declarations |
 | Local evidence immutability | PASS | absolute refs require matching SHA-256; tamper test returns exit 1 | mutable source updates require deliberate hash refresh |
 | Evidence freshness | PASS | malformed and future dates rejected | no configurable age/SLA threshold |
 | Stage ordering and boundary | PASS | prior stages must be accepted; stages beyond completion boundary cannot be active | no event-sourced transition ledger |
 | Closure-state contract | PASS | in-progress/review/accepted/waiting/blocked/rollback/superseded rules tested | remains a snapshot, not an event runtime |
-| Client acceptance | PASS | accepted client record and S6 acceptance imply each other; identity/scope reject placeholders; date/evidence are checked | does not contact or authenticate the client |
-| Authority safety | PASS, structural | action names are allowlisted; enabled actions require target, scope, registered grant source/artifact, rollback and readback; credential/payment stay human-only | manifest does not itself grant live execution authority |
+| Client acceptance | PASS | accepted client record and S6 acceptance imply each other; identity/scope reject exact placeholder tokens; date and typed evidence are checked | does not contact or authenticate the client |
+| Authority safety | PASS, structural | action names are allowlisted; enabled actions require target/scope, a typed evidence-backed matching authority grant, rollback and readback; credential/payment stay human-only | manifest does not itself grant live execution authority |
 | Confidentiality/publication | PASS, structural | public-ready requires public classification, rights/anonymization evidence and no markers | no deep secret/PII content scanner |
 | Contradiction handling | PASS | UAEC RED returns exactly three conflict errors; accepted-risk needs approval, controls and evidence | reconciliation quality remains reviewer-dependent |
 | UAEC bounded pilot | PASS | GREEN reports boundary=pilot, closure=accepted | does not prove UAEC software delivery |
@@ -98,8 +102,8 @@ A later two-lane review was replayed rather than trusted by age: its evidence-re
 ### Regression and GREEN
 
 ```text
-.......................................
-Ran 39 tests in 0.007s
+................................................
+Ran 48 tests in 0.011s
 OK
 PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closure=accepted)
 ```

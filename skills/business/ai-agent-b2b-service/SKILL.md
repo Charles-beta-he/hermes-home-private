@@ -1,7 +1,7 @@
 ---
 name: ai-agent-b2b-service
 description: "Use when packaging AI Agent customization or AI-assisted software-delivery governance as a B2B service: qualification, diagnosis, truth-source mapping, authority contracts, pilot validation, evidence-gated delivery, handover, and ongoing ops."
-version: 1.3.0
+version: 1.4.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -260,10 +260,10 @@ Tier 3: Enterprise (50K-200K)
 - [ ] Support boundaries and SLA are explicit.
 - [ ] A public case is produced only when publication rights and anonymization are verified; otherwise an internal case packet is retained.
 - [ ] Delivery manifest declares an exact completion boundary and closure state.
-- [ ] Every verified claim has scope, evidence, limitations and exact S0–S7 `stage_refs`; every accepted stage has a linked verified claim.
+- [ ] Every verified claim has scope, evidence, a non-empty limitations list, exact S0–S7 `stage_refs`, and a `max_stage` that bounds those refs; every accepted stage has a linked verified claim.
 - [ ] Unresolved contradictions block acceptance rather than being averaged or deleted.
-- [ ] Reviewable stages contain their required artifact types and evidence; superseded closure names its successor, date, reason and evidence.
-- [ ] External action names are allowlisted; enabled actions include exact target, scope, a registered grant source/artifact, rollback and readback; credential/payment actions remain human-only.
+- [ ] Reviewable stages contain their required artifact types and evidence; superseded closure resolves to an evidence-backed registered successor engagement.
+- [ ] External action names are allowlisted; enabled actions include exact target/scope, a typed evidence-backed authority grant bound to the same action/target/scope, rollback and readback; credential/payment actions remain human-only.
 - [ ] Pilot evidence is not promoted to production or client acceptance.
 - [ ] Accepted closures contain at least one verified outcome and no unverified/disputed claims; accepted risks name an approver, date, controls and evidence.
-- [ ] Public-ready and accepted-client states cite known publication/anonymization/acceptance evidence, not only booleans; final client acceptance requires S6 accepted.
+- [ ] Public-ready and accepted-client states cite typed publication/anonymization/acceptance evidence, not only booleans or unrelated known IDs; final client acceptance requires S6 accepted.

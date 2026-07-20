@@ -52,12 +52,34 @@ REQUIRED_ARTIFACT_TYPES = {
     "S6": {"client_acceptance", "handover"},
     "S7": {"kpi_readback", "operations_log"},
 }
-PLACEHOLDER_RE = re.compile(r"replace[-_ ]with|YYYY-MM-DD|\[[A-Z][^]]*\]", re.I)
+PLACEHOLDER_RE = re.compile(r"replace[-_ ]with|YYYY-MM-DD|\[(?:REPLACE|PLACEHOLDER|TODO|TBD)[^]]*\]", re.I)
+PLACEHOLDER_TOKENS = {"tbd", "todo", "n/a", "na", "unknown", "pending", "placeholder"}
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def nonempty(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def is_placeholder(value: object) -> bool:
+    if not nonempty(value):
+        return False
+    normalized = re.sub(r"[\s_-]+", " ", value.strip().lower())
+    return normalized in PLACEHOLDER_TOKENS or bool(PLACEHOLDER_RE.search(value))
+
+
+def validate_semantic_refs(
+    values: object,
+    source_type_by_id: dict[str, str],
+    allowed_types: set[str],
+    label: str,
+    errors: list[str],
+) -> None:
+    if not isinstance(values, list):
+        return
+    for ref in values:
+        if nonempty(ref) and ref in source_type_by_id and source_type_by_id[ref] not in allowed_types:
+            errors.append(f"{label} evidence type must be one of {sorted(allowed_types)}: {ref}")
 
 
 def add_duplicate_error(errors: list[str], seen: set[str], value: object, label: str) -> None:
@@ -87,7 +109,7 @@ def validate_local_ref(item: dict, label: str, errors: list[str]) -> None:
     if not nonempty(ref):
         errors.append(f"{label}.ref must be non-empty")
         return
-    if PLACEHOLDER_RE.search(ref):
+    if is_placeholder(ref):
         errors.append(f"{label}.ref contains placeholder")
     path = Path(ref).expanduser()
     if not path.is_absolute():
@@ -128,7 +150,7 @@ def validate(data: object) -> list[str]:
     required = {
         "schema", "engagement_id", "client_alias", "service_type",
         "completion_boundary", "closure_state", "confidentiality",
-        "truth_sources", "artifacts", "claims", "contradictions", "authority",
+        "truth_sources", "artifacts", "claims", "contradictions", "related_engagements", "authority",
         "stages", "metrics", "risks", "public_case", "client_acceptance",
     }
     for key in sorted(required - data.keys()):
@@ -140,7 +162,7 @@ def validate(data: object) -> list[str]:
         value = data.get(key)
         if not nonempty(value):
             errors.append(f"{key} must be non-empty")
-        elif PLACEHOLDER_RE.search(value):
+        elif is_placeholder(value):
             errors.append(f"{key} contains placeholder")
 
     boundary = data.get("completion_boundary")
@@ -154,6 +176,7 @@ def validate(data: object) -> list[str]:
         errors.append("confidentiality must be internal, client_confidential, or public")
 
     source_ids: set[str] = set()
+    source_type_by_id: dict[str, str] = {}
     truth_sources = data.get("truth_sources")
     if not isinstance(truth_sources, list) or not truth_sources:
         errors.append("truth_sources must be a non-empty list")
@@ -168,8 +191,10 @@ def validate(data: object) -> list[str]:
                 value = source.get(key)
                 if not nonempty(value):
                     errors.append(f"{label}.{key} must be non-empty")
-                elif PLACEHOLDER_RE.search(value):
+                elif is_placeholder(value):
                     errors.append(f"{label}.{key} contains placeholder")
+            if nonempty(source.get("id")) and nonempty(source.get("type")):
+                source_type_by_id[source["id"]] = source["type"]
             validate_date(source.get("observed_at"), f"{label}.observed_at", errors)
             validate_local_ref(source, label, errors)
 
@@ -191,7 +216,7 @@ def validate(data: object) -> list[str]:
                 value = artifact.get(key)
                 if not nonempty(value):
                     errors.append(f"{label}.{key} must be non-empty")
-                elif PLACEHOLDER_RE.search(value):
+                elif is_placeholder(value):
                     errors.append(f"{label}.{key} contains placeholder")
             if is_new_id and nonempty(artifact.get("type")):
                 artifact_type_by_id[artifact_id] = artifact["type"]
@@ -229,13 +254,22 @@ def validate(data: object) -> list[str]:
                 stage_refs, set(STAGE_ORDER), f"{label}.stage_refs", errors,
                 required=status == "verified",
             )
-            if status == "verified" and isinstance(stage_refs, list):
-                verified_claim_stage_refs.update(
-                    ref for ref in stage_refs if isinstance(ref, str) and ref in STAGE_ORDER
-                )
+            max_stage = claim.get("max_stage")
+            if status == "verified" and (not isinstance(max_stage, str) or max_stage not in STAGE_ORDER):
+                errors.append(f"verified claim {cid or idx} needs valid max_stage")
+            if status == "verified" and isinstance(stage_refs, list) and isinstance(max_stage, str) and max_stage in STAGE_ORDER:
+                max_index = STAGE_ORDER.index(max_stage)
+                for ref in stage_refs:
+                    if isinstance(ref, str) and ref in STAGE_ORDER:
+                        if STAGE_ORDER.index(ref) > max_index:
+                            errors.append(f"{label}.stage_refs {ref} exceeds claim max_stage {max_stage}")
+                        else:
+                            verified_claim_stage_refs.add(ref)
             limitations = claim.get("limitations")
-            if status == "verified" and not isinstance(limitations, list):
-                errors.append(f"verified claim {cid or idx} must have limitations list")
+            if status == "verified" and (
+                not isinstance(limitations, list) or not limitations or not all(nonempty(value) for value in limitations)
+            ):
+                errors.append(f"verified claim {cid or idx} needs limitations as a non-empty string list")
 
     contradiction_ids: set[str] = set()
     unresolved_claims: set[str] = set()
@@ -258,7 +292,8 @@ def validate(data: object) -> list[str]:
                 errors.append(f"{label}.claim_refs must contain at least 2 claims")
             if status == "unresolved":
                 errors.append(f"unresolved contradiction: {item.get('id', idx)}")
-                unresolved_claims.update(ref for ref in (refs or []) if isinstance(ref, str))
+                if isinstance(refs, list):
+                    unresolved_claims.update(ref for ref in refs if isinstance(ref, str))
             elif isinstance(status, str) and status in {"resolved", "accepted_risk"} and not nonempty(item.get("resolution")):
                 errors.append(f"{status} contradiction {item.get('id', idx)} needs resolution")
             if status == "accepted_risk":
@@ -301,6 +336,39 @@ def validate(data: object) -> list[str]:
         for key in ("local_read_only", "local_reversible_write"):
             if not isinstance(authority.get(key), bool):
                 errors.append(f"authority.{key} must be boolean")
+        grant_by_id: dict[str, dict] = {}
+        grant_ids: set[str] = set()
+        grants = authority.get("authority_grants")
+        if not isinstance(grants, list):
+            errors.append("authority.authority_grants must be a list")
+        else:
+            for idx, grant in enumerate(grants):
+                label = f"authority_grants[{idx}]"
+                if not isinstance(grant, dict):
+                    errors.append(f"{label} must be an object")
+                    continue
+                grant_id = grant.get("id")
+                is_new = nonempty(grant_id) and grant_id not in grant_ids
+                add_duplicate_error(errors, grant_ids, grant_id, "authority grant id")
+                if grant.get("type") != "authority_grant":
+                    errors.append(f"{label}.type must be authority_grant")
+                action_name = grant.get("action")
+                if action_name not in VALID_EXTERNAL_ACTIONS:
+                    errors.append(f"{label}.action is invalid")
+                for key in ("target", "scope", "granted_by"):
+                    value = grant.get(key)
+                    if not nonempty(value):
+                        errors.append(f"{label}.{key} must be non-empty")
+                    elif is_placeholder(value):
+                        errors.append(f"{label}.{key} contains placeholder")
+                validate_date(grant.get("granted_at"), f"{label}.granted_at", errors)
+                validate_refs(grant.get("evidence_refs"), source_ids, f"{label}.evidence_refs", errors, required=True)
+                validate_semantic_refs(
+                    grant.get("evidence_refs"), source_type_by_id, {"authority_grant"},
+                    f"{label}", errors,
+                )
+                if is_new:
+                    grant_by_id[grant_id] = grant
         action_ids: set[str] = set()
         actions = authority.get("external_actions")
         if not isinstance(actions, list):
@@ -322,11 +390,16 @@ def validate(data: object) -> list[str]:
                         value = action.get(key)
                         if not nonempty(value):
                             errors.append(f"allowed external action {action_name or idx} needs {key}")
-                        elif PLACEHOLDER_RE.search(value):
+                        elif is_placeholder(value):
                             errors.append(f"allowed external action {action_name or idx} {key} contains placeholder")
                     grant_ref = action.get("grant_ref")
-                    if nonempty(grant_ref) and grant_ref not in source_ids | artifact_ids:
-                        errors.append(f"allowed external action {action_name or idx} grant_ref references unknown id: {grant_ref}")
+                    grant = grant_by_id.get(grant_ref) if nonempty(grant_ref) else None
+                    if grant is None:
+                        errors.append(f"allowed external action {action_name or idx} grant_ref must reference a registered authority grant")
+                    else:
+                        for key in ("action", "target", "scope"):
+                            if grant.get(key) != action.get(key):
+                                errors.append(f"allowed external action {action_name or idx} {key} does not match authority grant {grant_ref}")
                 elif action.get("allowed") is not False:
                     errors.append(f"{label}.allowed must be boolean")
 
@@ -443,6 +516,29 @@ def validate(data: object) -> list[str]:
             if closure == "superseded" and stage_map[boundary_sid].get("status") != "superseded":
                 errors.append(f"superseded closure requires stage {boundary_sid}=superseded")
 
+    related_engagement_ids: set[str] = set()
+    successor_engagement_ids: set[str] = set()
+    related_engagements = data.get("related_engagements")
+    if not isinstance(related_engagements, list):
+        errors.append("related_engagements must be a list")
+    else:
+        for idx, engagement in enumerate(related_engagements):
+            label = f"related_engagements[{idx}]"
+            if not isinstance(engagement, dict):
+                errors.append(f"{label} must be an object")
+                continue
+            engagement_id = engagement.get("id")
+            add_duplicate_error(errors, related_engagement_ids, engagement_id, "related engagement id")
+            relationship = engagement.get("relationship")
+            if relationship not in {"successor", "predecessor", "related"}:
+                errors.append(f"{label}.relationship is invalid")
+            status = engagement.get("status")
+            if status not in {"planned", "active", "accepted", "closed"}:
+                errors.append(f"{label}.status is invalid")
+            validate_refs(engagement.get("evidence_refs"), source_ids, f"{label}.evidence_refs", errors, required=True)
+            if nonempty(engagement_id) and relationship == "successor" and status in {"planned", "active", "accepted"}:
+                successor_engagement_ids.add(engagement_id)
+
     if closure == "superseded":
         supersession = data.get("supersession")
         if not isinstance(supersession, dict):
@@ -452,8 +548,11 @@ def validate(data: object) -> list[str]:
                 value = supersession.get(key)
                 if not nonempty(value):
                     errors.append(f"supersession.{key} must be non-empty")
-                elif PLACEHOLDER_RE.search(value):
+                elif is_placeholder(value):
                     errors.append(f"supersession.{key} contains placeholder")
+            superseded_by = supersession.get("superseded_by")
+            if nonempty(superseded_by) and superseded_by not in successor_engagement_ids:
+                errors.append("supersession.superseded_by must reference a registered successor engagement")
             validate_date(supersession.get("superseded_at"), "supersession.superseded_at", errors)
             validate_refs(
                 supersession.get("evidence_refs"), source_ids,
@@ -475,7 +574,7 @@ def validate(data: object) -> list[str]:
                 value = metric.get(key)
                 if not nonempty(value):
                     errors.append(f"{label}.{key} must be non-empty")
-                elif PLACEHOLDER_RE.search(value):
+                elif is_placeholder(value):
                     errors.append(f"{label}.{key} contains placeholder")
             if "baseline" not in metric:
                 errors.append(f"{label} needs baseline")
@@ -501,7 +600,7 @@ def validate(data: object) -> list[str]:
                 value = risk.get(key)
                 if not nonempty(value):
                     errors.append(f"{label}.{key} must be non-empty")
-                elif PLACEHOLDER_RE.search(value):
+                elif is_placeholder(value):
                     errors.append(f"{label}.{key} contains placeholder")
             if isinstance(severity, str) and severity in {"high", "critical"} and not nonempty(risk.get("rollback")):
                 errors.append(f"high/critical risk {risk.get('id', idx)} needs rollback")
@@ -526,13 +625,23 @@ def validate(data: object) -> list[str]:
                 errors.append("public case ready requires anonymization_check=true")
             if markers:
                 errors.append("public case ready cannot contain sensitive markers")
+            rights_refs = public_case.get("publication_rights_evidence_refs")
             validate_refs(
-                public_case.get("publication_rights_evidence_refs"), source_ids,
+                rights_refs, source_ids,
                 "public_case.publication_rights_evidence_refs", errors, required=True,
             )
+            validate_semantic_refs(
+                rights_refs, source_type_by_id, {"publication_rights", "legal_approval"},
+                "public case publication rights", errors,
+            )
+            anonymization_refs = public_case.get("anonymization_evidence_refs")
             validate_refs(
-                public_case.get("anonymization_evidence_refs"), source_ids,
+                anonymization_refs, source_ids,
                 "public_case.anonymization_evidence_refs", errors, required=True,
+            )
+            validate_semantic_refs(
+                anonymization_refs, source_type_by_id, {"anonymization_review", "privacy_review"},
+                "public case anonymization", errors,
             )
 
     acceptance = data.get("client_acceptance")
@@ -548,12 +657,17 @@ def validate(data: object) -> list[str]:
                 value = acceptance.get(key)
                 if not nonempty(value):
                     errors.append(f"accepted client acceptance needs {key}")
-                elif PLACEHOLDER_RE.search(value):
+                elif is_placeholder(value):
                     errors.append(f"client_acceptance.{key} contains placeholder")
             validate_date(acceptance.get("accepted_at"), "client_acceptance.accepted_at", errors)
+            acceptance_refs = acceptance.get("evidence_refs")
             validate_refs(
-                acceptance.get("evidence_refs"), source_ids,
+                acceptance_refs, source_ids,
                 "client_acceptance.evidence_refs", errors, required=True,
+            )
+            validate_semantic_refs(
+                acceptance_refs, source_type_by_id, {"client_acceptance", "uat_acceptance"},
+                "client_acceptance", errors,
             )
         if closure == "waiting_acceptance" and acceptance_status != "pending":
             errors.append("waiting_acceptance closure requires client_acceptance=pending")

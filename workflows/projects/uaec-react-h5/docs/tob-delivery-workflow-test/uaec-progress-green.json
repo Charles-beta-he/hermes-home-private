@@ -10,7 +10,7 @@
     {
       "id": "TS_LEDGER",
       "type": "progress_ledger",
-      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/progress-ledger.md",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/evidence-snapshots/progress-ledger.md",
       "observed_at": "2026-07-14",
       "scope": "historical project progress claim",
       "sha256": "c826102a9923b3b61b4239a140c209f8dc6e28d08b6588e0990fada337f4bdbc"
@@ -18,7 +18,7 @@
     {
       "id": "TS_PLAN",
       "type": "module_alignment_plan",
-      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-16-full-alignment-plan.md",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/evidence-snapshots/full-alignment-plan.md",
       "observed_at": "2026-07-16",
       "scope": "nine Android-to-H5 module alignment percentages",
       "sha256": "eb218c8dd038aaf8e5749a0d8198e3df7c0f811ec9db1ea59029041a7a7adfd2"
@@ -26,7 +26,7 @@
     {
       "id": "TS_STATE",
       "type": "runtime_state_projection",
-      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/workflow/project-delivery-state.json",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/evidence-snapshots/project-delivery-state.json",
       "observed_at": "2026-07-20",
       "scope": "repository and authority snapshot",
       "sha256": "ba6176b8e1b6c7ee6361d1e420b2bac9ef9ed313ec2465c09ae7f79bea7c51fa"
@@ -34,7 +34,7 @@
     {
       "id": "TS_AUDIT",
       "type": "workflow_productization_audit",
-      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/evidence-snapshots/workflow-productization-audit.md",
       "observed_at": "2026-07-20",
       "scope": "workflow trial and claim-conflict analysis",
       "sha256": "c32ade9d35cfb6f315d7f1ce9b8971d2fa75124f920f9611b663068c39e1f371"
@@ -47,7 +47,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S0 qualification packet",
-      "sha256": "52e03be80d9ea465a2f68891d5daa620993e7eb885078f60b48461f9bc2cc2e1"
+      "sha256": "60a07a906cd786f94f9727dafcd826ab944aab8139a9f6ecadbb39646e83b8d6"
     },
     {
       "id": "A_BASELINE",
@@ -63,7 +63,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 specification contract",
-      "sha256": "52e03be80d9ea465a2f68891d5daa620993e7eb885078f60b48461f9bc2cc2e1"
+      "sha256": "60a07a906cd786f94f9727dafcd826ab944aab8139a9f6ecadbb39646e83b8d6"
     },
     {
       "id": "A_AUTHORITY_MATRIX",
@@ -71,7 +71,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 authority boundary",
-      "sha256": "52e03be80d9ea465a2f68891d5daa620993e7eb885078f60b48461f9bc2cc2e1"
+      "sha256": "60a07a906cd786f94f9727dafcd826ab944aab8139a9f6ecadbb39646e83b8d6"
     },
     {
       "id": "A_SOLUTION_WORKSPACE",
@@ -95,7 +95,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 executable pilot gate",
-      "sha256": "aefda3b6533fc3065be4a558040296bc73c45feed26285695544b6bfcd756a4b"
+      "sha256": "957323744d77cca76c70c3242dac9c68045b848aa8cf0cefc40109a7736a3e71"
     },
     {
       "id": "A_TEST_EVIDENCE",
@@ -103,7 +103,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/test_verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 regression evidence",
-      "sha256": "40b0932fda3e5279589ba59505bd1863de99177470f331c5a7da8c8ad693e706"
+      "sha256": "695628a3b608227fe369909492fd3945b32ef88cd367382fcdab7d45d0541b81"
     }
   ],
   "contradictions": [
@@ -166,7 +166,8 @@
         "rollback": "",
         "readback": ""
       }
-    ]
+    ],
+    "authority_grants": []
   },
   "stages": [
     {
@@ -388,7 +389,8 @@
       ],
       "stage_refs": [
         "S1"
-      ]
+      ],
+      "max_stage": "S1"
     },
     {
       "id": "C_REPO_STATE",
@@ -407,7 +409,8 @@
       "stage_refs": [
         "S1",
         "S2"
-      ]
+      ],
+      "max_stage": "S2"
     },
     {
       "id": "C_WORKFLOW_PILOT",
@@ -430,8 +433,10 @@
         "S2",
         "S3",
         "S4"
-      ]
+      ],
+      "max_stage": "S4"
     }
   ],
-  "supersession": null
+  "supersession": null,
+  "related_engagements": []
 }

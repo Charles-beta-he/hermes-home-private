@@ -18,10 +18,13 @@ validate = module.validate
 
 
 def valid_manifest():
-    sources = [{
-        "id": "TS1", "type": "repo", "ref": "evidence://source-1",
-        "observed_at": date.today().isoformat(), "scope": "pilot",
-    }]
+    sources = [
+        {"id": "TS1", "type": "repo", "ref": "evidence://source-1", "observed_at": date.today().isoformat(), "scope": "pilot"},
+        {"id": "TS_ACCEPT", "type": "client_acceptance", "ref": "evidence://acceptance", "observed_at": date.today().isoformat(), "scope": "acceptance"},
+        {"id": "TS_RIGHTS", "type": "publication_rights", "ref": "evidence://rights", "observed_at": date.today().isoformat(), "scope": "publication"},
+        {"id": "TS_ANON", "type": "anonymization_review", "ref": "evidence://anonymization", "observed_at": date.today().isoformat(), "scope": "privacy"},
+        {"id": "TS_GRANT", "type": "authority_grant", "ref": "evidence://grant", "observed_at": date.today().isoformat(), "scope": "authority"},
+    ]
     artifacts = []
     artifact_refs_by_stage = {}
     for i, sid in enumerate(module.STAGE_ORDER):
@@ -64,11 +67,14 @@ def valid_manifest():
             "status": "verified", "evidence_refs": ["TS1"],
             "negative_evidence_refs": ["TS1"], "limitations": ["not production"],
             "stage_refs": ["S0", "S1", "S2", "S3", "S4"],
+            "max_stage": "S4",
         }],
         "contradictions": [],
+        "related_engagements": [],
         "authority": {
             "local_read_only": True,
             "local_reversible_write": True,
+            "authority_grants": [],
             "external_actions": [{"action": "push", "allowed": False, "target": "", "rollback": "", "readback": ""}],
         },
         "stages": stages,
@@ -152,7 +158,7 @@ class ValidatorTests(unittest.TestCase):
         data["client_acceptance"].update({
             "status": "accepted", "accepted_by": "client-sponsor",
             "accepted_at": date.today().isoformat(), "scope": "whole delivery",
-            "evidence_refs": ["TS1"],
+            "evidence_refs": ["TS_ACCEPT"],
         })
         self.assertTrue(any("client_acceptance=accepted requires stage S6=accepted" in e for e in validate(data)))
 
@@ -166,6 +172,52 @@ class ValidatorTests(unittest.TestCase):
         errors = validate(data)
         self.assertTrue(any("accepted_by contains placeholder" in e for e in errors))
         self.assertTrue(any("scope contains placeholder" in e for e in errors))
+
+    def test_client_acceptance_rejects_common_placeholder_tokens(self):
+        for accepted_by, scope in (("TBD", "delivery"), ("client", "N/A"), ("TODO", "unknown")):
+            with self.subTest(accepted_by=accepted_by, scope=scope):
+                data = valid_manifest()
+                data["client_acceptance"].update({
+                    "status": "accepted", "accepted_by": accepted_by,
+                    "accepted_at": date.today().isoformat(), "scope": scope,
+                    "evidence_refs": ["TS_ACCEPT"],
+                })
+                self.assertTrue(any("contains placeholder" in e for e in validate(data)))
+
+    def test_legitimate_bracket_qualifier_is_not_placeholder(self):
+        data = valid_manifest()
+        data["client_alias"] = "Acme [US]"
+        self.assertEqual(validate(data), [])
+
+    def test_client_acceptance_requires_semantic_evidence_type(self):
+        data = valid_manifest()
+        data["client_acceptance"].update({
+            "status": "accepted", "accepted_by": "client-sponsor",
+            "accepted_at": date.today().isoformat(), "scope": "delivery",
+            "evidence_refs": ["TS1"],
+        })
+        self.assertTrue(any("client_acceptance evidence type" in e for e in validate(data)))
+
+    def test_public_case_requires_semantic_evidence_types(self):
+        data = valid_manifest()
+        data["confidentiality"] = "public"
+        data["public_case"] = {
+            "status": "ready", "publication_rights_verified": True,
+            "publication_rights_evidence_refs": ["TS1"],
+            "anonymization_check": True, "anonymization_evidence_refs": ["TS1"],
+            "sensitive_markers": [],
+        }
+        errors = validate(data)
+        self.assertTrue(any("publication rights evidence type" in e for e in errors))
+        self.assertTrue(any("anonymization evidence type" in e for e in errors))
+        data["public_case"]["publication_rights_evidence_refs"] = ["TS_RIGHTS"]
+        data["public_case"]["anonymization_evidence_refs"] = ["TS_ANON"]
+        self.assertEqual(validate(data), [])
+
+    def test_verified_claim_requires_nonempty_limitations(self):
+        data = valid_manifest()
+        data["claims"][0]["limitations"] = []
+        self.assertTrue(any("needs limitations as a non-empty string list" in e for e in validate(data)))
 
     def test_unresolved_contradiction_fails(self):
         data = valid_manifest()
@@ -286,6 +338,14 @@ class ValidatorTests(unittest.TestCase):
                 })
                 self.assertTrue(any(f"{action_name} cannot be enabled" in e for e in validate(data)))
 
+    def test_malformed_contradiction_claim_refs_does_not_crash(self):
+        data = valid_manifest()
+        data["contradictions"] = [{
+            "id": "X1", "claim_refs": 1, "status": "unresolved", "resolution": "",
+        }]
+        errors = validate(data)
+        self.assertTrue(any("contradictions[0].claim_refs must be a list" in error for error in errors))
+
     def test_malformed_stage_status_does_not_crash(self):
         data = valid_manifest()
         data["stages"][4]["status"] = []
@@ -349,6 +409,16 @@ class ValidatorTests(unittest.TestCase):
         self.assertTrue(any("superseded closure requires supersession record" in e for e in errors))
         self.assertTrue(any("superseded closure requires stage S4=superseded" in e for e in errors))
 
+    def test_weak_supersession_record_is_rejected(self):
+        data = valid_manifest()
+        data["closure_state"] = "superseded"
+        data["stages"][4].update({"status": "superseded", "owner": "", "artifacts": [], "evidence_refs": [], "blockers": []})
+        data["supersession"] = {
+            "superseded_by": "x", "superseded_at": date.today().isoformat(),
+            "reason": "x", "evidence_refs": ["TS1"],
+        }
+        self.assertTrue(any("registered successor engagement" in e for e in validate(data)))
+
     def test_valid_superseded_closure_passes(self):
         data = valid_manifest()
         data["closure_state"] = "superseded"
@@ -356,6 +426,10 @@ class ValidatorTests(unittest.TestCase):
             "status": "superseded", "owner": "", "artifacts": [],
             "evidence_refs": [], "blockers": [],
         })
+        data["related_engagements"] = [{
+            "id": "successor-engagement", "relationship": "successor", "status": "active",
+            "evidence_refs": ["TS1"],
+        }]
         data["supersession"] = {
             "superseded_by": "successor-engagement", "superseded_at": date.today().isoformat(),
             "reason": "scope replaced by a successor engagement", "evidence_refs": ["TS1"],
@@ -369,9 +443,31 @@ class ValidatorTests(unittest.TestCase):
             "grant_ref": "UNKNOWN-GRANT", "rollback": "revert change",
             "readback": "read target state",
         })
-        self.assertTrue(any("grant_ref references unknown id" in e for e in validate(data)))
+        self.assertTrue(any("grant_ref must reference a registered authority grant" in e for e in validate(data)))
 
-    def test_accepted_stage_requires_verified_claim_linkage(self):
+    def test_allowed_external_action_rejects_untyped_source_as_grant(self):
+        data = valid_manifest()
+        data["authority"]["external_actions"][0].update({
+            "allowed": True, "target": "repository-target", "scope": "single change",
+            "grant_ref": "TS1", "rollback": "revert change", "readback": "read target state",
+        })
+        self.assertTrue(any("registered authority grant" in e for e in validate(data)))
+
+    def test_allowed_external_action_accepts_bound_authority_grant(self):
+        data = valid_manifest()
+        data["authority"]["authority_grants"] = [{
+            "id": "G1", "type": "authority_grant", "action": "push",
+            "target": "repository-target", "scope": "single change",
+            "granted_by": "authorized-owner", "granted_at": date.today().isoformat(),
+            "evidence_refs": ["TS_GRANT"],
+        }]
+        data["authority"]["external_actions"][0].update({
+            "allowed": True, "target": "repository-target", "scope": "single change",
+            "grant_ref": "G1", "rollback": "revert change", "readback": "read target state",
+        })
+        self.assertEqual(validate(data), [])
+
+    def test_accepted_stage_requires_verified_claim_with_sufficient_max_stage(self):
         data = valid_manifest()
         data["completion_boundary"] = "production"
         refs = [f"A5_{kind}" for kind in sorted(module.REQUIRED_ARTIFACT_TYPES["S5"])]
@@ -379,8 +475,9 @@ class ValidatorTests(unittest.TestCase):
             "status": "accepted", "owner": "delivery-owner", "artifacts": refs,
             "evidence_refs": ["TS1"], "blockers": [],
         })
+        data["claims"][0]["stage_refs"].append("S5")
         errors = validate(data)
-        self.assertTrue(any("accepted stage S5 needs a linked verified claim" in e for e in errors))
+        self.assertTrue(any("exceeds claim max_stage S4" in e for e in errors))
 
     def test_blocked_closure_requires_blocked_stage(self):
         data = valid_manifest()

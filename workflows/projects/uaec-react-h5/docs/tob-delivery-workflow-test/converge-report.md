@@ -13,11 +13,11 @@
 | Machine-readable engagement manifest exists | `templates/delivery-engagement-manifest.json` | JSON lint on write; placeholders deliberately return RED | PASS | starter template |
 | Verified claims require scoped, known evidence IDs and exact stage applicability | `scripts/verify_delivery_workflow.py` | unit and mutation tests | PASS | structural validation |
 | Accepted closures require a verified outcome and reject unverified/disputed claims; accepted risks require approval, controls and evidence | validator | unit tests | PASS | structural governance |
-| Accepted stages require owner, known references, stage-specific semantic artifact types and a linked verified claim | validator | unit tests | PASS | structural validation |
-| Absolute local evidence is present and hash-pinned | RED/GREEN manifests | missing/tamper tests | PASS | local files only |
-| Closure, stage order and maximum completion boundary are consistent; review packets and supersession records fail closed | validator | draft/review/accepted/superseded/S6/beyond-boundary tests | PASS | snapshot state machine |
-| Allowed external actions are allowlisted and require target/scope/registered grant source or artifact/rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
-| Public case requires public classification plus rights/anonymization evidence; accepted clients require non-placeholder dated evidence and S6 acceptance | validator | unit tests | PASS | case remains not_ready; client not_requested |
+| Accepted stages require owner, known references, stage-specific semantic artifact types and a linked verified claim bounded by `max_stage` | validator | unit tests | PASS | structural validation |
+| Absolute local evidence is present, hash-pinned and copied into the candidate evidence packet | RED/GREEN manifests and snapshots | missing/tamper/archive tests | PASS | local immutable bytes only |
+| Closure, stage order and maximum completion boundary are consistent; review packets and registered evidence-backed successor records fail closed | validator | draft/review/accepted/superseded/S6/beyond-boundary tests | PASS | snapshot state machine |
+| Allowed external actions require a typed authority grant bound to action/target/scope plus rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
+| Public/client gates require purpose-specific evidence types; client identity/scope reject exact placeholder tokens and require S6 acceptance | validator | unit tests | PASS | case remains not_ready; client not_requested |
 | Malformed nested values do not crash validation | validator | 20,000 seeded mutations | PASS | robustness, not formal proof |
 | UAEC progress conflict fails closed | `uaec-progress-red.json` | validator returned 3 errors and expected exit 1 | PASS | negative evidence |
 | Reconciled bounded pilot passes | `uaec-progress-green.json` | validator returned boundary=pilot, closure=accepted | PASS | pilot manifest only |
@@ -61,8 +61,8 @@ PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closur
 ## Regression evidence
 
 ```text
-.......................................
-Ran 39 tests in 0.007s
+................................................
+Ran 48 tests in 0.011s
 OK
 ```
 

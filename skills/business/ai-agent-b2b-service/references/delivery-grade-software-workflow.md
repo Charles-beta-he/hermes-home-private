@@ -189,19 +189,21 @@ The verifier intentionally fails closed for:
 - verified claims without scope/evidence, or accepted closures without any verified outcome or containing unverified/disputed claims;
 - `accepted_risk` contradictions without an approver, acceptance date, compensating controls and known evidence references;
 - active stages without owners, accepted/reviewable stages without their required artifacts/evidence, and out-of-order stage progress;
-- closure states that do not match the completion-boundary stage, including superseded closures without a successor record;
-- accepted stages without a linked verified claim;
-- accepted client records without identity/date/scope, known acceptance evidence, or an accepted S6 stage;
+- closure states that do not match the completion-boundary stage, including superseded closures whose `superseded_by` does not resolve to an evidence-backed `related_engagements` successor;
+- accepted stages without a linked verified claim whose `max_stage` covers that stage;
+- verified claims without a valid `max_stage` or a non-empty limitations list;
+- accepted client records without non-placeholder identity/date/scope, typed acceptance evidence, or an accepted S6 stage;
 - S6/S7 progress without explicit client acceptance;
-- unknown external action names, enabled credential/payment actions, or allowed actions without exact target, scope, a registered grant source/artifact, rollback and readback;
-- public cases without `confidentiality=public`, publication-rights evidence and anonymization-review evidence;
-- accepted client records without identity/date/scope and known acceptance evidence references;
+- unknown external action names, enabled credential/payment actions, or allowed actions without exact target, scope, a typed and evidence-backed `authority_grants` record bound to the same action/target/scope, rollback and readback;
+- public cases without `confidentiality=public`, typed publication-rights evidence and typed anonymization-review evidence;
+- accepted client records without identity/date/scope and typed acceptance evidence references;
 - duplicate source, artifact, claim, contradiction, action, metric or risk IDs.
 
 Evidence semantics:
 - `truth_sources` are claim/stage/metric evidence IDs;
 - `artifacts` are produced-output IDs referenced by stages;
-- every claim declares `stage_refs`; every accepted stage has at least one linked verified claim;
+- every verified claim declares `stage_refs` and a maximum supported stage in `max_stage`; every accepted stage has at least one linked verified claim that does not exceed that maximum;
+- source `type` is part of the structural evidence contract for publication rights, anonymization review, client acceptance and authority grants; ID existence alone is insufficient;
 - accepted and `ready_for_review` stages must carry the stage-specific artifact types and evidence below, not generic labels:
   - S0: `qualification`;
   - S1: `baseline`;
@@ -223,7 +225,7 @@ Boundary and closure semantics:
 - `waiting_acceptance`: boundary is `acceptance`, S0–S5 are accepted, S6 has its required review packet, client acceptance is pending;
 - `blocked`: at least one stage within the boundary is blocked;
 - `rolled_back`: at least one stage within the boundary is rejected or superseded;
-- `superseded`: the boundary stage is superseded and `supersession` records the successor, date, reason and known evidence.
+- `superseded`: the boundary stage is superseded; `supersession.superseded_by` resolves to an evidence-backed active/planned/accepted successor in `related_engagements`, and the record includes date, reason and known evidence.
 
 ## Required Client-Facing Deliverables
 
@@ -256,7 +258,8 @@ Every claim must contain:
 - `status`: verified, disputed, unverified or superseded;
 - `evidence_refs`;
 - `stage_refs`: exact S0–S7 stages whose acceptance denominator this claim supports;
-- limitations and negative evidence where material.
+- `max_stage`: the highest stage the claim may support; every `stage_refs` entry must be at or below it;
+- a non-empty limitations list and negative evidence where material.
 
 Forbidden examples:
 - “100% complete” with no denominator;
@@ -285,7 +288,7 @@ Classify actions:
 - payment;
 - production/destructive mutation.
 
-Only local read-only and reversible local writes are open by default. External action names must be allowlisted. Every allowed external action must include exact target, scope/payload, a `grant_ref` that resolves to a registered truth source or artifact, rollback/escape path and post-action readback. `credential_entry` and `payment_or_funds` are human-only and cannot be enabled by this Manifest. A manifest grant record is evidence about authority, not execution permission for the current Agent session; live execution still requires the applicable runtime/user authorization. Never type credentials or payment details.
+Only local read-only and reversible local writes are open by default. External action names must be allowlisted. Every allowed external action must include exact target, scope/payload, a `grant_ref` that resolves to a typed `authority_grants` record with grantor/date/evidence and the same action/target/scope, rollback/escape path and post-action readback. The grant evidence source must have type `authority_grant`. `credential_entry` and `payment_or_funds` are human-only and cannot be enabled by this Manifest. A manifest grant record is evidence about authority, not execution permission for the current Agent session; live execution still requires the applicable runtime/user authorization. Never type credentials or payment details.
 
 ## Change Control
 
