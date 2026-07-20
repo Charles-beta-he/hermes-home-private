@@ -112,7 +112,7 @@ A later two-lane review was replayed rather than trusted by age: its evidence-re
 
 ```text
 .......................................................
-Ran 55 tests in 0.018s
+55 tests passed (elapsed time varies by run)
 OK
 PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closure=accepted)
 ```
