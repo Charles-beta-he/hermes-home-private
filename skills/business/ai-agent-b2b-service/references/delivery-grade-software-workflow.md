@@ -186,12 +186,14 @@ The verifier intentionally fails closed for:
 - missing absolute local evidence or a mismatched SHA-256;
 - claim, stage, metric or artifact references to unknown IDs;
 - unresolved contradictions;
-- verified claims without scope/evidence;
+- verified claims without scope/evidence, or accepted closures without any verified outcome or containing unverified/disputed claims;
+- `accepted_risk` contradictions without an approver, acceptance date, compensating controls and known evidence references;
 - active stages without owners, accepted stages without artifacts/evidence, and out-of-order stage progress;
 - closure states that do not match the completion-boundary stage;
 - S6/S7 progress without explicit client acceptance;
 - unknown external action names, enabled credential/payment actions, or allowed actions without exact target, scope, grant reference, rollback and readback;
-- public cases without `confidentiality=public`, publication rights and anonymization;
+- public cases without `confidentiality=public`, publication-rights evidence and anonymization-review evidence;
+- accepted client records without identity/date/scope and known acceptance evidence references;
 - duplicate source, artifact, claim, contradiction, action, metric or risk IDs.
 
 Evidence semantics:

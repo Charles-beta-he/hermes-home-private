@@ -264,13 +264,16 @@
   "public_case": {
     "status": "not_ready",
     "publication_rights_verified": false,
+    "publication_rights_evidence_refs": [],
     "anonymization_check": false,
+    "anonymization_evidence_refs": [],
     "sensitive_markers": []
   },
   "client_acceptance": {
     "status": "not_requested",
     "accepted_by": "",
     "accepted_at": "",
-    "scope": ""
+    "scope": "",
+    "evidence_refs": []
   }
 }

@@ -92,6 +92,60 @@ class ValidatorTests(unittest.TestCase):
             stage.update({"status": "not_started", "owner": "", "artifacts": [], "evidence_refs": [], "blockers": []})
         self.assertEqual(validate(data), [])
 
+    def test_accepted_closure_rejects_unverified_or_disputed_claims(self):
+        for claim_status in ("unverified", "disputed"):
+            with self.subTest(status=claim_status):
+                data = valid_manifest()
+                data["claims"][0]["status"] = claim_status
+                errors = validate(data)
+                self.assertTrue(any("accepted closure requires settled claim" in e for e in errors))
+
+    def test_accepted_closure_requires_at_least_one_verified_claim(self):
+        data = valid_manifest()
+        data["claims"][0]["status"] = "superseded"
+        errors = validate(data)
+        self.assertTrue(any("at least one verified claim" in e for e in errors))
+
+    def test_accepted_closure_malformed_claim_status_fails_without_crashing(self):
+        for malformed in ([], {}):
+            with self.subTest(value=malformed):
+                data = valid_manifest()
+                data["claims"][0]["status"] = malformed
+                errors = validate(data)
+                self.assertTrue(any("invalid status" in e for e in errors))
+
+    def test_accepted_risk_contradiction_requires_approval_controls_and_evidence(self):
+        data = valid_manifest()
+        data["claims"].append({"id": "C2", "text": "conflicting claim", "scope": "whole project", "status": "superseded", "evidence_refs": [], "negative_evidence_refs": [], "limitations": []})
+        data["contradictions"] = [{
+            "id": "X1", "claim_refs": ["C1", "C2"], "status": "accepted_risk",
+            "resolution": "temporary exception",
+        }]
+        errors = validate(data)
+        for field in ("approved_by", "accepted_at", "compensating_controls", "evidence_refs"):
+            self.assertTrue(any(field in e for e in errors))
+
+    def test_public_case_ready_requires_rights_and_anonymization_evidence(self):
+        data = valid_manifest()
+        data["confidentiality"] = "public"
+        data["public_case"] = {
+            "status": "ready", "publication_rights_verified": True,
+            "anonymization_check": True, "sensitive_markers": [],
+        }
+        errors = validate(data)
+        self.assertTrue(any("publication_rights_evidence_refs" in e for e in errors))
+        self.assertTrue(any("anonymization_evidence_refs" in e for e in errors))
+
+    def test_client_acceptance_requires_evidence_and_valid_date(self):
+        data = valid_manifest()
+        data["client_acceptance"] = {
+            "status": "accepted", "accepted_by": "client-sponsor",
+            "accepted_at": "not-a-date", "scope": "pilot", "evidence_refs": [],
+        }
+        errors = validate(data)
+        self.assertTrue(any("accepted_at must be ISO date" in e for e in errors))
+        self.assertTrue(any("client_acceptance.evidence_refs must not be empty" in e for e in errors))
+
     def test_unresolved_contradiction_fails(self):
         data = valid_manifest()
         data["claims"].append({"id": "C2", "text": "conflicting claim", "scope": "whole project", "status": "verified", "evidence_refs": ["TS1"], "negative_evidence_refs": [], "limitations": []})

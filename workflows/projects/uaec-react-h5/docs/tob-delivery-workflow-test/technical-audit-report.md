@@ -31,7 +31,7 @@ Non-goals:
 
 ## Initial audit findings and repairs
 
-The adversarial audit rounds found twelve reproducible issues:
+The adversarial audit rounds found eighteen reproducible issues:
 
 | ID | Initial issue | Severity | Repair |
 |---|---|---:|---|
@@ -47,33 +47,42 @@ The adversarial audit rounds found twelve reproducible issues:
 | F10 | generic artifact labels could satisfy accepted stages without the required delivery outputs | P1 | each accepted S0–S7 stage now requires explicit semantic artifact types |
 | F11 | stages beyond the declared completion boundary could remain active/accepted | P1 | completion boundary is now enforced as the maximum active stage |
 | F12 | unknown external actions and manifest-enabled credential/payment operations could PASS | P0 | external actions are allowlisted; credential/payment operations remain human-only and cannot be enabled |
+| F13 | an `accepted` closure could retain unverified or disputed claims | P0 | accepted closures now require every claim to be `verified` or `superseded` |
+| F14 | an `accepted_risk` contradiction could rely on resolution prose alone | P1 | approver, acceptance date, compensating controls and known evidence references are mandatory |
+| F15 | public-case rights and anonymization could be asserted by booleans alone | P1 | public-ready now requires known rights and anonymization evidence references |
+| F16 | client acceptance could omit evidence and use an invalid date | P0 | accepted client records require ISO date and known non-empty acceptance evidence references |
+| F17 | the new accepted-closure claim check crashed on list/dict claim states | P1 | explicit string guard plus malformed-status regression coverage |
+| F18 | an accepted closure could contain only superseded claims and no verified outcome | P1 | accepted closure now requires at least one verified claim |
 
 A subsequent malformed-type test exposed validator crashes on list/dict values. Type guards and filtered reference handling were added. A seeded 20,000-mutation robustness run then completed with zero validator crashes.
+
+A delayed independent review batch was reconciled after it arrived. Two reviewers had inspected the immutable pre-hardening commit `d009661b`, not the current implementation; the security-review lane was provider-blocked. Their executable false-PASS examples for dangling evidence, stage-boundary bypass, client-acceptance bypass and unsafe authority had already been repaired in `9ad1956a`. Four still-applicable self-attestation gaps were replayed against the current tree and became F13–F16 above. Remaining advisory P1/P2 items—an executable recovery/event ledger, routing evals, reusable handover templates, deep anonymization scanning and production/S7 adapters—stay outside this local validator pilot and prevent certification.
 
 ## Multi-dimensional result matrix
 
 | Dimension | Result | Evidence | Remaining boundary |
 |---|---|---|---|
 | Syntax and executable entry point | PASS | `py_compile`; CLI exit contract exercised | no package/CLI distribution |
-| Unit behavior | PASS | 24 tests, all passing | standard-library unittest only |
+| Unit behavior | PASS | 30 tests, all passing | standard-library unittest only |
 | Input robustness | PASS | seeded 20,000 field mutations, zero crashes | not a formal parser proof |
 | Missing/corrupt input | PASS | missing and malformed JSON return exit 2 | no JSON Schema publication yet |
-| Claim/evidence integrity | PASS | unknown IDs rejected; verified claims require evidence | semantic truth still requires human/domain verification |
+| Claim/evidence integrity | PASS | unknown IDs rejected; verified claims require evidence; accepted closures reject unsettled claims | semantic truth still requires human/domain verification |
 | Artifact integrity | PASS | accepted-stage IDs resolve and required S0–S7 semantic artifact types are enforced | remote/logical artifact URIs are declarations |
 | Local evidence immutability | PASS | absolute refs require matching SHA-256; tamper test returns exit 1 | mutable source updates require deliberate hash refresh |
 | Evidence freshness | PASS | malformed and future dates rejected | no configurable age/SLA threshold |
 | Stage ordering and boundary | PASS | prior stages must be accepted; stages beyond completion boundary cannot be active | no event-sourced transition ledger |
 | Closure-state contract | PASS | in-progress/review/accepted/waiting/blocked/rollback rules tested | superseded remains a documentary terminal state |
-| Client acceptance | PASS | accepted S6 and active S7 require accepted client record | does not contact or authenticate the client |
+| Client acceptance | PASS | accepted S6/S7 require a client record with identity/date/scope and known evidence | does not contact or authenticate the client |
 | Authority safety | PASS, structural | action names are allowlisted; enabled actions require target, scope, grant ref, rollback and readback; credential/payment stay human-only | manifest does not itself grant live execution authority |
-| Confidentiality/publication | PASS, structural | public-ready requires public classification, rights, anonymization and no markers | no deep secret/PII content scanner |
-| Contradiction handling | PASS | UAEC RED returns exactly three conflict errors | reconciliation quality remains reviewer-dependent |
+| Confidentiality/publication | PASS, structural | public-ready requires public classification, rights/anonymization evidence and no markers | no deep secret/PII content scanner |
+| Contradiction handling | PASS | UAEC RED returns exactly three conflict errors; accepted-risk needs approval, controls and evidence | reconciliation quality remains reviewer-dependent |
 | UAEC bounded pilot | PASS | GREEN reports boundary=pilot, closure=accepted | does not prove UAEC software delivery |
 | Recovery semantics | PARTIAL | blocked/rolled-back states are checked | no executable rollback orchestrator or recovery drill |
 | Continuation/concurrency/idempotency | PARTIAL | snapshot is deterministic and side-effect free | no lease/event/transition writer for concurrent operators |
 | Project-state ingestion | PARTIAL | real UAEC sources are referenced and hash-pinned | manifest extraction/refresh is still manual |
 | Remote evidence verification | NOT IMPLEMENTED | explicitly outside validator behavior | URLs are not fetched, authenticated or hash-pinned |
 | CI integration | NOT IMPLEMENTED | no CI job installed | must be wired into a chosen repository/pipeline |
+| Skill routing and adoption | PARTIAL | delayed reviewer confirmed the branch is usable for diagnosis/pilot | overlaps an adjacent delivery skill; no route evals or reusable S6/S7 handover template pack |
 | Cross-project portability | UNVERIFIED | generic skill/template exists | only UAEC has a real project trial |
 | Business engineering gate | NOT RUN | out of audit scope | no UAEC lint/build/E2E/remote CI/deploy/device run |
 
@@ -82,8 +91,8 @@ A subsequent malformed-type test exposed validator crashes on list/dict values. 
 ### Regression and GREEN
 
 ```text
-........................
-Ran 24 tests in 0.004s
+..............................
+Ran 30 tests in 0.006s
 OK
 PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closure=accepted)
 ```
@@ -154,7 +163,8 @@ Not yet usable as:
 3. Add authenticated remote-evidence adapters with immutable receipts.
 4. Install the validator as a repository/CI gate for one explicitly chosen project.
 5. Run the same workflow on a second unrelated project.
-6. Separately run UAEC business lint/build/test/E2E/CI/device gates before making any product-delivery claim.
+6. Add route evals and a reusable UAT/runbook/SLA/ownership/recovery handover template pack.
+7. Separately run UAEC business lint/build/test/E2E/CI/device gates before making any product-delivery claim.
 
 ## Final status
 

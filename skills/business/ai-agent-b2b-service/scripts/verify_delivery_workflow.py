@@ -251,11 +251,38 @@ def validate(data: object) -> list[str]:
                 unresolved_claims.update(ref for ref in (refs or []) if isinstance(ref, str))
             elif isinstance(status, str) and status in {"resolved", "accepted_risk"} and not nonempty(item.get("resolution")):
                 errors.append(f"{status} contradiction {item.get('id', idx)} needs resolution")
+            if status == "accepted_risk":
+                if not nonempty(item.get("approved_by")):
+                    errors.append(f"accepted_risk contradiction {item.get('id', idx)} needs approved_by")
+                validate_date(item.get("accepted_at"), f"{label}.accepted_at", errors)
+                controls = item.get("compensating_controls")
+                if not isinstance(controls, list) or not controls or not all(nonempty(value) for value in controls):
+                    errors.append(f"{label}.compensating_controls must be a non-empty string list")
+                validate_refs(
+                    item.get("evidence_refs"), source_ids,
+                    f"{label}.evidence_refs", errors, required=True,
+                )
 
     if unresolved_claims and isinstance(claims, list):
         for claim in claims:
             if isinstance(claim, dict) and claim.get("id") in unresolved_claims and claim.get("status") == "verified":
                 errors.append(f"claim {claim.get('id')} cannot remain verified in unresolved contradiction")
+
+    if closure == "accepted" and isinstance(claims, list):
+        verified_claims = 0
+        for idx, claim in enumerate(claims):
+            claim_status = claim.get("status") if isinstance(claim, dict) else None
+            if claim_status == "verified":
+                verified_claims += 1
+            if isinstance(claim, dict) and (
+                not isinstance(claim_status, str) or claim_status not in {"verified", "superseded"}
+            ):
+                errors.append(
+                    f"accepted closure requires settled claim {claim.get('id', idx)} "
+                    "to be verified or superseded"
+                )
+        if verified_claims == 0:
+            errors.append("accepted closure requires at least one verified claim")
 
     authority = data.get("authority")
     if not isinstance(authority, dict):
@@ -461,6 +488,14 @@ def validate(data: object) -> list[str]:
                 errors.append("public case ready requires anonymization_check=true")
             if markers:
                 errors.append("public case ready cannot contain sensitive markers")
+            validate_refs(
+                public_case.get("publication_rights_evidence_refs"), source_ids,
+                "public_case.publication_rights_evidence_refs", errors, required=True,
+            )
+            validate_refs(
+                public_case.get("anonymization_evidence_refs"), source_ids,
+                "public_case.anonymization_evidence_refs", errors, required=True,
+            )
 
     acceptance = data.get("client_acceptance")
     acceptance_status = None
@@ -471,9 +506,14 @@ def validate(data: object) -> list[str]:
         if not isinstance(acceptance_status, str) or acceptance_status not in {"not_requested", "pending", "accepted", "rejected"}:
             errors.append("client_acceptance.status is invalid")
         if acceptance_status == "accepted":
-            for key in ("accepted_by", "accepted_at", "scope"):
+            for key in ("accepted_by", "scope"):
                 if not nonempty(acceptance.get(key)):
                     errors.append(f"accepted client acceptance needs {key}")
+            validate_date(acceptance.get("accepted_at"), "client_acceptance.accepted_at", errors)
+            validate_refs(
+                acceptance.get("evidence_refs"), source_ids,
+                "client_acceptance.evidence_refs", errors, required=True,
+            )
         if closure == "waiting_acceptance" and acceptance_status != "pending":
             errors.append("waiting_acceptance closure requires client_acceptance=pending")
 

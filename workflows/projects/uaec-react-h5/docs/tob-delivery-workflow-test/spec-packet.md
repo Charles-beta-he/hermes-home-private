@@ -50,8 +50,9 @@
    - 阶段越序、超出 completion boundary 仍处于活动状态，或 closure_state 与 completion boundary 不一致；
    - 本地绝对证据路径缺失、SHA-256 不匹配、日期损坏或位于未来；
    - 未知外部动作、外部动作授权缺少目标、scope、grant_ref、回滚或 readback，或 credential/payment 被错误启用；
-   - public case 含敏感标记、未通过匿名化，或 confidentiality 不是 public；
-   - S6/S7 在没有明确客户验收时越级通过；
+   - accepted closure 没有任何 verified outcome、仍含 unverified/disputed claim，或 accepted_risk 缺少批准人、日期、补偿控制和证据；
+   - public case 含敏感标记、未引用发布权/匿名化证据，或 confidentiality 不是 public；
+   - S6/S7 在没有带日期和证据的明确客户验收时越级通过；
    - 错误嵌套类型导致校验器崩溃。
 5. 未完成的 in_progress Manifest 不得被 completion_boundary 强制伪装为 accepted；模板中的 placeholder 必须保持 RED，直到被真实值替换。
 6. UAEC 冲突夹具必须失败（RED）。

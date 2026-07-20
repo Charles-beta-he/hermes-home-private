@@ -1,7 +1,7 @@
 ---
 name: ai-agent-b2b-service
 description: "Use when packaging AI Agent customization or AI-assisted software-delivery governance as a B2B service: qualification, diagnosis, truth-source mapping, authority contracts, pilot validation, evidence-gated delivery, handover, and ongoing ops."
-version: 1.2.0
+version: 1.2.2
 author: Hermes Agent
 license: MIT
 metadata:
@@ -248,6 +248,7 @@ Tier 3: Enterprise (50K-200K)
 - `templates/delivery-engagement-manifest.json` — intentionally-RED starter for machine-readable truth sources, artifacts, claims, authority, stages, metrics, risks, public-case and acceptance state.
 - `scripts/verify_delivery_workflow.py` — fail-closed manifest validator with reference integrity, local SHA-256 evidence pinning, ordered stages, stage-specific semantic artifacts, maximum completion-boundary enforcement, closure contracts and authority/publication gates.
 - `scripts/test_verify_delivery_workflow.py` — regression tests for contradiction, evidence integrity, malformed input, semantic artifacts, stage/boundary/closure state, authority, client acceptance and anonymization gates.
+- `references/delivery-manifest-adversarial-verification.md` — reusable RED/GREEN/template, mutation, authority, semantic-artifact and independent-fixture verification procedure for fail-closed Manifest validators.
 
 ## Verification Checklist
 
@@ -263,4 +264,5 @@ Tier 3: Enterprise (50K-200K)
 - [ ] Unresolved contradictions block acceptance rather than being averaged or deleted.
 - [ ] External action names are allowlisted; enabled actions include exact target, scope, grant reference, rollback and readback; credential/payment actions remain human-only.
 - [ ] Pilot evidence is not promoted to production or client acceptance.
-- [ ] Public cases have explicit publication rights and anonymization evidence.
+- [ ] Accepted closures contain at least one verified outcome and no unverified/disputed claims; accepted risks name an approver, date, controls and evidence.
+- [ ] Public-ready and accepted-client states cite known publication/anonymization/acceptance evidence, not only booleans.

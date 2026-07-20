@@ -12,15 +12,16 @@
 | Each stage defines artifacts and exit gates | same reference | skill readback | PASS | procedure only |
 | Machine-readable engagement manifest exists | `templates/delivery-engagement-manifest.json` | JSON lint on write; placeholders deliberately return RED | PASS | starter template |
 | Verified claims require scoped, known evidence IDs | `scripts/verify_delivery_workflow.py` | unit and mutation tests | PASS | structural validation |
+| Accepted closures require a verified outcome and reject unverified/disputed claims; accepted risks require approval, controls and evidence | validator | unit tests | PASS | structural governance |
 | Accepted stages require owner, known references and stage-specific semantic artifact types | validator | unit tests | PASS | structural validation |
 | Absolute local evidence is present and hash-pinned | RED/GREEN manifests | missing/tamper tests | PASS | local files only |
 | Closure, stage order and maximum completion boundary are consistent | validator | draft/review/accepted/S6/beyond-boundary tests | PASS | snapshot state machine |
 | Allowed external actions are allowlisted and require target/scope/grant/rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
-| Public case requires public classification, rights and anonymization | validator | unit tests | PASS | case remains not_ready |
+| Public case requires public classification plus rights/anonymization evidence; accepted clients require dated evidence | validator | unit tests | PASS | case remains not_ready; client not_requested |
 | Malformed nested values do not crash validation | validator | 20,000 seeded mutations | PASS | robustness, not formal proof |
 | UAEC progress conflict fails closed | `uaec-progress-red.json` | validator returned 3 errors and expected exit 1 | PASS | negative evidence |
 | Reconciled bounded pilot passes | `uaec-progress-green.json` | validator returned boundary=pilot, closure=accepted | PASS | pilot manifest only |
-| Existing ToB skill routes to delivery-grade branch | `ai-agent-b2b-service/SKILL.md` v1.1.0 | skill reload/readback | PASS | class-level routing |
+| Existing ToB skill routes to delivery-grade branch | `ai-agent-b2b-service/SKILL.md` v1.2.2 | skill reload/readback | PASS | class-level routing |
 | Multi-dimensional technical audit exists | `technical-audit-report.md` | artifact readback and verification matrix | PASS | production gaps remain explicit |
 
 ## RED evidence
@@ -60,8 +61,8 @@ PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closur
 ## Regression evidence
 
 ```text
-........................
-Ran 24 tests in 0.004s
+..............................
+Ran 30 tests in 0.006s
 OK
 ```
 
@@ -79,6 +80,8 @@ Covered dimensions include:
 10. duplicate governed IDs and placeholder rejection;
 11. draft, review, blocked and accepted states;
 12. malformed nested input resilience.
+13. accepted-closure claim settlement and accepted-risk approval controls;
+14. publication-rights, anonymization and client-acceptance evidence references.
 
 A seeded 20,000-mutation run returned `CRASHES=0`. Missing and malformed JSON returned exit `2`; a hash-tampered GREEN copy returned exit `1`. `py_compile` also passed. `ruff` and `mypy` were unavailable and are recorded as degraded rather than passed.
 
