@@ -202,7 +202,7 @@ The verifier intentionally fails closed for:
 Evidence semantics:
 - `truth_sources` are claim/stage/metric evidence IDs;
 - `artifacts` are produced-output IDs referenced by stages;
-- every verified claim declares `stage_refs` and a maximum supported stage in `max_stage`; every accepted stage has at least one linked verified claim that does not exceed that maximum;
+- every verified claim declares `stage_refs` and a maximum supported stage in `max_stage`; every accepted stage has at least one linked verified claim that does not exceed either the claim maximum or the highest `max_stage` declared by its cited truth sources;
 - source `type` is part of the structural evidence contract for publication rights, anonymization review, client acceptance and authority grants; ID existence alone is insufficient;
 - accepted and `ready_for_review` stages must carry the stage-specific artifact types and evidence below, not generic labels:
   - S0: `qualification`;
@@ -225,7 +225,7 @@ Boundary and closure semantics:
 - `waiting_acceptance`: boundary is `acceptance`, S0–S5 are accepted, S6 has its required review packet, client acceptance is pending;
 - `blocked`: at least one stage within the boundary is blocked;
 - `rolled_back`: at least one stage within the boundary is rejected or superseded;
-- `superseded`: the boundary stage is superseded; `supersession.superseded_by` resolves to an evidence-backed active/planned/accepted successor in `related_engagements`, and the record includes date, reason and known evidence.
+- `superseded`: the boundary stage is superseded; `supersession.superseded_by` resolves to an active/planned/accepted successor in `related_engagements`, and both the successor and supersession record cite `successor_engagement`-typed evidence with date and reason.
 
 ## Required Client-Facing Deliverables
 
@@ -258,7 +258,8 @@ Every claim must contain:
 - `status`: verified, disputed, unverified or superseded;
 - `evidence_refs`;
 - `stage_refs`: exact S0–S7 stages whose acceptance denominator this claim supports;
-- `max_stage`: the highest stage the claim may support; every `stage_refs` entry must be at or below it;
+- `max_stage`: the highest stage the claim may support; every `stage_refs` entry must be at or below it, and at least one cited truth source must declare an equal or higher `max_stage` capability;
+- truth-source `max_stage` is a structural evidence-capability declaration, not external authentication; reviewers must still verify the pinned source bytes and their real scope;
 - a non-empty limitations list and negative evidence where material.
 
 Forbidden examples:

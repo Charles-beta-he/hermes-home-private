@@ -13,9 +13,9 @@
 | Machine-readable engagement manifest exists | `templates/delivery-engagement-manifest.json` | JSON lint on write; placeholders deliberately return RED | PASS | starter template |
 | Verified claims require scoped, known evidence IDs and exact stage applicability | `scripts/verify_delivery_workflow.py` | unit and mutation tests | PASS | structural validation |
 | Accepted closures require a verified outcome and reject unverified/disputed claims; accepted risks require approval, controls and evidence | validator | unit tests | PASS | structural governance |
-| Accepted stages require owner, known references, stage-specific semantic artifact types and a linked verified claim bounded by `max_stage` | validator | unit tests | PASS | structural validation |
+| Accepted stages require owner, known references, semantic artifacts and a linked verified claim bounded by both claim and cited-source `max_stage` | validator | unit tests | PASS | source capability is structural, not external authentication |
 | Absolute local evidence is present, hash-pinned and copied into the candidate evidence packet | RED/GREEN manifests and snapshots | missing/tamper/archive tests | PASS | local immutable bytes only |
-| Closure, stage order and maximum completion boundary are consistent; review packets and registered evidence-backed successor records fail closed | validator | draft/review/accepted/superseded/S6/beyond-boundary tests | PASS | snapshot state machine |
+| Closure, stage order and maximum completion boundary are consistent; successor records require registered `successor_engagement` evidence | validator | draft/review/accepted/superseded/S6/beyond-boundary tests | PASS | snapshot state machine |
 | Allowed external actions require a typed authority grant bound to action/target/scope plus rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
 | Public/client gates require purpose-specific evidence types; client identity/scope reject exact placeholder tokens and require S6 acceptance | validator | unit tests | PASS | case remains not_ready; client not_requested |
 | Malformed nested values do not crash validation | validator | 20,000 seeded mutations | PASS | robustness, not formal proof |
@@ -61,8 +61,8 @@ PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closur
 ## Regression evidence
 
 ```text
-................................................
-Ran 48 tests in 0.011s
+...................................................
+Ran 51 tests in 0.013s
 OK
 ```
 

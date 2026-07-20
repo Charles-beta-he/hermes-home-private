@@ -13,7 +13,8 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/evidence-snapshots/progress-ledger.md",
       "observed_at": "2026-07-14",
       "scope": "historical project progress claim",
-      "sha256": "c826102a9923b3b61b4239a140c209f8dc6e28d08b6588e0990fada337f4bdbc"
+      "sha256": "c826102a9923b3b61b4239a140c209f8dc6e28d08b6588e0990fada337f4bdbc",
+      "max_stage": "S4"
     },
     {
       "id": "TS_PLAN",
@@ -21,7 +22,8 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/evidence-snapshots/full-alignment-plan.md",
       "observed_at": "2026-07-16",
       "scope": "nine Android-to-H5 module alignment percentages",
-      "sha256": "eb218c8dd038aaf8e5749a0d8198e3df7c0f811ec9db1ea59029041a7a7adfd2"
+      "sha256": "eb218c8dd038aaf8e5749a0d8198e3df7c0f811ec9db1ea59029041a7a7adfd2",
+      "max_stage": "S4"
     },
     {
       "id": "TS_STATE",
@@ -29,7 +31,8 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/evidence-snapshots/project-delivery-state.json",
       "observed_at": "2026-07-20",
       "scope": "repository and authority snapshot",
-      "sha256": "ba6176b8e1b6c7ee6361d1e420b2bac9ef9ed313ec2465c09ae7f79bea7c51fa"
+      "sha256": "ba6176b8e1b6c7ee6361d1e420b2bac9ef9ed313ec2465c09ae7f79bea7c51fa",
+      "max_stage": "S4"
     }
   ],
   "artifacts": [
@@ -39,7 +42,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S0 qualification packet",
-      "sha256": "60a07a906cd786f94f9727dafcd826ab944aab8139a9f6ecadbb39646e83b8d6"
+      "sha256": "48206a6d9dc5bacf53ecf78d31b916ea17e24b0ea2495ef4d08bfcfdc65ec5eb"
     },
     {
       "id": "A_BASELINE",
@@ -55,7 +58,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 specification contract",
-      "sha256": "60a07a906cd786f94f9727dafcd826ab944aab8139a9f6ecadbb39646e83b8d6"
+      "sha256": "48206a6d9dc5bacf53ecf78d31b916ea17e24b0ea2495ef4d08bfcfdc65ec5eb"
     },
     {
       "id": "A_AUTHORITY_MATRIX",
@@ -63,7 +66,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 authority boundary",
-      "sha256": "60a07a906cd786f94f9727dafcd826ab944aab8139a9f6ecadbb39646e83b8d6"
+      "sha256": "48206a6d9dc5bacf53ecf78d31b916ea17e24b0ea2495ef4d08bfcfdc65ec5eb"
     },
     {
       "id": "A_SOLUTION_WORKSPACE",
@@ -87,7 +90,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 executable pilot gate",
-      "sha256": "957323744d77cca76c70c3242dac9c68045b848aa8cf0cefc40109a7736a3e71"
+      "sha256": "3a0f6a12ba3771611059d67ea37ee5d77c0c10e4841e72acf72bad8cebdcbdd8"
     },
     {
       "id": "A_TEST_EVIDENCE",
@@ -95,7 +98,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/test_verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 regression evidence",
-      "sha256": "695628a3b608227fe369909492fd3945b32ef88cd367382fcdab7d45d0541b81"
+      "sha256": "a94cb31e264bd97bcf2f21b10bf2e5ae7f5fa48fcc29e79afff12ab039d00c3b"
     }
   ],
   "contradictions": [

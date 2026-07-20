@@ -19,11 +19,12 @@ validate = module.validate
 
 def valid_manifest():
     sources = [
-        {"id": "TS1", "type": "repo", "ref": "evidence://source-1", "observed_at": date.today().isoformat(), "scope": "pilot"},
-        {"id": "TS_ACCEPT", "type": "client_acceptance", "ref": "evidence://acceptance", "observed_at": date.today().isoformat(), "scope": "acceptance"},
-        {"id": "TS_RIGHTS", "type": "publication_rights", "ref": "evidence://rights", "observed_at": date.today().isoformat(), "scope": "publication"},
-        {"id": "TS_ANON", "type": "anonymization_review", "ref": "evidence://anonymization", "observed_at": date.today().isoformat(), "scope": "privacy"},
-        {"id": "TS_GRANT", "type": "authority_grant", "ref": "evidence://grant", "observed_at": date.today().isoformat(), "scope": "authority"},
+        {"id": "TS1", "type": "repo", "ref": "evidence://source-1", "observed_at": date.today().isoformat(), "scope": "pilot", "max_stage": "S4"},
+        {"id": "TS_ACCEPT", "type": "client_acceptance", "ref": "evidence://acceptance", "observed_at": date.today().isoformat(), "scope": "acceptance", "max_stage": "S6"},
+        {"id": "TS_RIGHTS", "type": "publication_rights", "ref": "evidence://rights", "observed_at": date.today().isoformat(), "scope": "publication", "max_stage": "S7"},
+        {"id": "TS_ANON", "type": "anonymization_review", "ref": "evidence://anonymization", "observed_at": date.today().isoformat(), "scope": "privacy", "max_stage": "S7"},
+        {"id": "TS_GRANT", "type": "authority_grant", "ref": "evidence://grant", "observed_at": date.today().isoformat(), "scope": "authority", "max_stage": "S5"},
+        {"id": "TS_SUCCESSOR", "type": "successor_engagement", "ref": "evidence://successor", "observed_at": date.today().isoformat(), "scope": "engagement succession", "max_stage": "S4"},
     ]
     artifacts = []
     artifact_refs_by_stage = {}
@@ -428,13 +429,43 @@ class ValidatorTests(unittest.TestCase):
         })
         data["related_engagements"] = [{
             "id": "successor-engagement", "relationship": "successor", "status": "active",
+            "evidence_refs": ["TS_SUCCESSOR"],
+        }]
+        data["supersession"] = {
+            "superseded_by": "successor-engagement", "superseded_at": date.today().isoformat(),
+            "reason": "scope replaced by a successor engagement", "evidence_refs": ["TS_SUCCESSOR"],
+        }
+        self.assertEqual(validate(data), [])
+
+    def test_successor_requires_typed_engagement_evidence(self):
+        data = valid_manifest()
+        data["closure_state"] = "superseded"
+        data["stages"][4].update({
+            "status": "superseded", "owner": "", "artifacts": [],
+            "evidence_refs": [], "blockers": [],
+        })
+        data["related_engagements"] = [{
+            "id": "successor-engagement", "relationship": "successor", "status": "active",
             "evidence_refs": ["TS1"],
         }]
         data["supersession"] = {
             "superseded_by": "successor-engagement", "superseded_at": date.today().isoformat(),
-            "reason": "scope replaced by a successor engagement", "evidence_refs": ["TS1"],
+            "reason": "scope replaced", "evidence_refs": ["TS1"],
         }
-        self.assertEqual(validate(data), [])
+        self.assertTrue(any("evidence type" in e for e in validate(data)))
+
+    def test_claim_max_stage_cannot_exceed_evidence_capability(self):
+        data = valid_manifest()
+        data["claims"][0]["max_stage"] = "S5"
+        data["claims"][0]["stage_refs"].append("S5")
+        self.assertTrue(any("exceeds evidence capability" in e for e in validate(data)))
+
+    def test_truth_source_requires_stage_capability(self):
+        data = valid_manifest()
+        data["truth_sources"][0].pop("max_stage")
+        errors = validate(data)
+        self.assertTrue(any("truth_sources[0].max_stage" in e for e in errors))
+        self.assertTrue(any("needs evidence with a declared max_stage" in e for e in errors))
 
     def test_allowed_external_action_requires_known_grant_reference(self):
         data = valid_manifest()

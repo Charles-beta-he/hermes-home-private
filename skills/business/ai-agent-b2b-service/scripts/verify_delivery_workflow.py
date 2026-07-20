@@ -175,8 +175,11 @@ def validate(data: object) -> list[str]:
     if not isinstance(confidentiality, str) or confidentiality not in {"internal", "client_confidential", "public"}:
         errors.append("confidentiality must be internal, client_confidential, or public")
 
+    # Scope: all delivery manifests. Applicability: evidence-backed stage claims.
+    # Anti-condition: this structural cap does not authenticate the external evidence itself.
     source_ids: set[str] = set()
     source_type_by_id: dict[str, str] = {}
+    source_max_stage_by_id: dict[str, str] = {}
     truth_sources = data.get("truth_sources")
     if not isinstance(truth_sources, list) or not truth_sources:
         errors.append("truth_sources must be a non-empty list")
@@ -195,6 +198,11 @@ def validate(data: object) -> list[str]:
                     errors.append(f"{label}.{key} contains placeholder")
             if nonempty(source.get("id")) and nonempty(source.get("type")):
                 source_type_by_id[source["id"]] = source["type"]
+            source_max_stage = source.get("max_stage")
+            if not isinstance(source_max_stage, str) or source_max_stage not in STAGE_ORDER:
+                errors.append(f"{label}.max_stage must be a valid S0-S7 stage")
+            elif nonempty(source.get("id")):
+                source_max_stage_by_id[source["id"]] = source_max_stage
             validate_date(source.get("observed_at"), f"{label}.observed_at", errors)
             validate_local_ref(source, label, errors)
 
@@ -265,6 +273,16 @@ def validate(data: object) -> list[str]:
                             errors.append(f"{label}.stage_refs {ref} exceeds claim max_stage {max_stage}")
                         else:
                             verified_claim_stage_refs.add(ref)
+                evidence_refs = claim.get("evidence_refs")
+                evidence_capabilities = [
+                    source_max_stage_by_id[ref]
+                    for ref in evidence_refs
+                    if isinstance(ref, str) and ref in source_max_stage_by_id
+                ] if isinstance(evidence_refs, list) else []
+                if not evidence_capabilities:
+                    errors.append(f"verified claim {cid or idx} needs evidence with a declared max_stage")
+                elif max_index > max(STAGE_ORDER.index(stage) for stage in evidence_capabilities):
+                    errors.append(f"verified claim {cid or idx} max_stage {max_stage} exceeds evidence capability")
             limitations = claim.get("limitations")
             if status == "verified" and (
                 not isinstance(limitations, list) or not limitations or not all(nonempty(value) for value in limitations)
@@ -536,6 +554,11 @@ def validate(data: object) -> list[str]:
             if status not in {"planned", "active", "accepted", "closed"}:
                 errors.append(f"{label}.status is invalid")
             validate_refs(engagement.get("evidence_refs"), source_ids, f"{label}.evidence_refs", errors, required=True)
+            if relationship == "successor":
+                validate_semantic_refs(
+                    engagement.get("evidence_refs"), source_type_by_id, {"successor_engagement"},
+                    label, errors,
+                )
             if nonempty(engagement_id) and relationship == "successor" and status in {"planned", "active", "accepted"}:
                 successor_engagement_ids.add(engagement_id)
 
@@ -557,6 +580,10 @@ def validate(data: object) -> list[str]:
             validate_refs(
                 supersession.get("evidence_refs"), source_ids,
                 "supersession.evidence_refs", errors, required=True,
+            )
+            validate_semantic_refs(
+                supersession.get("evidence_refs"), source_type_by_id, {"successor_engagement"},
+                "supersession", errors,
             )
 
     metric_ids: set[str] = set()

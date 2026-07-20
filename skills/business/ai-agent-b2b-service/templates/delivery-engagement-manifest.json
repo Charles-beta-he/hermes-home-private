@@ -13,7 +13,8 @@
       "ref": "replace-with-path-or-url",
       "observed_at": "YYYY-MM-DD",
       "scope": "bounded requirement scope",
-      "sha256": "required-for-absolute-local-file"
+      "sha256": "required-for-absolute-local-file",
+      "max_stage": "replace-with-S0-S7"
     }
   ],
   "artifacts": [
