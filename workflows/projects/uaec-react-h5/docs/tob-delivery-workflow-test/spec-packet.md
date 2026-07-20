@@ -21,7 +21,7 @@
 
 ## 不变量
 
-- 每个完成声明必须包含明确 scope、时间点、证据引用和未覆盖边界。
+- 每个完成声明必须包含明确 scope、时间点、证据引用、适用阶段 `stage_refs` 和未覆盖边界；每个 accepted stage 必须由 verified claim 覆盖。
 - 新证据与旧结论冲突时，交付状态必须降级为 `blocked` 或 `ready_for_review`，不能继续标记 `accepted`。
 - 所有外部副作用必须由 Authority Matrix 明确授权。
 - 客户验收与内部技术验证分离。
@@ -46,13 +46,15 @@
 4. 校验器能对以下问题 fail closed：
    - 未解决的证据冲突；
    - verified claim 缺少 scope/evidence，或引用未知证据 ID；
-   - accepted stage 缺少 artifact/evidence、artifact 不存在、引用未知 ID，或缺少该阶段要求的语义类型；
+   - accepted 或 ready_for_review stage 缺少 artifact/evidence、artifact 不存在、引用未知 ID，或缺少该阶段要求的语义类型；
    - 阶段越序、超出 completion boundary 仍处于活动状态，或 closure_state 与 completion boundary 不一致；
    - 本地绝对证据路径缺失、SHA-256 不匹配、日期损坏或位于未来；
-   - 未知外部动作、外部动作授权缺少目标、scope、grant_ref、回滚或 readback，或 credential/payment 被错误启用；
+   - 未知外部动作、外部动作授权缺少目标、scope、可解析到已登记 source/artifact 的 grant_ref、回滚或 readback，或 credential/payment 被错误启用；
    - accepted closure 没有任何 verified outcome、仍含 unverified/disputed claim，或 accepted_risk 缺少批准人、日期、补偿控制和证据；
    - public case 含敏感标记、未引用发布权/匿名化证据，或 confidentiality 不是 public；
-   - S6/S7 在没有带日期和证据的明确客户验收时越级通过；
+   - client_acceptance=accepted 时 S6 未 accepted，或 S6/S7 在没有非 placeholder 身份/scope、有效日期和已知证据的明确客户验收时越级通过；
+   - superseded closure 缺少边界阶段 superseded 状态、后继引用、日期、原因或已知证据；
+   - production/acceptance/operations 阶段只依赖 pilot claim 而没有对应阶段的 verified claim；
    - 错误嵌套类型导致校验器崩溃。
 5. 未完成的 in_progress Manifest 不得被 completion_boundary 强制伪装为 accepted；模板中的 placeholder 必须保持 RED，直到被真实值替换。
 6. UAEC 冲突夹具必须失败（RED）。

@@ -63,6 +63,7 @@ def valid_manifest():
             "id": "C1", "text": "pilot claim", "scope": "pilot/local",
             "status": "verified", "evidence_refs": ["TS1"],
             "negative_evidence_refs": ["TS1"], "limitations": ["not production"],
+            "stage_refs": ["S0", "S1", "S2", "S3", "S4"],
         }],
         "contradictions": [],
         "authority": {
@@ -145,6 +146,26 @@ class ValidatorTests(unittest.TestCase):
         errors = validate(data)
         self.assertTrue(any("accepted_at must be ISO date" in e for e in errors))
         self.assertTrue(any("client_acceptance.evidence_refs must not be empty" in e for e in errors))
+
+    def test_accepted_client_record_requires_S6_accepted(self):
+        data = valid_manifest()
+        data["client_acceptance"].update({
+            "status": "accepted", "accepted_by": "client-sponsor",
+            "accepted_at": date.today().isoformat(), "scope": "whole delivery",
+            "evidence_refs": ["TS1"],
+        })
+        self.assertTrue(any("client_acceptance=accepted requires stage S6=accepted" in e for e in validate(data)))
+
+    def test_client_acceptance_rejects_placeholder_identity_and_scope(self):
+        data = valid_manifest()
+        data["client_acceptance"].update({
+            "status": "accepted", "accepted_by": "replace-with-client",
+            "accepted_at": date.today().isoformat(), "scope": "replace-with-scope",
+            "evidence_refs": ["TS1"],
+        })
+        errors = validate(data)
+        self.assertTrue(any("accepted_by contains placeholder" in e for e in errors))
+        self.assertTrue(any("scope contains placeholder" in e for e in errors))
 
     def test_unresolved_contradiction_fails(self):
         data = valid_manifest()
@@ -265,6 +286,12 @@ class ValidatorTests(unittest.TestCase):
                 })
                 self.assertTrue(any(f"{action_name} cannot be enabled" in e for e in validate(data)))
 
+    def test_malformed_stage_status_does_not_crash(self):
+        data = valid_manifest()
+        data["stages"][4]["status"] = []
+        errors = validate(data)
+        self.assertTrue(any("stage S4 has invalid status" in error for error in errors))
+
     def test_duplicate_ids_fail(self):
         data = valid_manifest()
         data["risks"].append(copy.deepcopy(data["risks"][0]))
@@ -285,6 +312,75 @@ class ValidatorTests(unittest.TestCase):
         data["closure_state"] = "ready_for_review"
         data["stages"][4]["status"] = "ready_for_review"
         self.assertEqual(validate(data), [])
+
+    def test_ready_for_review_requires_boundary_review_packet(self):
+        data = valid_manifest()
+        data["closure_state"] = "ready_for_review"
+        data["stages"][4].update({
+            "status": "ready_for_review", "artifacts": [], "evidence_refs": [],
+        })
+        errors = validate(data)
+        self.assertTrue(any("reviewable stage S4 needs artifacts" in e for e in errors))
+        self.assertTrue(any("reviewable stage S4 needs evidence_refs" in e for e in errors))
+
+    def test_waiting_acceptance_requires_S6_review_packet(self):
+        data = valid_manifest()
+        data["completion_boundary"] = "acceptance"
+        data["closure_state"] = "waiting_acceptance"
+        data["claims"][0]["stage_refs"].extend(["S5", "S6"])
+        refs = [f"A5_{kind}" for kind in sorted(module.REQUIRED_ARTIFACT_TYPES["S5"])]
+        data["stages"][5].update({
+            "status": "accepted", "owner": "delivery-owner", "artifacts": refs,
+            "evidence_refs": ["TS1"], "blockers": [],
+        })
+        data["stages"][6].update({
+            "status": "ready_for_review", "owner": "delivery-owner",
+            "artifacts": [], "evidence_refs": [], "blockers": [],
+        })
+        data["client_acceptance"]["status"] = "pending"
+        errors = validate(data)
+        self.assertTrue(any("reviewable stage S6 needs artifacts" in e for e in errors))
+        self.assertTrue(any("reviewable stage S6 needs evidence_refs" in e for e in errors))
+
+    def test_superseded_closure_requires_record_and_boundary_stage(self):
+        data = valid_manifest()
+        data["closure_state"] = "superseded"
+        errors = validate(data)
+        self.assertTrue(any("superseded closure requires supersession record" in e for e in errors))
+        self.assertTrue(any("superseded closure requires stage S4=superseded" in e for e in errors))
+
+    def test_valid_superseded_closure_passes(self):
+        data = valid_manifest()
+        data["closure_state"] = "superseded"
+        data["stages"][4].update({
+            "status": "superseded", "owner": "", "artifacts": [],
+            "evidence_refs": [], "blockers": [],
+        })
+        data["supersession"] = {
+            "superseded_by": "successor-engagement", "superseded_at": date.today().isoformat(),
+            "reason": "scope replaced by a successor engagement", "evidence_refs": ["TS1"],
+        }
+        self.assertEqual(validate(data), [])
+
+    def test_allowed_external_action_requires_known_grant_reference(self):
+        data = valid_manifest()
+        data["authority"]["external_actions"][0].update({
+            "allowed": True, "target": "repository-target", "scope": "single change",
+            "grant_ref": "UNKNOWN-GRANT", "rollback": "revert change",
+            "readback": "read target state",
+        })
+        self.assertTrue(any("grant_ref references unknown id" in e for e in validate(data)))
+
+    def test_accepted_stage_requires_verified_claim_linkage(self):
+        data = valid_manifest()
+        data["completion_boundary"] = "production"
+        refs = [f"A5_{kind}" for kind in sorted(module.REQUIRED_ARTIFACT_TYPES["S5"])]
+        data["stages"][5].update({
+            "status": "accepted", "owner": "delivery-owner", "artifacts": refs,
+            "evidence_refs": ["TS1"], "blockers": [],
+        })
+        errors = validate(data)
+        self.assertTrue(any("accepted stage S5 needs a linked verified claim" in e for e in errors))
 
     def test_blocked_closure_requires_blocked_stage(self):
         data = valid_manifest()

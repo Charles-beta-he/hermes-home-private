@@ -198,6 +198,7 @@ def validate(data: object) -> list[str]:
             validate_local_ref(artifact, label, errors)
 
     claim_ids: set[str] = set()
+    verified_claim_stage_refs: set[str] = set()
     claims = data.get("claims")
     if not isinstance(claims, list) or not claims:
         errors.append("claims must be a non-empty list")
@@ -223,6 +224,15 @@ def validate(data: object) -> list[str]:
                 claim.get("negative_evidence_refs"), source_ids,
                 f"{label}.negative_evidence_refs", errors,
             )
+            stage_refs = claim.get("stage_refs")
+            validate_refs(
+                stage_refs, set(STAGE_ORDER), f"{label}.stage_refs", errors,
+                required=status == "verified",
+            )
+            if status == "verified" and isinstance(stage_refs, list):
+                verified_claim_stage_refs.update(
+                    ref for ref in stage_refs if isinstance(ref, str) and ref in STAGE_ORDER
+                )
             limitations = claim.get("limitations")
             if status == "verified" and not isinstance(limitations, list):
                 errors.append(f"verified claim {cid or idx} must have limitations list")
@@ -309,8 +319,14 @@ def validate(data: object) -> list[str]:
                     if nonempty(action_name) and action_name in HUMAN_ONLY_EXTERNAL_ACTIONS:
                         errors.append(f"{action_name} cannot be enabled; it requires a human-only gate")
                     for key in ("target", "scope", "grant_ref", "rollback", "readback"):
-                        if not nonempty(action.get(key)):
+                        value = action.get(key)
+                        if not nonempty(value):
                             errors.append(f"allowed external action {action_name or idx} needs {key}")
+                        elif PLACEHOLDER_RE.search(value):
+                            errors.append(f"allowed external action {action_name or idx} {key} contains placeholder")
+                    grant_ref = action.get("grant_ref")
+                    if nonempty(grant_ref) and grant_ref not in source_ids | artifact_ids:
+                        errors.append(f"allowed external action {action_name or idx} grant_ref references unknown id: {grant_ref}")
                 elif action.get("allowed") is not False:
                     errors.append(f"{label}.allowed must be boolean")
 
@@ -349,9 +365,10 @@ def validate(data: object) -> list[str]:
                 blockers = []
             if isinstance(status, str) and status in {"accepted", "in_progress", "blocked", "ready_for_review", "rejected"} and not nonempty(stage.get("owner")):
                 errors.append(f"active stage {sid} needs owner")
-            if status == "accepted":
+            if isinstance(status, str) and status in {"accepted", "ready_for_review"}:
+                state_label = "accepted" if status == "accepted" else "reviewable"
                 if not stage_artifacts:
-                    errors.append(f"accepted stage {sid} needs artifacts")
+                    errors.append(f"{state_label} stage {sid} needs artifacts")
                 elif isinstance(stage_artifacts, list):
                     actual_types = {
                         artifact_type_by_id.get(ref)
@@ -361,13 +378,15 @@ def validate(data: object) -> list[str]:
                     missing_types = REQUIRED_ARTIFACT_TYPES[sid] - actual_types
                     if missing_types:
                         errors.append(
-                            f"accepted stage {sid} missing required artifact types: "
+                            f"{state_label} stage {sid} missing required artifact types: "
                             f"{', '.join(sorted(missing_types))}"
                         )
                 if not stage_evidence:
-                    errors.append(f"accepted stage {sid} needs evidence_refs")
+                    errors.append(f"{state_label} stage {sid} needs evidence_refs")
                 if blockers:
-                    errors.append(f"accepted stage {sid} cannot have blockers")
+                    errors.append(f"{state_label} stage {sid} cannot have blockers")
+            if status == "accepted" and sid not in verified_claim_stage_refs:
+                errors.append(f"accepted stage {sid} needs a linked verified claim")
             if status == "blocked" and not blockers:
                 errors.append(f"blocked stage {sid} needs blockers")
         for sid in STAGE_ORDER:
@@ -421,6 +440,25 @@ def validate(data: object) -> list[str]:
                 for sid in STAGE_ORDER[: boundary_idx + 1]
             ):
                 errors.append("rolled_back closure requires rejected or superseded stage")
+            if closure == "superseded" and stage_map[boundary_sid].get("status") != "superseded":
+                errors.append(f"superseded closure requires stage {boundary_sid}=superseded")
+
+    if closure == "superseded":
+        supersession = data.get("supersession")
+        if not isinstance(supersession, dict):
+            errors.append("superseded closure requires supersession record")
+        else:
+            for key in ("superseded_by", "reason"):
+                value = supersession.get(key)
+                if not nonempty(value):
+                    errors.append(f"supersession.{key} must be non-empty")
+                elif PLACEHOLDER_RE.search(value):
+                    errors.append(f"supersession.{key} contains placeholder")
+            validate_date(supersession.get("superseded_at"), "supersession.superseded_at", errors)
+            validate_refs(
+                supersession.get("evidence_refs"), source_ids,
+                "supersession.evidence_refs", errors, required=True,
+            )
 
     metric_ids: set[str] = set()
     metrics = data.get("metrics")
@@ -507,8 +545,11 @@ def validate(data: object) -> list[str]:
             errors.append("client_acceptance.status is invalid")
         if acceptance_status == "accepted":
             for key in ("accepted_by", "scope"):
-                if not nonempty(acceptance.get(key)):
+                value = acceptance.get(key)
+                if not nonempty(value):
                     errors.append(f"accepted client acceptance needs {key}")
+                elif PLACEHOLDER_RE.search(value):
+                    errors.append(f"client_acceptance.{key} contains placeholder")
             validate_date(acceptance.get("accepted_at"), "client_acceptance.accepted_at", errors)
             validate_refs(
                 acceptance.get("evidence_refs"), source_ids,
@@ -518,6 +559,8 @@ def validate(data: object) -> list[str]:
             errors.append("waiting_acceptance closure requires client_acceptance=pending")
 
     if all(sid in stage_map for sid in ("S6", "S7")):
+        if acceptance_status == "accepted" and stage_map["S6"].get("status") != "accepted":
+            errors.append("client_acceptance=accepted requires stage S6=accepted")
         if stage_map["S6"].get("status") == "accepted" and acceptance_status != "accepted":
             errors.append("accepted stage S6 requires client_acceptance=accepted")
         s7_status = stage_map["S7"].get("status")

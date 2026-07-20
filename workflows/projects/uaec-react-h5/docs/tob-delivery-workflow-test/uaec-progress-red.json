@@ -39,7 +39,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S0 qualification packet",
-      "sha256": "e09b76a1bb4592c0d97f7c2e46d708b69b0621ca6cef329ae7cf1f7c4cf2fe9b"
+      "sha256": "52e03be80d9ea465a2f68891d5daa620993e7eb885078f60b48461f9bc2cc2e1"
     },
     {
       "id": "A_BASELINE",
@@ -55,7 +55,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 specification contract",
-      "sha256": "e09b76a1bb4592c0d97f7c2e46d708b69b0621ca6cef329ae7cf1f7c4cf2fe9b"
+      "sha256": "52e03be80d9ea465a2f68891d5daa620993e7eb885078f60b48461f9bc2cc2e1"
     },
     {
       "id": "A_AUTHORITY_MATRIX",
@@ -63,7 +63,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 authority boundary",
-      "sha256": "e09b76a1bb4592c0d97f7c2e46d708b69b0621ca6cef329ae7cf1f7c4cf2fe9b"
+      "sha256": "52e03be80d9ea465a2f68891d5daa620993e7eb885078f60b48461f9bc2cc2e1"
     },
     {
       "id": "A_SOLUTION_WORKSPACE",
@@ -87,7 +87,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 executable pilot gate",
-      "sha256": "b656a8c00b7d623ec909f4c68cfe8c1dc04f3bbbb9f05051c8075d1990c84e37"
+      "sha256": "aefda3b6533fc3065be4a558040296bc73c45feed26285695544b6bfcd756a4b"
     },
     {
       "id": "A_TEST_EVIDENCE",
@@ -95,7 +95,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/test_verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 regression evidence",
-      "sha256": "158e78e5ddf2d77b17526a0b6be6852ff208629418d56593d82c7aeb0316977a"
+      "sha256": "40b0932fda3e5279589ba59505bd1863de99177470f331c5a7da8c8ad693e706"
     }
   ],
   "contradictions": [
@@ -354,7 +354,14 @@
         "TS_LEDGER"
       ],
       "negative_evidence_refs": [],
-      "limitations": []
+      "limitations": [],
+      "stage_refs": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ]
     },
     {
       "id": "C_MODULE_GAPS",
@@ -367,7 +374,15 @@
       "negative_evidence_refs": [],
       "limitations": [
         "plan percentages are not runtime acceptance by themselves"
+      ],
+      "stage_refs": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4"
       ]
     }
-  ]
+  ],
+  "supersession": null
 }

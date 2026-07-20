@@ -146,6 +146,7 @@
       "status": "unverified",
       "evidence_refs": [],
       "negative_evidence_refs": [],
+      "stage_refs": [],
       "limitations": [
         "name uncovered boundaries"
       ]
@@ -275,5 +276,6 @@
     "accepted_at": "",
     "scope": "",
     "evidence_refs": []
-  }
+  },
+  "supersession": null
 }
