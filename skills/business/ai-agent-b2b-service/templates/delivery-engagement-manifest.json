@@ -12,7 +12,130 @@
       "type": "canonical_requirement",
       "ref": "replace-with-path-or-url",
       "observed_at": "YYYY-MM-DD",
-      "scope": "bounded requirement scope"
+      "scope": "bounded requirement scope",
+      "sha256": "required-for-absolute-local-file"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "A_S0_QUALIFICATION",
+      "type": "qualification",
+      "ref": "replace-with-s0-qualification-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S0 qualification",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S1_BASELINE",
+      "type": "baseline",
+      "ref": "replace-with-s1-baseline-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S1 baseline",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S2_AUTHORITY_MATRIX",
+      "type": "authority_matrix",
+      "ref": "replace-with-s2-authority_matrix-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S2 authority_matrix",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S2_SPEC",
+      "type": "spec",
+      "ref": "replace-with-s2-spec-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S2 spec",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S3_RISK_REGISTER",
+      "type": "risk_register",
+      "ref": "replace-with-s3-risk_register-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S3 risk_register",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S3_SOLUTION_WORKSPACE",
+      "type": "solution_workspace",
+      "ref": "replace-with-s3-solution_workspace-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S3 solution_workspace",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S4_PILOT_EVIDENCE",
+      "type": "pilot_evidence",
+      "ref": "replace-with-s4-pilot_evidence-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S4 pilot_evidence",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S4_TEST_EVIDENCE",
+      "type": "test_evidence",
+      "ref": "replace-with-s4-test_evidence-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S4 test_evidence",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S5_RELEASE_PROVENANCE",
+      "type": "release_provenance",
+      "ref": "replace-with-s5-release_provenance-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S5 release_provenance",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S5_ROLLBACK_PLAN",
+      "type": "rollback_plan",
+      "ref": "replace-with-s5-rollback_plan-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S5 rollback_plan",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S5_RUNTIME_EVIDENCE",
+      "type": "runtime_evidence",
+      "ref": "replace-with-s5-runtime_evidence-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S5 runtime_evidence",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S6_CLIENT_ACCEPTANCE",
+      "type": "client_acceptance",
+      "ref": "replace-with-s6-client_acceptance-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S6 client_acceptance",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S6_HANDOVER",
+      "type": "handover",
+      "ref": "replace-with-s6-handover-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S6 handover",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S7_KPI_READBACK",
+      "type": "kpi_readback",
+      "ref": "replace-with-s7-kpi_readback-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S7 kpi_readback",
+      "sha256": "required-for-absolute-local-file"
+    },
+    {
+      "id": "A_S7_OPERATIONS_LOG",
+      "type": "operations_log",
+      "ref": "replace-with-s7-operations_log-path-url-or-artifact-uri",
+      "owner": "replace-with-delivery-owner",
+      "scope": "S7 operations_log",
+      "sha256": "required-for-absolute-local-file"
     }
   ],
   "claims": [
@@ -23,7 +146,9 @@
       "status": "unverified",
       "evidence_refs": [],
       "negative_evidence_refs": [],
-      "limitations": ["name uncovered boundaries"]
+      "limitations": [
+        "name uncovered boundaries"
+      ]
     }
   ],
   "contradictions": [],
@@ -35,20 +160,86 @@
         "action": "push",
         "allowed": false,
         "target": "",
+        "scope": "",
+        "grant_ref": "",
         "rollback": "",
         "readback": ""
       }
     ]
   },
   "stages": [
-    {"id":"S0","name":"qualification","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S1","name":"discovery_baseline","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S2","name":"commercial_spec_authority","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S3","name":"solution_workspace","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S4","name":"pilot_slice","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S5","name":"production_delivery","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S6","name":"acceptance_handover","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S7","name":"operations_ratchet","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]}
+    {
+      "id": "S0",
+      "name": "qualification",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    },
+    {
+      "id": "S1",
+      "name": "discovery_baseline",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    },
+    {
+      "id": "S2",
+      "name": "commercial_spec_authority",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    },
+    {
+      "id": "S3",
+      "name": "solution_workspace",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    },
+    {
+      "id": "S4",
+      "name": "pilot_slice",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    },
+    {
+      "id": "S5",
+      "name": "production_delivery",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    },
+    {
+      "id": "S6",
+      "name": "acceptance_handover",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    },
+    {
+      "id": "S7",
+      "name": "operations_ratchet",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": []
+    }
   ],
   "metrics": [
     {
@@ -56,7 +247,8 @@
       "name": "claim_evidence_consistency",
       "baseline": null,
       "target": 1.0,
-      "measurement_ref": "replace-with-query-or-report"
+      "measurement_ref": "replace-with-query-or-report",
+      "evidence_refs": []
     }
   ],
   "risks": [

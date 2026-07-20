@@ -45,14 +45,19 @@
 3. 存在机器可读的 engagement manifest 模板。
 4. 校验器能对以下问题 fail closed：
    - 未解决的证据冲突；
-   - verified claim 缺少 scope/evidence；
-   - accepted stage 缺少 artifact/evidence；
-   - 外部动作授权缺少目标、回滚或 readback；
-   - public case 含敏感标记或未通过匿名化；
-   - final acceptance 在前置阶段未 accepted 时越级通过。
-5. UAEC 冲突夹具必须失败（RED）。
-6. 将“全项目 100%”降级为有限范围结论并保留冲突后，内部交付实例必须通过结构校验（GREEN），但公开案例状态保持 `not_ready`。
-7. 更新 `ai-agent-b2b-service` 入口，指向新协议、模板和校验器。
+   - verified claim 缺少 scope/evidence，或引用未知证据 ID；
+   - accepted stage 缺少 artifact/evidence、artifact 不存在、引用未知 ID，或缺少该阶段要求的语义类型；
+   - 阶段越序、超出 completion boundary 仍处于活动状态，或 closure_state 与 completion boundary 不一致；
+   - 本地绝对证据路径缺失、SHA-256 不匹配、日期损坏或位于未来；
+   - 未知外部动作、外部动作授权缺少目标、scope、grant_ref、回滚或 readback，或 credential/payment 被错误启用；
+   - public case 含敏感标记、未通过匿名化，或 confidentiality 不是 public；
+   - S6/S7 在没有明确客户验收时越级通过；
+   - 错误嵌套类型导致校验器崩溃。
+5. 未完成的 in_progress Manifest 不得被 completion_boundary 强制伪装为 accepted；模板中的 placeholder 必须保持 RED，直到被真实值替换。
+6. UAEC 冲突夹具必须失败（RED）。
+7. 将“全项目 100%”降级为有限范围结论并保留冲突后，内部交付实例必须通过结构校验（GREEN），但公开案例状态保持 `not_ready`。
+8. 更新 `ai-agent-b2b-service` 入口，指向新协议、模板和校验器。
+9. 对已接受阶段使用的本地 source/artifact 固定文件哈希，源文件改变后 GREEN 必须失效并要求刷新证据。
 
 ## 风险等级与权限
 

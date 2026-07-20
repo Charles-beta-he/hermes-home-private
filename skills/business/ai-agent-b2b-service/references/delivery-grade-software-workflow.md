@@ -173,20 +173,51 @@ Exit gate per cycle:
 
 ## Engagement Manifest
 
-Use `templates/delivery-engagement-manifest.json` as the machine-readable control surface. Validate it with:
+Use `templates/delivery-engagement-manifest.json` as the machine-readable control surface. The checked-in template is intentionally RED until every placeholder is replaced; it is not acceptance evidence. A populated `in_progress` manifest may keep future stages `not_started` without pretending that the target completion boundary has already been reached.
+
+Validate it with:
 
 ```bash
 python3 ~/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py <manifest.json>
 ```
 
 The verifier intentionally fails closed for:
+- malformed or future-dated source metadata;
+- missing absolute local evidence or a mismatched SHA-256;
+- claim, stage, metric or artifact references to unknown IDs;
 - unresolved contradictions;
 - verified claims without scope/evidence;
-- accepted stages without artifacts/evidence;
-- completion-boundary stage not accepted;
-- external actions without exact target/rollback/readback;
-- public cases that have not passed anonymization;
-- closure marked accepted while prior gates remain open.
+- active stages without owners, accepted stages without artifacts/evidence, and out-of-order stage progress;
+- closure states that do not match the completion-boundary stage;
+- S6/S7 progress without explicit client acceptance;
+- unknown external action names, enabled credential/payment actions, or allowed actions without exact target, scope, grant reference, rollback and readback;
+- public cases without `confidentiality=public`, publication rights and anonymization;
+- duplicate source, artifact, claim, contradiction, action, metric or risk IDs.
+
+Evidence semantics:
+- `truth_sources` are claim/stage/metric evidence IDs;
+- `artifacts` are produced-output IDs referenced by stages;
+- accepted stages must carry the stage-specific artifact types below, not generic labels:
+  - S0: `qualification`;
+  - S1: `baseline`;
+  - S2: `spec`, `authority_matrix`;
+  - S3: `solution_workspace`, `risk_register`;
+  - S4: `pilot_evidence`, `test_evidence`;
+  - S5: `release_provenance`, `runtime_evidence`, `rollback_plan`;
+  - S6: `client_acceptance`, `handover`;
+  - S7: `kpi_readback`, `operations_log`;
+- an absolute local `ref` must exist and carry a matching lowercase SHA-256;
+- URLs and logical artifact URIs remain declarations: this validator does not fetch or authenticate remote systems;
+- a PASS means the declared snapshot satisfies these manifest gates, not that business code, CI, deployment, production behavior or client acceptance happened.
+
+Boundary and closure semantics:
+- `completion_boundary` is both the promised target and the maximum active stage; stages beyond it must remain `not_started` or `superseded`;
+- `in_progress`: target boundary is declared, but no boundary acceptance is implied;
+- `ready_for_review`: all prior stages are accepted and the boundary stage is ready for review;
+- `accepted`: every stage through the boundary is accepted;
+- `waiting_acceptance`: boundary is `acceptance`, S0–S5 are accepted, S6 is ready, and client acceptance is pending;
+- `blocked`: at least one stage within the boundary is blocked;
+- `rolled_back`: at least one stage within the boundary is rejected or superseded.
 
 ## Required Client-Facing Deliverables
 
@@ -247,7 +278,7 @@ Classify actions:
 - payment;
 - production/destructive mutation.
 
-Only the first two are open by default. Every allowed external action must include exact target, allowed payload/action, rollback/escape path and post-action readback. Never type credentials or payment details.
+Only local read-only and reversible local writes are open by default. External action names must be allowlisted. Every allowed external action must include exact target, scope/payload, grant reference, rollback/escape path and post-action readback. `credential_entry` and `payment_or_funds` are human-only and cannot be enabled by this Manifest. A manifest grant record is evidence about authority, not execution permission for the current Agent session; live execution still requires the applicable runtime/user authorization. Never type credentials or payment details.
 
 ## Change Control
 

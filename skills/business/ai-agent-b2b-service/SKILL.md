@@ -1,7 +1,7 @@
 ---
 name: ai-agent-b2b-service
 description: "Use when packaging AI Agent customization or AI-assisted software-delivery governance as a B2B service: qualification, diagnosis, truth-source mapping, authority contracts, pilot validation, evidence-gated delivery, handover, and ongoing ops."
-version: 1.1.0
+version: 1.2.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -127,7 +127,7 @@ Create the machine-readable control surface from `templates/delivery-engagement-
 python3 ~/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py <manifest.json>
 ```
 
-A validator PASS proves structural convergence only up to the declared `completion_boundary`; it does not independently prove production readiness or client acceptance.
+A validator PASS proves only that the declared snapshot satisfies the local manifest gates up to the declared `completion_boundary`. It does not independently prove business-code correctness, remote evidence, production readiness, live authority, or client acceptance. The starter template must remain RED until placeholders are replaced; `in_progress` does not require the target boundary to be accepted.
 
 ## Client Interview Template (20 Questions)
 
@@ -245,9 +245,9 @@ Tier 3: Enterprise (50K-200K)
 - `references/solo-company-startup-context.md` — startup models, registration considerations, pricing reference for solo consultants.
 - `references/delivery-grade-software-workflow.md` — eight-stage, evidence-gated workflow for AI-assisted software delivery, migration, parity, authority, handover, and operations.
 - `templates/needs-diagnosis-report.md` — ready-to-use client diagnosis report template.
-- `templates/delivery-engagement-manifest.json` — machine-readable truth-source, claims, authority, stage, metric, risk, public-case, and acceptance control surface.
-- `scripts/verify_delivery_workflow.py` — fail-closed manifest validator.
-- `scripts/test_verify_delivery_workflow.py` — regression tests for contradiction, evidence, stage, authority and anonymization gates.
+- `templates/delivery-engagement-manifest.json` — intentionally-RED starter for machine-readable truth sources, artifacts, claims, authority, stages, metrics, risks, public-case and acceptance state.
+- `scripts/verify_delivery_workflow.py` — fail-closed manifest validator with reference integrity, local SHA-256 evidence pinning, ordered stages, stage-specific semantic artifacts, maximum completion-boundary enforcement, closure contracts and authority/publication gates.
+- `scripts/test_verify_delivery_workflow.py` — regression tests for contradiction, evidence integrity, malformed input, semantic artifacts, stage/boundary/closure state, authority, client acceptance and anonymization gates.
 
 ## Verification Checklist
 
@@ -261,6 +261,6 @@ Tier 3: Enterprise (50K-200K)
 - [ ] Delivery manifest declares an exact completion boundary and closure state.
 - [ ] Every verified claim has scope, evidence and limitations.
 - [ ] Unresolved contradictions block acceptance rather than being averaged or deleted.
-- [ ] Allowed external actions include exact target, rollback and readback.
+- [ ] External action names are allowlisted; enabled actions include exact target, scope, grant reference, rollback and readback; credential/payment actions remain human-only.
 - [ ] Pilot evidence is not promoted to production or client acceptance.
 - [ ] Public cases have explicit publication rights and anonymization evidence.

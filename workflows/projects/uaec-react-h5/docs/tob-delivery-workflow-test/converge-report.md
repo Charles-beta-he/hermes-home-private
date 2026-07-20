@@ -10,15 +10,18 @@
 |---|---|---|---|---|
 | Eight-stage lifecycle covers qualification through operations | `ai-agent-b2b-service/references/delivery-grade-software-workflow.md` | skill readback | PASS | procedure only |
 | Each stage defines artifacts and exit gates | same reference | skill readback | PASS | procedure only |
-| Machine-readable engagement manifest exists | `templates/delivery-engagement-manifest.json` | JSON lint on write | PASS | starter template |
-| Verified claims require scope/evidence | `scripts/verify_delivery_workflow.py` | unit tests | PASS | structural validation |
-| Accepted stages require owner/artifacts/evidence | validator | unit tests | PASS | structural validation |
-| Allowed external actions require target/rollback/readback | validator | unit tests | PASS | does not grant authority |
-| Public case requires rights/anonymization/no sensitive markers | validator | unit tests | PASS | case remains not_ready |
-| Completion boundary cannot skip prior stages | validator | unit tests | PASS | manifest consistency |
+| Machine-readable engagement manifest exists | `templates/delivery-engagement-manifest.json` | JSON lint on write; placeholders deliberately return RED | PASS | starter template |
+| Verified claims require scoped, known evidence IDs | `scripts/verify_delivery_workflow.py` | unit and mutation tests | PASS | structural validation |
+| Accepted stages require owner, known references and stage-specific semantic artifact types | validator | unit tests | PASS | structural validation |
+| Absolute local evidence is present and hash-pinned | RED/GREEN manifests | missing/tamper tests | PASS | local files only |
+| Closure, stage order and maximum completion boundary are consistent | validator | draft/review/accepted/S6/beyond-boundary tests | PASS | snapshot state machine |
+| Allowed external actions are allowlisted and require target/scope/grant/rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
+| Public case requires public classification, rights and anonymization | validator | unit tests | PASS | case remains not_ready |
+| Malformed nested values do not crash validation | validator | 20,000 seeded mutations | PASS | robustness, not formal proof |
 | UAEC progress conflict fails closed | `uaec-progress-red.json` | validator returned 3 errors and expected exit 1 | PASS | negative evidence |
-| Reconciled bounded pilot passes | `uaec-progress-green.json` | validator returned PASS | PASS | pilot structure only |
+| Reconciled bounded pilot passes | `uaec-progress-green.json` | validator returned boundary=pilot, closure=accepted | PASS | pilot manifest only |
 | Existing ToB skill routes to delivery-grade branch | `ai-agent-b2b-service/SKILL.md` v1.1.0 | skill reload/readback | PASS | class-level routing |
+| Multi-dimensional technical audit exists | `technical-audit-report.md` | artifact readback and verification matrix | PASS | production gaps remain explicit |
 
 ## RED evidence
 
@@ -51,28 +54,33 @@ python3 ~/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_w
 Observed:
 
 ```text
-PASS .../uaec-progress-green.json: b2b_delivery_workflow_v1 is structurally converged
+PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closure=accepted)
 ```
 
 ## Regression evidence
 
 ```text
-.......
-Ran 7 tests in 0.000s
+........................
+Ran 24 tests in 0.004s
 OK
 ```
 
-Covered negative cases:
+Covered dimensions include:
 
-1. unresolved contradiction;
-2. verified claim without evidence;
-3. accepted stage without artifact;
-4. allowed external action without exact controls;
-5. public case without rights/anonymization;
-6. completion-boundary stage skipping;
-7. valid bounded pilot.
+1. unresolved contradiction and verified-claim evidence requirements;
+2. source/artifact/metric reference integrity;
+3. absolute local evidence existence and SHA-256 tamper detection;
+4. observed-date format and future-date rejection;
+5. accepted-stage owner/artifact/evidence requirements;
+6. ordered stage and closure-state contracts;
+7. S6/S7 client-acceptance gates;
+8. strict authority booleans and exact external-action grant controls;
+9. public-case confidentiality, rights and anonymization;
+10. duplicate governed IDs and placeholder rejection;
+11. draft, review, blocked and accepted states;
+12. malformed nested input resilience.
 
-`py_compile` also passed for validator and test script.
+A seeded 20,000-mutation run returned `CRASHES=0`. Missing and malformed JSON returned exit `2`; a hash-tampered GREEN copy returned exit `1`. `py_compile` also passed. `ruff` and `mypy` were unavailable and are recorded as degraded rather than passed.
 
 ## Reconciliation decision
 
@@ -89,7 +97,7 @@ The historical “100% Android functional parity” statement is preserved but m
 
 ## Closure state
 
-`accepted` for the internal `pilot` workflow trial only.
+`accepted` for the internal `pilot` manifest trial only. This means the declared S0–S4 governance artifacts and evidence references satisfy the local validator; it does not mean an end-to-end UAEC business slice, production release or client acceptance was executed.
 
 Remaining stages:
 

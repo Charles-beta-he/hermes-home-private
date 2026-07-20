@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
-import sys
+import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 
 SCRIPT = Path(__file__).with_name("verify_delivery_workflow.py")
@@ -16,6 +18,25 @@ validate = module.validate
 
 
 def valid_manifest():
+    sources = [{
+        "id": "TS1", "type": "repo", "ref": "evidence://source-1",
+        "observed_at": date.today().isoformat(), "scope": "pilot",
+    }]
+    artifacts = []
+    artifact_refs_by_stage = {}
+    for i, sid in enumerate(module.STAGE_ORDER):
+        refs = []
+        for artifact_type in sorted(module.REQUIRED_ARTIFACT_TYPES[sid]):
+            artifact_id = f"A{i}_{artifact_type}"
+            refs.append(artifact_id)
+            artifacts.append({
+                "id": artifact_id,
+                "type": artifact_type,
+                "ref": f"artifact://{sid}/{artifact_type}",
+                "owner": "delivery-owner",
+                "scope": sid,
+            })
+        artifact_refs_by_stage[sid] = refs
     stages = []
     for i, name in enumerate(module.STAGE_NAMES.values()):
         accepted = i <= 4
@@ -24,8 +45,8 @@ def valid_manifest():
             "name": name,
             "status": "accepted" if accepted else "not_started",
             "owner": "delivery-owner" if accepted else "",
-            "artifacts": [f"artifact-S{i}"] if accepted else [],
-            "evidence_refs": [f"evidence-S{i}"] if accepted else [],
+            "artifacts": artifact_refs_by_stage[f"S{i}"] if accepted else [],
+            "evidence_refs": ["TS1"] if accepted else [],
             "blockers": [],
         })
     return {
@@ -36,26 +57,45 @@ def valid_manifest():
         "completion_boundary": "pilot",
         "closure_state": "accepted",
         "confidentiality": "internal",
-        "truth_sources": [{"id":"TS1","type":"repo","ref":"/private/source","observed_at":"2026-07-20","scope":"pilot"}],
-        "claims": [{"id":"C1","text":"pilot claim","scope":"pilot/local","status":"verified","evidence_refs":["E1"],"negative_evidence_refs":["N1"],"limitations":["not production"]}],
+        "truth_sources": sources,
+        "artifacts": artifacts,
+        "claims": [{
+            "id": "C1", "text": "pilot claim", "scope": "pilot/local",
+            "status": "verified", "evidence_refs": ["TS1"],
+            "negative_evidence_refs": ["TS1"], "limitations": ["not production"],
+        }],
         "contradictions": [],
-        "authority": {"local_read_only":True,"local_reversible_write":True,"external_actions":[{"action":"push","allowed":False,"target":"","rollback":"","readback":""}]},
+        "authority": {
+            "local_read_only": True,
+            "local_reversible_write": True,
+            "external_actions": [{"action": "push", "allowed": False, "target": "", "rollback": "", "readback": ""}],
+        },
         "stages": stages,
-        "metrics": [{"id":"M1","name":"consistency","baseline":0,"target":1,"measurement_ref":"report"}],
-        "risks": [{"id":"R1","severity":"high","description":"claim drift","detection":"validator","mitigation":"narrow claim","rollback":"mark disputed"}],
-        "public_case": {"status":"not_ready","publication_rights_verified":False,"anonymization_check":False,"sensitive_markers":["internal"]},
-        "client_acceptance": {"status":"not_requested","accepted_by":"","accepted_at":"","scope":""},
+        "metrics": [{"id": "M1", "name": "consistency", "baseline": 0, "target": 1, "measurement_ref": "validator", "evidence_refs": ["TS1"]}],
+        "risks": [{"id": "R1", "severity": "high", "description": "claim drift", "detection": "validator", "mitigation": "narrow claim", "rollback": "mark disputed"}],
+        "public_case": {"status": "not_ready", "publication_rights_verified": False, "anonymization_check": False, "sensitive_markers": ["internal"]},
+        "client_acceptance": {"status": "not_requested", "accepted_by": "", "accepted_at": "", "scope": ""},
     }
 
 
 class ValidatorTests(unittest.TestCase):
-    def test_valid_pilot_manifest(self):
+    def test_manifest_root_must_be_object(self):
+        self.assertIn("root must be a JSON object", validate([]))
+
+    def test_valid_manifest_passes(self):
         self.assertEqual(validate(valid_manifest()), [])
+
+    def test_draft_manifest_does_not_require_target_boundary_accepted(self):
+        data = valid_manifest()
+        data["closure_state"] = "in_progress"
+        for stage in data["stages"]:
+            stage.update({"status": "not_started", "owner": "", "artifacts": [], "evidence_refs": [], "blockers": []})
+        self.assertEqual(validate(data), [])
 
     def test_unresolved_contradiction_fails(self):
         data = valid_manifest()
-        data["claims"].append({"id":"C2","text":"conflicting claim","scope":"whole project","status":"verified","evidence_refs":["E2"],"negative_evidence_refs":[],"limitations":[]})
-        data["contradictions"] = [{"id":"X1","claim_refs":["C1","C2"],"status":"unresolved","resolution":""}]
+        data["claims"].append({"id": "C2", "text": "conflicting claim", "scope": "whole project", "status": "verified", "evidence_refs": ["TS1"], "negative_evidence_refs": [], "limitations": []})
+        data["contradictions"] = [{"id": "X1", "claim_refs": ["C1", "C2"], "status": "unresolved", "resolution": ""}]
         errors = validate(data)
         self.assertTrue(any("unresolved contradiction" in e for e in errors))
         self.assertTrue(any("cannot remain verified" in e for e in errors))
@@ -63,33 +103,157 @@ class ValidatorTests(unittest.TestCase):
     def test_verified_claim_without_evidence_fails(self):
         data = valid_manifest()
         data["claims"][0]["evidence_refs"] = []
-        self.assertTrue(any("must have evidence_refs" in e for e in validate(data)))
+        self.assertTrue(any("must not be empty" in e for e in validate(data)))
 
-    def test_accepted_stage_without_artifact_fails(self):
+    def test_unknown_claim_evidence_fails(self):
+        data = valid_manifest()
+        data["claims"][0]["evidence_refs"] = ["UNKNOWN"]
+        self.assertTrue(any("unknown id" in e for e in validate(data)))
+
+    def test_negative_evidence_must_be_list_and_known(self):
+        data = valid_manifest()
+        data["claims"][0]["negative_evidence_refs"] = "TS1"
+        self.assertTrue(any("negative_evidence_refs must be a list" in e for e in validate(data)))
+        data = valid_manifest()
+        data["claims"][0]["negative_evidence_refs"] = ["UNKNOWN"]
+        self.assertTrue(any("unknown id" in e for e in validate(data)))
+
+    def test_local_absolute_source_requires_existence_and_hash(self):
+        data = valid_manifest()
+        data["truth_sources"][0]["ref"] = "/definitely/missing/evidence.md"
+        self.assertTrue(any("does not exist" in e for e in validate(data)))
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "evidence.txt"
+            path.write_text("evidence", encoding="utf-8")
+            data = valid_manifest()
+            data["truth_sources"][0].update({"ref": str(path), "sha256": "0" * 64})
+            self.assertTrue(any("sha256 mismatch" in e for e in validate(data)))
+            data["truth_sources"][0]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+            self.assertEqual(validate(data), [])
+
+    def test_observed_at_must_be_iso_and_not_future(self):
+        data = valid_manifest()
+        data["truth_sources"][0]["observed_at"] = "not-a-date"
+        self.assertTrue(any("must be ISO date" in e for e in validate(data)))
+        data["truth_sources"][0]["observed_at"] = "2999-01-01"
+        self.assertTrue(any("cannot be in the future" in e for e in validate(data)))
+
+    def test_accepted_stage_requires_known_artifact_and_evidence(self):
+        data = valid_manifest()
+        data["stages"][3]["artifacts"] = ["UNKNOWN"]
+        self.assertTrue(any("unknown id" in e for e in validate(data)))
         data = valid_manifest()
         data["stages"][3]["artifacts"] = []
         self.assertTrue(any("accepted stage S3 needs artifacts" in e for e in validate(data)))
 
-    def test_allowed_external_action_requires_exact_controls(self):
+    def test_accepted_stage_requires_semantic_artifact_types(self):
+        data = valid_manifest()
+        data["stages"][4]["artifacts"] = ["A4_pilot_evidence"]
+        errors = validate(data)
+        self.assertTrue(any("missing required artifact types: test_evidence" in e for e in errors))
+
+    def test_stage_beyond_completion_boundary_cannot_be_active(self):
+        data = valid_manifest()
+        data["stages"][5].update({
+            "status": "accepted",
+            "owner": "delivery-owner",
+            "artifacts": [
+                f"A5_{kind}" for kind in sorted(module.REQUIRED_ARTIFACT_TYPES["S5"])
+            ],
+            "evidence_refs": ["TS1"],
+            "blockers": [],
+        })
+        self.assertTrue(any("stage S5 is beyond completion boundary pilot" in e for e in validate(data)))
+
+    def test_stage_cannot_skip_unaccepted_prior_stage(self):
+        data = valid_manifest()
+        data["stages"][2]["status"] = "ready_for_review"
+        self.assertTrue(any("stage S3 cannot be accepted before S2 is accepted" in e for e in validate(data)))
+
+    def test_accepted_S6_requires_prior_stages_and_client_acceptance(self):
+        data = valid_manifest()
+        data["completion_boundary"] = "acceptance"
+        for i in (5, 6):
+            artifact_refs = [f"A{i}_{kind}" for kind in sorted(module.REQUIRED_ARTIFACT_TYPES[f"S{i}"])]
+            data["stages"][i].update({"status": "accepted", "owner": "delivery-owner", "artifacts": artifact_refs, "evidence_refs": ["TS1"], "blockers": []})
+        errors = validate(data)
+        self.assertTrue(any("stage S6 requires client_acceptance=accepted" in e for e in errors))
+
+    def test_authority_local_flags_are_boolean(self):
+        data = valid_manifest()
+        data["authority"]["local_read_only"] = "yes"
+        self.assertTrue(any("local_read_only must be boolean" in e for e in validate(data)))
+
+    def test_allowed_external_action_requires_grant_and_controls(self):
         data = valid_manifest()
         data["authority"]["external_actions"][0]["allowed"] = True
         errors = validate(data)
-        self.assertTrue(any("needs target" in e for e in errors))
-        self.assertTrue(any("needs rollback" in e for e in errors))
-        self.assertTrue(any("needs readback" in e for e in errors))
+        for key in ("target", "scope", "grant_ref", "rollback", "readback"):
+            self.assertTrue(any(f"needs {key}" in e for e in errors))
 
-    def test_public_case_requires_rights_and_anonymization(self):
+    def test_unknown_external_action_is_rejected(self):
         data = valid_manifest()
-        data["public_case"]["status"] = "ready"
-        errors = validate(data)
-        self.assertTrue(any("publication rights" in e for e in errors))
-        self.assertTrue(any("anonymization" in e for e in errors))
-        self.assertTrue(any("sensitive markers" in e for e in errors))
+        data["authority"]["external_actions"].append({"action": "do_anything", "allowed": False})
+        self.assertTrue(any("unknown external action: do_anything" in e for e in validate(data)))
 
-    def test_completion_boundary_cannot_skip_stage(self):
+    def test_payment_and_credential_actions_cannot_be_enabled(self):
+        for action_name in ("credential_entry", "payment_or_funds"):
+            with self.subTest(action=action_name):
+                data = valid_manifest()
+                data["authority"]["external_actions"].append({
+                    "action": action_name,
+                    "allowed": True,
+                    "target": "human-gated-target",
+                    "scope": "human-only",
+                    "grant_ref": "GRANT-HUMAN-ONLY",
+                    "rollback": "cancel before execution",
+                    "readback": "human receipt",
+                })
+                self.assertTrue(any(f"{action_name} cannot be enabled" in e for e in validate(data)))
+
+    def test_duplicate_ids_fail(self):
         data = valid_manifest()
-        data["stages"][2]["status"] = "ready_for_review"
-        self.assertTrue(any("requires accepted stage S2" in e for e in validate(data)))
+        data["risks"].append(copy.deepcopy(data["risks"][0]))
+        self.assertTrue(any("duplicate risk id" in e for e in validate(data)))
+
+    def test_public_case_requires_public_confidentiality(self):
+        data = valid_manifest()
+        data["public_case"] = {"status": "ready", "publication_rights_verified": True, "anonymization_check": True, "sensitive_markers": []}
+        self.assertTrue(any("confidentiality=public" in e for e in validate(data)))
+
+    def test_placeholder_is_rejected(self):
+        data = valid_manifest()
+        data["engagement_id"] = "replace-with-stable-id"
+        self.assertTrue(any("contains placeholder" in e for e in validate(data)))
+
+    def test_ready_for_review_state_contract(self):
+        data = valid_manifest()
+        data["closure_state"] = "ready_for_review"
+        data["stages"][4]["status"] = "ready_for_review"
+        self.assertEqual(validate(data), [])
+
+    def test_blocked_closure_requires_blocked_stage(self):
+        data = valid_manifest()
+        data["closure_state"] = "blocked"
+        self.assertTrue(any("requires a blocked stage" in e for e in validate(data)))
+
+    def test_malformed_nested_types_return_errors_instead_of_crashing(self):
+        mutations = [
+            ("completion_boundary", []),
+            ("closure_state", {}),
+            ("confidentiality", []),
+        ]
+        for key, value in mutations:
+            with self.subTest(key=key):
+                data = valid_manifest()
+                data[key] = value
+                self.assertTrue(validate(data))
+        data = valid_manifest()
+        data["stages"][0]["id"] = []
+        self.assertTrue(validate(data))
+        data = valid_manifest()
+        data["contradictions"] = [{"id": "X", "claim_refs": [{}], "status": "unresolved", "resolution": ""}]
+        self.assertTrue(validate(data))
 
 
 if __name__ == "__main__":

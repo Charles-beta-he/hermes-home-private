@@ -12,47 +12,99 @@
       "type": "progress_ledger",
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/progress-ledger.md",
       "observed_at": "2026-07-14",
-      "scope": "project progress claim"
+      "scope": "historical project progress claim",
+      "sha256": "c826102a9923b3b61b4239a140c209f8dc6e28d08b6588e0990fada337f4bdbc"
     },
     {
       "id": "TS_PLAN",
       "type": "module_alignment_plan",
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-16-full-alignment-plan.md",
       "observed_at": "2026-07-16",
-      "scope": "nine Android-to-H5 module alignment percentages"
+      "scope": "nine Android-to-H5 module alignment percentages",
+      "sha256": "eb218c8dd038aaf8e5749a0d8198e3df7c0f811ec9db1ea59029041a7a7adfd2"
     },
     {
       "id": "TS_STATE",
       "type": "runtime_state_projection",
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/workflow/project-delivery-state.json",
       "observed_at": "2026-07-20",
-      "scope": "repository and authority snapshot"
+      "scope": "repository and authority snapshot",
+      "sha256": "ba6176b8e1b6c7ee6361d1e420b2bac9ef9ed313ec2465c09ae7f79bea7c51fa"
     }
   ],
-  "claims": [
+  "artifacts": [
     {
-      "id": "C_GLOBAL_100",
-      "text": "The entire frontend has 100% Android functional parity",
-      "scope": "whole project",
-      "status": "verified",
-      "evidence_refs": ["TS_LEDGER"],
-      "negative_evidence_refs": [],
-      "limitations": []
+      "id": "A_QUALIFICATION",
+      "type": "qualification",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
+      "owner": "internal-delivery-owner",
+      "scope": "S0 qualification packet",
+      "sha256": "184f7890b01a17290c76c4e7f2eb9af3b0ed84fc1b555e868eaf7036291a71ac"
     },
     {
-      "id": "C_MODULE_GAPS",
-      "text": "A newer module plan reports alignment from 1% to 57% across nine modules",
-      "scope": "nine modules in the 2026-07-16 plan",
-      "status": "verified",
-      "evidence_refs": ["TS_PLAN"],
-      "negative_evidence_refs": [],
-      "limitations": ["line-count and plan percentages are not runtime acceptance by themselves"]
+      "id": "A_BASELINE",
+      "type": "baseline",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
+      "owner": "internal-delivery-owner",
+      "scope": "S1 evidence baseline",
+      "sha256": "c32ade9d35cfb6f315d7f1ce9b8971d2fa75124f920f9611b663068c39e1f371"
+    },
+    {
+      "id": "A_SPEC",
+      "type": "spec",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
+      "owner": "internal-delivery-owner",
+      "scope": "S2 specification contract",
+      "sha256": "184f7890b01a17290c76c4e7f2eb9af3b0ed84fc1b555e868eaf7036291a71ac"
+    },
+    {
+      "id": "A_AUTHORITY_MATRIX",
+      "type": "authority_matrix",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
+      "owner": "internal-delivery-owner",
+      "scope": "S2 authority boundary",
+      "sha256": "184f7890b01a17290c76c4e7f2eb9af3b0ed84fc1b555e868eaf7036291a71ac"
+    },
+    {
+      "id": "A_SOLUTION_WORKSPACE",
+      "type": "solution_workspace",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
+      "owner": "internal-delivery-owner",
+      "scope": "S3 governed delivery workspace",
+      "sha256": "c32ade9d35cfb6f315d7f1ce9b8971d2fa75124f920f9611b663068c39e1f371"
+    },
+    {
+      "id": "A_RISK_REGISTER",
+      "type": "risk_register",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
+      "owner": "internal-delivery-owner",
+      "scope": "S3 risk register",
+      "sha256": "c32ade9d35cfb6f315d7f1ce9b8971d2fa75124f920f9611b663068c39e1f371"
+    },
+    {
+      "id": "A_PILOT_EVIDENCE",
+      "type": "pilot_evidence",
+      "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py",
+      "owner": "internal-delivery-owner",
+      "scope": "S4 executable pilot gate",
+      "sha256": "862586080fcc83f674be97563551fa435dc08a630fa941a7f8fcd97c3f67257a"
+    },
+    {
+      "id": "A_TEST_EVIDENCE",
+      "type": "test_evidence",
+      "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/test_verify_delivery_workflow.py",
+      "owner": "internal-delivery-owner",
+      "scope": "S4 regression evidence",
+      "sha256": "3837257e34ff60843d4b58f5ae7b7e317fc7bc741ec885cde20dd25ed0a97ca9"
     }
   ],
   "contradictions": [
     {
       "id": "X_SCOPE_100",
-      "claim_refs": ["C_GLOBAL_100", "C_MODULE_GAPS"],
+      "claim_refs": [
+        "C_GLOBAL_100",
+        "C_MODULE_GAPS"
+      ],
       "status": "unresolved",
       "resolution": ""
     }
@@ -61,32 +113,261 @@
     "local_read_only": true,
     "local_reversible_write": true,
     "external_actions": [
-      {"action":"push","allowed":false,"target":"","rollback":"","readback":""},
-      {"action":"deploy","allowed":false,"target":"","rollback":"","readback":""},
-      {"action":"external_send","allowed":false,"target":"","rollback":"","readback":""}
+      {
+        "action": "push",
+        "allowed": false,
+        "target": "",
+        "scope": "",
+        "grant_ref": "",
+        "rollback": "",
+        "readback": ""
+      },
+      {
+        "action": "deploy",
+        "allowed": false,
+        "target": "",
+        "scope": "",
+        "grant_ref": "",
+        "rollback": "",
+        "readback": ""
+      },
+      {
+        "action": "external_send",
+        "allowed": false,
+        "target": "",
+        "scope": "",
+        "grant_ref": "",
+        "rollback": "",
+        "readback": ""
+      },
+      {
+        "action": "credential_entry",
+        "allowed": false,
+        "target": "",
+        "scope": "",
+        "grant_ref": "",
+        "rollback": "",
+        "readback": ""
+      },
+      {
+        "action": "payment_or_funds",
+        "allowed": false,
+        "target": "",
+        "scope": "",
+        "grant_ref": "",
+        "rollback": "",
+        "readback": ""
+      }
     ]
   },
   "stages": [
-    {"id":"S0","name":"qualification","status":"accepted","owner":"internal-delivery-owner","artifacts":["spec-packet.md"],"evidence_refs":["TS_LEDGER"],"blockers":[]},
-    {"id":"S1","name":"discovery_baseline","status":"accepted","owner":"internal-delivery-owner","artifacts":["workflow-productization-audit.md"],"evidence_refs":["TS_LEDGER","TS_PLAN","TS_STATE"],"blockers":[]},
-    {"id":"S2","name":"commercial_spec_authority","status":"accepted","owner":"internal-delivery-owner","artifacts":["spec-packet.md"],"evidence_refs":["TS_STATE"],"blockers":[]},
-    {"id":"S3","name":"solution_workspace","status":"accepted","owner":"internal-delivery-owner","artifacts":["project profile","parity backlog","SSOT"],"evidence_refs":["TS_STATE"],"blockers":[]},
-    {"id":"S4","name":"pilot_slice","status":"accepted","owner":"internal-delivery-owner","artifacts":["project evidence packets"],"evidence_refs":["TS_LEDGER"],"blockers":[]},
-    {"id":"S5","name":"production_delivery","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S6","name":"acceptance_handover","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
-    {"id":"S7","name":"operations_ratchet","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]}
+    {
+      "id": "S0",
+      "name": "qualification",
+      "status": "accepted",
+      "owner": "internal-delivery-owner",
+      "artifacts": [
+        "A_QUALIFICATION"
+      ],
+      "evidence_refs": [
+        "TS_LEDGER"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "S1",
+      "name": "discovery_baseline",
+      "status": "accepted",
+      "owner": "internal-delivery-owner",
+      "artifacts": [
+        "A_BASELINE"
+      ],
+      "evidence_refs": [
+        "TS_LEDGER",
+        "TS_PLAN",
+        "TS_STATE"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "S2",
+      "name": "commercial_spec_authority",
+      "status": "accepted",
+      "owner": "internal-delivery-owner",
+      "artifacts": [
+        "A_SPEC",
+        "A_AUTHORITY_MATRIX"
+      ],
+      "evidence_refs": [
+        "TS_STATE"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "S3",
+      "name": "solution_workspace",
+      "status": "accepted",
+      "owner": "internal-delivery-owner",
+      "artifacts": [
+        "A_SOLUTION_WORKSPACE",
+        "A_RISK_REGISTER"
+      ],
+      "evidence_refs": [
+        "TS_STATE"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "S4",
+      "name": "pilot_slice",
+      "status": "accepted",
+      "owner": "internal-delivery-owner",
+      "artifacts": [
+        "A_PILOT_EVIDENCE",
+        "A_TEST_EVIDENCE"
+      ],
+      "evidence_refs": [
+        "TS_LEDGER",
+        "TS_PLAN",
+        "TS_STATE"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "S5",
+      "name": "production_delivery",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": [
+        "not in workflow trial completion boundary"
+      ]
+    },
+    {
+      "id": "S6",
+      "name": "acceptance_handover",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": [
+        "client acceptance not requested"
+      ]
+    },
+    {
+      "id": "S7",
+      "name": "operations_ratchet",
+      "status": "not_started",
+      "owner": "",
+      "artifacts": [],
+      "evidence_refs": [],
+      "blockers": [
+        "requires a real client operating cycle"
+      ]
+    }
   ],
   "metrics": [
-    {"id":"M1","name":"claim_evidence_consistency","baseline":0,"target":1,"measurement_ref":"workflow validator"}
+    {
+      "id": "M1",
+      "name": "claim_evidence_consistency",
+      "baseline": 0,
+      "target": 1,
+      "measurement_ref": "validator exit status",
+      "evidence_refs": [
+        "TS_LEDGER",
+        "TS_PLAN"
+      ]
+    },
+    {
+      "id": "M2",
+      "name": "unauthorized_external_actions",
+      "baseline": 0,
+      "target": 0,
+      "measurement_ref": "authority matrix",
+      "evidence_refs": [
+        "TS_STATE"
+      ]
+    },
+    {
+      "id": "M3",
+      "name": "pilot_stage_artifact_coverage",
+      "baseline": 0,
+      "target": 1,
+      "measurement_ref": "validator stage reference checks",
+      "evidence_refs": [
+        "TS_STATE"
+      ]
+    }
   ],
   "risks": [
-    {"id":"R_SCOPE","severity":"high","description":"scope-inflated completion claim","detection":"compare newer scoped evidence against global claims","mitigation":"supersede or narrow the claim","rollback":"downgrade closure to blocked"}
+    {
+      "id": "R_SCOPE",
+      "severity": "high",
+      "description": "scope-inflated completion claim",
+      "detection": "compare newer scoped evidence against global claims",
+      "mitigation": "preserve history and supersede or narrow the claim",
+      "rollback": "downgrade closure and affected stages to blocked"
+    },
+    {
+      "id": "R_CONFIDENTIALITY",
+      "severity": "high",
+      "description": "internal client/project facts leak into public case",
+      "detection": "public-case anonymization and rights gate",
+      "mitigation": "keep case not_ready until sanitized and authorized",
+      "rollback": "withdraw public artifact and revoke publication state"
+    },
+    {
+      "id": "R_EVIDENCE_PROMOTION",
+      "severity": "high",
+      "description": "local structural result promoted to production/client acceptance",
+      "detection": "completion boundary and limitations review",
+      "mitigation": "bind closure to pilot only",
+      "rollback": "mark over-broad claim superseded"
+    }
   ],
   "public_case": {
     "status": "not_ready",
     "publication_rights_verified": false,
     "anonymization_check": false,
-    "sensitive_markers": ["client name", "private repo path", "internal domain", "authentication fields"]
+    "sensitive_markers": [
+      "client name",
+      "private repo path",
+      "internal domain",
+      "authentication fields",
+      "commit and receipt identifiers"
+    ]
   },
-  "client_acceptance": {"status":"not_requested","accepted_by":"","accepted_at":"","scope":""}
+  "client_acceptance": {
+    "status": "not_requested",
+    "accepted_by": "",
+    "accepted_at": "",
+    "scope": ""
+  },
+  "claims": [
+    {
+      "id": "C_GLOBAL_100",
+      "text": "The entire frontend has 100% Android functional parity",
+      "scope": "whole project",
+      "status": "verified",
+      "evidence_refs": [
+        "TS_LEDGER"
+      ],
+      "negative_evidence_refs": [],
+      "limitations": []
+    },
+    {
+      "id": "C_MODULE_GAPS",
+      "text": "A newer module plan reports alignment from 1% to 57% across nine modules",
+      "scope": "nine modules in the 2026-07-16 plan",
+      "status": "verified",
+      "evidence_refs": [
+        "TS_PLAN"
+      ],
+      "negative_evidence_refs": [],
+      "limitations": [
+        "plan percentages are not runtime acceptance by themselves"
+      ]
+    }
+  ]
 }
