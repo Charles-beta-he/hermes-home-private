@@ -11,17 +11,17 @@
 | Eight-stage lifecycle covers qualification through operations | `ai-agent-b2b-service/references/delivery-grade-software-workflow.md` | skill readback | PASS | procedure only |
 | Each stage defines artifacts and exit gates | same reference | skill readback | PASS | procedure only |
 | Machine-readable engagement manifest exists | `templates/delivery-engagement-manifest.json` | JSON lint on write; placeholders deliberately return RED | PASS | starter template |
-| Verified claims require scoped, known evidence IDs and exact stage applicability | `scripts/verify_delivery_workflow.py` | unit and mutation tests | PASS | structural validation |
+| Verified claims require controlled scope class, positive/negative evidence and exact stage applicability | `scripts/verify_delivery_workflow.py` | unit and mutation tests | PASS | structural validation, not issuer authentication |
 | Accepted closures require a verified outcome and reject unverified/disputed claims; accepted risks require approval, controls and evidence | validator | unit tests | PASS | structural governance |
-| Accepted stages require owner, known references, semantic artifacts and a linked verified claim bounded by both claim and cited-source `max_stage` | validator | unit tests | PASS | source capability is structural, not external authentication |
+| Accepted stages require owner, known references, semantic artifacts and a linked verified claim bounded by scope class, claim and cited-source `max_stage` | validator | unit tests | PASS | declarations remain structural, not external authentication |
 | Absolute local evidence is present, hash-pinned and copied into the candidate evidence packet | RED/GREEN manifests and snapshots | missing/tamper/archive tests | PASS | local immutable bytes only |
 | Closure, stage order and maximum completion boundary are consistent; successor records require registered `successor_engagement` evidence | validator | draft/review/accepted/superseded/S6/beyond-boundary tests | PASS | snapshot state machine |
 | Allowed external actions require a typed authority grant bound to action/target/scope, non-past expiry, `revoked=false`, rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
 | Public/client gates require purpose-specific evidence types; client identity/scope reject exact placeholder tokens and require S6 acceptance | validator | unit tests | PASS | case remains not_ready; client not_requested |
-| Malformed nested values do not crash validation | validator | 20,000 seeded mutations | PASS | robustness, not formal proof |
+| Malformed nested values, including list-valued grant/successor enums, do not crash validation | validator | explicit regressions plus 20,000 seeded mutations | PASS | robustness, not formal proof |
 | UAEC progress conflict fails closed | `uaec-progress-red.json` | validator returned 3 errors and expected exit 1 | PASS | negative evidence |
 | Reconciled bounded pilot passes | `uaec-progress-green.json` | validator returned boundary=pilot, closure=accepted | PASS | pilot manifest only |
-| Existing ToB skill routes to delivery-grade branch | `ai-agent-b2b-service/SKILL.md` v1.3.0 | skill reload/readback | PASS | class-level routing |
+| Existing ToB skill routes to delivery-grade branch | `ai-agent-b2b-service/SKILL.md` v1.7.0 | skill reload/readback | PASS | class-level routing |
 | Multi-dimensional technical audit exists | `technical-audit-report.md` | artifact readback and verification matrix | PASS | production gaps remain explicit |
 
 ## RED evidence
@@ -61,8 +61,8 @@ PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closur
 ## Regression evidence
 
 ```text
-....................................................
-Ran 52 tests in 0.013s
+.......................................................
+Ran 55 tests in 0.018s
 OK
 ```
 

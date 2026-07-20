@@ -67,6 +67,7 @@ def valid_manifest():
             "id": "C1", "text": "pilot claim", "scope": "pilot/local",
             "status": "verified", "evidence_refs": ["TS1"],
             "negative_evidence_refs": ["TS1"], "limitations": ["not production"],
+            "scope_class": "pilot",
             "stage_refs": ["S0", "S1", "S2", "S3", "S4"],
             "max_stage": "S4",
         }],
@@ -175,7 +176,7 @@ class ValidatorTests(unittest.TestCase):
         self.assertTrue(any("scope contains placeholder" in e for e in errors))
 
     def test_client_acceptance_rejects_common_placeholder_tokens(self):
-        for accepted_by, scope in (("TBD", "delivery"), ("client", "N/A"), ("TODO", "unknown")):
+        for accepted_by, scope in (("TBD", "delivery"), ("client", "N/A"), ("TODO", "unknown"), ("  TBD.  ", " N/A. ")):
             with self.subTest(accepted_by=accepted_by, scope=scope):
                 data = valid_manifest()
                 data["client_acceptance"].update({
@@ -219,6 +220,19 @@ class ValidatorTests(unittest.TestCase):
         data = valid_manifest()
         data["claims"][0]["limitations"] = []
         self.assertTrue(any("needs limitations as a non-empty string list" in e for e in validate(data)))
+
+    def test_verified_claim_requires_negative_evidence(self):
+        data = valid_manifest()
+        data["claims"][0]["negative_evidence_refs"] = []
+        self.assertTrue(any("negative_evidence_refs must not be empty" in e for e in validate(data)))
+
+    def test_resolved_contradiction_requires_substantive_evidence_backed_resolution(self):
+        data = valid_manifest()
+        data["claims"].append({"id": "C2", "text": "bounded comparison", "scope": "pilot", "status": "superseded", "evidence_refs": [], "negative_evidence_refs": [], "limitations": []})
+        data["contradictions"] = [{"id": "X1", "claim_refs": ["C1", "C2"], "status": "resolved", "resolution": "x", "evidence_refs": []}]
+        errors = validate(data)
+        self.assertTrue(any("needs substantive resolution" in e for e in errors))
+        self.assertTrue(any("evidence_refs must not be empty" in e for e in errors))
 
     def test_unresolved_contradiction_fails(self):
         data = valid_manifest()
@@ -460,6 +474,13 @@ class ValidatorTests(unittest.TestCase):
         data["claims"][0]["stage_refs"].append("S5")
         self.assertTrue(any("exceeds evidence capability" in e for e in validate(data)))
 
+    def test_claim_max_stage_cannot_exceed_scope_class_when_source_is_also_raised(self):
+        data = valid_manifest()
+        data["claims"][0]["max_stage"] = "S5"
+        data["claims"][0]["stage_refs"].append("S5")
+        data["truth_sources"][0]["max_stage"] = "S5"
+        self.assertTrue(any("exceeds scope_class pilot" in e for e in validate(data)))
+
     def test_truth_source_requires_stage_capability(self):
         data = valid_manifest()
         data["truth_sources"][0].pop("max_stage")
@@ -554,6 +575,12 @@ class ValidatorTests(unittest.TestCase):
         self.assertTrue(validate(data))
         data = valid_manifest()
         data["contradictions"] = [{"id": "X", "claim_refs": [{}], "status": "unresolved", "resolution": ""}]
+        self.assertTrue(validate(data))
+        data = valid_manifest()
+        data["authority"]["authority_grants"] = [{"id": "G", "type": "authority_grant", "action": [], "target": "x", "scope": "x", "granted_by": "x", "granted_at": date.today().isoformat(), "expires_at": (date.today() + timedelta(days=1)).isoformat(), "revoked": False, "evidence_refs": ["TS_GRANT"]}]
+        self.assertTrue(validate(data))
+        data = valid_manifest()
+        data["related_engagements"] = [{"id": "E", "relationship": [], "status": "planned", "evidence_refs": ["TS_SUCCESSOR"]}]
         self.assertTrue(validate(data))
 
 

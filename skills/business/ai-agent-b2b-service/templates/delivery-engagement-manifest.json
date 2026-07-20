@@ -151,7 +151,8 @@
       "limitations": [
         "name uncovered boundaries"
       ],
-      "max_stage": "replace-with-S0-through-S7"
+      "max_stage": "replace-with-S0-through-S7",
+      "scope_class": "replace-with-diagnosis-solution-pilot-production-acceptance-or-operations"
     }
   ],
   "contradictions": [],

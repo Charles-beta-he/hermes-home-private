@@ -28,6 +28,7 @@ BOUNDARY_STAGE = {
     "acceptance": "S6",
     "operations": "S7",
 }
+CLAIM_SCOPE_MAX_STAGE = dict(BOUNDARY_STAGE)
 VALID_STAGE_STATES = {
     "not_started", "in_progress", "blocked", "ready_for_review",
     "accepted", "rejected", "superseded",
@@ -64,7 +65,8 @@ def nonempty(value: object) -> bool:
 def is_placeholder(value: object) -> bool:
     if not nonempty(value):
         return False
-    normalized = re.sub(r"[\s_-]+", " ", value.strip().lower())
+    normalized = re.sub(r"^[^\w]+|[^\w]+$", "", value.strip().lower())
+    normalized = re.sub(r"[\s_-]+", " ", normalized)
     return normalized in PLACEHOLDER_TOKENS or bool(PLACEHOLDER_RE.search(value))
 
 
@@ -268,7 +270,7 @@ def validate(data: object) -> list[str]:
             )
             validate_refs(
                 claim.get("negative_evidence_refs"), source_ids,
-                f"{label}.negative_evidence_refs", errors,
+                f"{label}.negative_evidence_refs", errors, required=status == "verified",
             )
             stage_refs = claim.get("stage_refs")
             validate_refs(
@@ -276,8 +278,19 @@ def validate(data: object) -> list[str]:
                 required=status == "verified",
             )
             max_stage = claim.get("max_stage")
+            scope_class = claim.get("scope_class")
+            if status == "verified" and (
+                not isinstance(scope_class, str) or scope_class not in CLAIM_SCOPE_MAX_STAGE
+            ):
+                errors.append(f"verified claim {cid or idx} needs valid scope_class")
             if status == "verified" and (not isinstance(max_stage, str) or max_stage not in STAGE_ORDER):
                 errors.append(f"verified claim {cid or idx} needs valid max_stage")
+            if (
+                status == "verified" and isinstance(max_stage, str) and max_stage in STAGE_ORDER
+                and isinstance(scope_class, str) and scope_class in CLAIM_SCOPE_MAX_STAGE
+                and STAGE_ORDER.index(max_stage) > STAGE_ORDER.index(CLAIM_SCOPE_MAX_STAGE[scope_class])
+            ):
+                errors.append(f"verified claim {cid or idx} max_stage {max_stage} exceeds scope_class {scope_class}")
             if status == "verified" and isinstance(stage_refs, list) and isinstance(max_stage, str) and max_stage in STAGE_ORDER:
                 max_index = STAGE_ORDER.index(max_stage)
                 for ref in stage_refs:
@@ -325,8 +338,15 @@ def validate(data: object) -> list[str]:
                 errors.append(f"unresolved contradiction: {item.get('id', idx)}")
                 if isinstance(refs, list):
                     unresolved_claims.update(ref for ref in refs if isinstance(ref, str))
-            elif isinstance(status, str) and status in {"resolved", "accepted_risk"} and not nonempty(item.get("resolution")):
-                errors.append(f"{status} contradiction {item.get('id', idx)} needs resolution")
+            elif isinstance(status, str) and status in {"resolved", "accepted_risk"}:
+                resolution = item.get("resolution")
+                if not nonempty(resolution) or len(resolution.strip()) < 10 or is_placeholder(resolution):
+                    errors.append(f"{status} contradiction {item.get('id', idx)} needs substantive resolution")
+            if status == "resolved":
+                validate_refs(
+                    item.get("evidence_refs"), source_ids,
+                    f"{label}.evidence_refs", errors, required=True,
+                )
             if status == "accepted_risk":
                 if not nonempty(item.get("approved_by")):
                     errors.append(f"accepted_risk contradiction {item.get('id', idx)} needs approved_by")
@@ -384,7 +404,7 @@ def validate(data: object) -> list[str]:
                 if grant.get("type") != "authority_grant":
                     errors.append(f"{label}.type must be authority_grant")
                 action_name = grant.get("action")
-                if action_name not in VALID_EXTERNAL_ACTIONS:
+                if not isinstance(action_name, str) or action_name not in VALID_EXTERNAL_ACTIONS:
                     errors.append(f"{label}.action is invalid")
                 for key in ("target", "scope", "granted_by"):
                     value = grant.get(key)
@@ -567,10 +587,10 @@ def validate(data: object) -> list[str]:
             engagement_id = engagement.get("id")
             add_duplicate_error(errors, related_engagement_ids, engagement_id, "related engagement id")
             relationship = engagement.get("relationship")
-            if relationship not in {"successor", "predecessor", "related"}:
+            if not isinstance(relationship, str) or relationship not in {"successor", "predecessor", "related"}:
                 errors.append(f"{label}.relationship is invalid")
             status = engagement.get("status")
-            if status not in {"planned", "active", "accepted", "closed"}:
+            if not isinstance(status, str) or status not in {"planned", "active", "accepted", "closed"}:
                 errors.append(f"{label}.status is invalid")
             validate_refs(engagement.get("evidence_refs"), source_ids, f"{label}.evidence_refs", errors, required=True)
             if relationship == "successor":

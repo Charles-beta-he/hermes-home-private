@@ -42,7 +42,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S0 qualification packet",
-      "sha256": "0fc655ed740911009992926827eef0d2c4fc32ebf41d35710d3ae5b6af40e844"
+      "sha256": "90d02cb712a8defaa0095aeed991c22df99aad65f8cf3dc067da96d5d3f8329f"
     },
     {
       "id": "A_BASELINE",
@@ -50,7 +50,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
       "owner": "internal-delivery-owner",
       "scope": "S1 evidence baseline",
-      "sha256": "c32ade9d35cfb6f315d7f1ce9b8971d2fa75124f920f9611b663068c39e1f371"
+      "sha256": "a496ccdcda7e7d313e4b3e205f81058177bd641756c8b5c05e5cceeee1f1c295"
     },
     {
       "id": "A_SPEC",
@@ -58,7 +58,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 specification contract",
-      "sha256": "0fc655ed740911009992926827eef0d2c4fc32ebf41d35710d3ae5b6af40e844"
+      "sha256": "90d02cb712a8defaa0095aeed991c22df99aad65f8cf3dc067da96d5d3f8329f"
     },
     {
       "id": "A_AUTHORITY_MATRIX",
@@ -66,7 +66,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 authority boundary",
-      "sha256": "0fc655ed740911009992926827eef0d2c4fc32ebf41d35710d3ae5b6af40e844"
+      "sha256": "90d02cb712a8defaa0095aeed991c22df99aad65f8cf3dc067da96d5d3f8329f"
     },
     {
       "id": "A_SOLUTION_WORKSPACE",
@@ -74,7 +74,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
       "owner": "internal-delivery-owner",
       "scope": "S3 governed delivery workspace",
-      "sha256": "c32ade9d35cfb6f315d7f1ce9b8971d2fa75124f920f9611b663068c39e1f371"
+      "sha256": "a496ccdcda7e7d313e4b3e205f81058177bd641756c8b5c05e5cceeee1f1c295"
     },
     {
       "id": "A_RISK_REGISTER",
@@ -82,7 +82,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
       "owner": "internal-delivery-owner",
       "scope": "S3 risk register",
-      "sha256": "c32ade9d35cfb6f315d7f1ce9b8971d2fa75124f920f9611b663068c39e1f371"
+      "sha256": "a496ccdcda7e7d313e4b3e205f81058177bd641756c8b5c05e5cceeee1f1c295"
     },
     {
       "id": "A_PILOT_EVIDENCE",
@@ -90,7 +90,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 executable pilot gate",
-      "sha256": "d5138fd242db40d2c0a790c7a6e644181c27df67de9ae4a5fe932028dc233c64"
+      "sha256": "478d56969dccc4e27f204ec1c82061f0b7dc4dee18340ac158d4b2fd3943a7af"
     },
     {
       "id": "A_TEST_EVIDENCE",
@@ -98,7 +98,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/test_verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 regression evidence",
-      "sha256": "058c2442fab77e800be126d93feaea06540920c6ada70eef2e5f36207b2f9f77"
+      "sha256": "4eff74cc87d89ebe14ef8fbebb74d1b2f86eb159c6183d1a5b5aeb6a034989ee"
     }
   ],
   "contradictions": [
@@ -357,7 +357,10 @@
       "evidence_refs": [
         "TS_LEDGER"
       ],
-      "negative_evidence_refs": [],
+      "negative_evidence_refs": [
+        "TS_PLAN",
+        "TS_STATE"
+      ],
       "limitations": [
         "claim remains bounded by its declared scope and evidence"
       ],
@@ -368,7 +371,8 @@
         "S3",
         "S4"
       ],
-      "max_stage": "S4"
+      "max_stage": "S4",
+      "scope_class": "pilot"
     },
     {
       "id": "C_MODULE_GAPS",
@@ -378,7 +382,9 @@
       "evidence_refs": [
         "TS_PLAN"
       ],
-      "negative_evidence_refs": [],
+      "negative_evidence_refs": [
+        "TS_LEDGER"
+      ],
       "limitations": [
         "plan percentages are not runtime acceptance by themselves"
       ],
@@ -389,7 +395,8 @@
         "S3",
         "S4"
       ],
-      "max_stage": "S4"
+      "max_stage": "S4",
+      "scope_class": "pilot"
     }
   ],
   "supersession": null,

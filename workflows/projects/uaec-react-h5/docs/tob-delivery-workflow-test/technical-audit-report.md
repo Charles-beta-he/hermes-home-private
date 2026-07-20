@@ -67,20 +67,26 @@ The adversarial audit rounds found twenty-five reproducible issues:
 | F30 | claim `max_stage` was still independently self-declared and could be raised with its `stage_refs` | P1 | every truth source now declares a stage capability and a verified claim cannot exceed the highest capability among cited evidence |
 | F31 | successor registration accepted an ordinary known source rather than succession-specific evidence | P2 | successor and supersession records now require `successor_engagement`-typed evidence |
 | F32 | authority grants had no expiry or revocation state | P1 | enabled grants require a non-past `expires_at` date and explicit `revoked=false` |
+| F33 | list-valued grant action and successor relationship/status could crash membership checks | P1 | string guards plus explicit malformed regression probes |
+| F34 | punctuation-wrapped placeholders such as `TBD.` and `N/A.` could evade acceptance checks | P1 | boundary punctuation is normalized while legitimate `Acme [US]` remains valid |
+| F35 | immutable evidence packet simultaneously claimed clean/0/0 and dirty/ahead=1 | P1 | historical audit statement is explicitly superseded by the exact dated state snapshot; spec and both audit copies agree |
+| F36 | claim and source stage ceilings could be raised together while scope remained pilot | P1 | verified claims now require controlled `scope_class`, which independently caps `max_stage` |
+| F37 | verified claims could omit negative evidence | P2 | positive and negative evidence are both mandatory for verified claims |
+| F38 | a one-character contradiction resolution could mark conflicting claims resolved | P2 | resolved contradictions require substantive text and registered evidence |
 
 A subsequent malformed-type test exposed validator crashes on list/dict values. Type guards and filtered reference handling were added. A seeded 20,000-mutation robustness run then completed with zero validator crashes.
 
-A later two-lane review was replayed rather than trusted by age: its evidence-report lane accepted only the local structural pilot boundary, while its architecture lane found five current false-PASS/crash paths. The first amendment commit was then independently rejected again because placeholder, successor, grant and claim-stage semantics remained too weak and because GREEN depended on bytes outside the immutable commit. Those findings were reproduced and hardened as F21–F32. A fresh post-fix independent vote is still required before certification. Remaining advisory items—an executable recovery/event ledger, routing evals, reusable handover templates, deep anonymization scanning and production/S7 adapters—remain outside this local validator pilot and prevent production certification.
+A later two-lane review was replayed rather than trusted by age: its evidence-report lane accepted only the local structural pilot boundary, while its architecture lane found five current false-PASS/crash paths. The first amendment commit was then independently rejected again because placeholder, successor, grant and claim-stage semantics remained too weak and because GREEN depended on bytes outside the immutable commit. Those findings were reproduced and hardened as F21–F38. A fresh post-fix independent vote is still required before certification. Remaining advisory items—an executable recovery/event ledger, routing evals, reusable handover templates, deep anonymization scanning and production/S7 adapters—remain outside this local validator pilot and prevent production certification.
 
 ## Multi-dimensional result matrix
 
 | Dimension | Result | Evidence | Remaining boundary |
 |---|---|---|---|
 | Syntax and executable entry point | PASS | `py_compile`; CLI exit contract exercised | no package/CLI distribution |
-| Unit behavior | PASS | 52 tests passed from an immutable candidate archive | standard-library unittest only; fresh independent commit-bound vote required |
+| Unit behavior | PASS | 55 tests passed in the latest worktree run | standard-library unittest only; final immutable replay and fresh independent vote required |
 | Input robustness | PASS | seeded 20,000 field mutations, zero crashes | not a formal parser proof |
 | Missing/corrupt input | PASS | missing and malformed JSON return exit 2 | no JSON Schema publication yet |
-| Claim/evidence integrity | PASS | unknown IDs rejected; verified claims require evidence, limitations, stage_refs and a claim/source capability bound; accepted stages require an eligible linked claim | source capability is structurally declared; semantic truth still requires human/domain verification |
+| Claim/evidence integrity | PASS | verified claims require controlled scope class, positive/negative evidence, limitations, stage refs and claim/source capability bounds; accepted stages require an eligible linked claim | declarations remain structural; semantic truth still requires human/domain verification |
 | Artifact integrity | PASS | accepted-stage IDs resolve and required S0–S7 semantic artifact types are enforced | remote/logical artifact URIs are declarations |
 | Local evidence immutability | PASS | absolute refs require matching SHA-256; tamper test returns exit 1 | mutable source updates require deliberate hash refresh |
 | Evidence freshness | PASS | malformed and future dates rejected | no configurable age/SLA threshold |
@@ -105,8 +111,8 @@ A later two-lane review was replayed rather than trusted by age: its evidence-re
 ### Regression and GREEN
 
 ```text
-....................................................
-Ran 52 tests in 0.013s
+.......................................................
+Ran 55 tests in 0.018s
 OK
 PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closure=accepted)
 ```

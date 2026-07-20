@@ -51,7 +51,7 @@
 - 运行证据：`evidence/**`
 - 执行回执：`receipts/project-delivery-runs/**`
 
-当前交付状态文件记录：仓库位于 `dev`，工作树干净，`origin/dev` ahead/behind 均为 0；本地权限开放，但 push、deploy、外发、凭证、支付和破坏性操作均关闭。该状态是运行快照，不证明所有业务功能已完成。
+该段 clean/0/0 是较早审计时点的历史叙述，已被 `docs/tob-delivery-workflow-test/evidence-snapshots/project-delivery-state.json` 的 2026-07-20 精确状态 supersede：仓库位于 `dev`，`dirty=true`、`ahead_origin_dev=1`、`behind_origin_dev=0`，并存在一个 untracked 文件。本段只保留历史审计语境；两种状态都不证明所有业务功能已完成。push、deploy、外发、凭证、支付和破坏性操作均关闭。
 
 ## 4. 必须先解决的真实性问题
 

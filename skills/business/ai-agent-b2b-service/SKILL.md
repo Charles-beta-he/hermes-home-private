@@ -1,7 +1,7 @@
 ---
 name: ai-agent-b2b-service
 description: "Use when packaging AI Agent customization or AI-assisted software-delivery governance as a B2B service: qualification, diagnosis, truth-source mapping, authority contracts, pilot validation, evidence-gated delivery, handover, and ongoing ops."
-version: 1.6.0
+version: 1.7.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -239,6 +239,9 @@ Tier 3: Enterprise (50K-200K)
 5. **No success metrics defined.** If you can't measure whether the Agent helped, the client can't justify paying.
 6. **Ignoring the human factor.** The biggest blocker is usually people resisting change, not technical limitations. Plan for change management.
 7. **One-person bottleneck.** As a solo operator, document everything so you can eventually delegate or scale.
+8. **Certifying a moving tree.** Any validator, fixture, hash, report, or semantic documentation edit after a review creates a new candidate. Refresh hashes, commit exact paths, replay from `git archive`, and request a new review bound to the new commit; never inherit an older vote.
+9. **Self-referential evidence drift.** Do not write a report as though its own not-yet-created commit has already passed archive replay. Use candidate-neutral wording, then store the post-commit replay receipt separately or in a later exact report-only commit and replay that final commit again.
+10. **Confusing metadata with authentication.** A claim cap bounded by `truth_sources[].max_stage` is a structural contract only. If both fields can be edited by the same author, the validator cannot prove issuer authenticity or real source scope; disclose this boundary and require external/domain verification for production or client acceptance.
 
 ## Linked Files
 
@@ -260,7 +263,7 @@ Tier 3: Enterprise (50K-200K)
 - [ ] Support boundaries and SLA are explicit.
 - [ ] A public case is produced only when publication rights and anonymization are verified; otherwise an internal case packet is retained.
 - [ ] Delivery manifest declares an exact completion boundary and closure state.
-- [ ] Every verified claim has scope, evidence, a non-empty limitations list, exact S0–S7 `stage_refs`, and a `max_stage` that is bounded both by those refs and by at least one cited truth source's `max_stage`; every accepted stage has a linked verified claim.
+- [ ] Every verified claim has scope, a controlled `scope_class`, evidence, non-empty negative evidence, a non-empty limitations list, exact S0–S7 `stage_refs`, and a `max_stage` bounded by the scope class, those refs and at least one cited truth source's `max_stage`; every accepted stage has a linked verified claim.
 - [ ] Unresolved contradictions block acceptance rather than being averaged or deleted.
 - [ ] Reviewable stages contain their required artifact types and evidence; superseded closure resolves to a registered successor engagement backed by `successor_engagement`-typed evidence.
 - [ ] External action names are allowlisted; enabled actions include exact target/scope, a typed evidence-backed authority grant bound to the same action/target/scope, a non-expired validity window, `revoked=false`, rollback and readback; credential/payment actions remain human-only.

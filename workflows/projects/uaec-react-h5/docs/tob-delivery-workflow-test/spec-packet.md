@@ -16,12 +16,12 @@
 1. 项目已建立 Profile、SSOT、Capability Backlog、状态、事件、lease、receipt 和 evidence 结构。
 2. `progress-ledger.md` 的 2026-07-14 条目声明“100% Android functional parity”。
 3. 更新日期为 2026-07-16 的全模块计划仍给出多个模块 1%–57% 的对齐度。
-4. 当前交付状态快照记录仓库干净、ahead/behind 为 0，但明确不证明业务范围全部完成。
+4. 当前候选内的 2026-07-20 交付状态快照记录仓库 `dirty=true`、`ahead_origin_dev=1`、`behind_origin_dev=0`；更早审计文本中的 clean/0/0 叙述已被该精确状态快照 supersede，且两者都不证明业务范围全部完成。
 5. push、deploy、外发、凭证、支付和破坏性动作没有授权。
 
 ## 不变量
 
-- 每个完成声明必须包含明确 scope、时间点、证据引用、适用阶段 `stage_refs`、最高可支撑阶段 `max_stage` 和非空 limitations；`max_stage` 不得超过至少一个 cited truth source 声明的证据能力，每个 accepted stage 必须由同时满足这两层上限的 verified claim 覆盖。
+- 每个完成声明必须包含明确 scope、受控 `scope_class`、时间点、正向与负向证据引用、适用阶段 `stage_refs`、最高可支撑阶段 `max_stage` 和非空 limitations；`max_stage` 不得超过 scope class 或至少一个 cited truth source 声明的证据能力，每个 accepted stage 必须由同时满足这些上限的 verified claim 覆盖。
 - 新证据与旧结论冲突时，交付状态必须降级为 `blocked` 或 `ready_for_review`，不能继续标记 `accepted`。
 - 所有外部副作用必须由 Authority Matrix 明确授权。
 - 客户验收与内部技术验证分离。

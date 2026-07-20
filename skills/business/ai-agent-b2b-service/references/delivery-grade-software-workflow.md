@@ -185,8 +185,8 @@ The verifier intentionally fails closed for:
 - malformed or future-dated source metadata;
 - missing absolute local evidence or a mismatched SHA-256;
 - claim, stage, metric or artifact references to unknown IDs;
-- unresolved contradictions;
-- verified claims without scope/evidence, or accepted closures without any verified outcome or containing unverified/disputed claims;
+- unresolved contradictions, or resolved contradictions without substantive resolution text and registered evidence;
+- verified claims without scope, controlled scope class, positive/negative evidence or limitations, or accepted closures without any verified outcome or containing unverified/disputed claims;
 - `accepted_risk` contradictions without an approver, acceptance date, compensating controls and known evidence references;
 - active stages without owners, accepted/reviewable stages without their required artifacts/evidence, and out-of-order stage progress;
 - closure states that do not match the completion-boundary stage, including superseded closures whose `superseded_by` does not resolve to an evidence-backed `related_engagements` successor;
@@ -202,7 +202,7 @@ The verifier intentionally fails closed for:
 Evidence semantics:
 - `truth_sources` are claim/stage/metric evidence IDs;
 - `artifacts` are produced-output IDs referenced by stages;
-- every verified claim declares `stage_refs` and a maximum supported stage in `max_stage`; every accepted stage has at least one linked verified claim that does not exceed either the claim maximum or the highest `max_stage` declared by its cited truth sources;
+- every verified claim declares `stage_refs`, a controlled `scope_class`, positive and negative evidence, and a maximum supported stage in `max_stage`; every accepted stage has at least one linked verified claim that does not exceed the scope-class ceiling, claim maximum or highest `max_stage` declared by its cited truth sources;
 - source `type` is part of the structural evidence contract for publication rights, anonymization review, client acceptance and authority grants; ID existence alone is insufficient;
 - accepted and `ready_for_review` stages must carry the stage-specific artifact types and evidence below, not generic labels:
   - S0: `qualification`;
@@ -258,6 +258,7 @@ Every claim must contain:
 - `status`: verified, disputed, unverified or superseded;
 - `evidence_refs`;
 - `stage_refs`: exact S0–S7 stages whose acceptance denominator this claim supports;
+- `scope_class`: controlled assurance boundary (`diagnosis`, `solution`, `pilot`, `production`, `acceptance`, `operations`); claim `max_stage` may not exceed its class;
 - `max_stage`: the highest stage the claim may support; every `stage_refs` entry must be at or below it, and at least one cited truth source must declare an equal or higher `max_stage` capability;
 - truth-source `max_stage` is a structural evidence-capability declaration, not external authentication; reviewers must still verify the pinned source bytes and their real scope;
 - a non-empty limitations list and negative evidence where material.
