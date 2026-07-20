@@ -77,7 +77,7 @@ A later two-lane review was replayed rather than trusted by age: its evidence-re
 | Dimension | Result | Evidence | Remaining boundary |
 |---|---|---|---|
 | Syntax and executable entry point | PASS | `py_compile`; CLI exit contract exercised | no package/CLI distribution |
-| Unit behavior | PASS | 52 tests, all passing in the latest worktree run | standard-library unittest only; final commit-bound rerun required |
+| Unit behavior | PASS | 52 tests passed from an immutable candidate archive | standard-library unittest only; fresh independent commit-bound vote required |
 | Input robustness | PASS | seeded 20,000 field mutations, zero crashes | not a formal parser proof |
 | Missing/corrupt input | PASS | missing and malformed JSON return exit 2 | no JSON Schema publication yet |
 | Claim/evidence integrity | PASS | unknown IDs rejected; verified claims require evidence, limitations, stage_refs and a claim/source capability bound; accepted stages require an eligible linked claim | source capability is structurally declared; semantic truth still requires human/domain verification |
