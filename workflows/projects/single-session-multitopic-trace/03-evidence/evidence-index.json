@@ -1,0 +1,242 @@
+[
+  {
+    "claim_refs": [
+      "local-control-plane-slice"
+    ],
+    "evidence_id": "E-WSO-001",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1248Z.log",
+    "recorded_at": "2026-07-20T12:51:13.697412Z",
+    "schema_version": 1,
+    "sha256": "494880610f6b1b501197c8bade0a1039b9d39b5419ffedeff8767a9ae7673a18",
+    "summary": "14 focused unittest cases passed, including negative authority, overlap, expiry, evidence integrity, malformed ledger and tmux non-execution cases"
+  },
+  {
+    "claim_refs": [
+      "local-control-plane-slice"
+    ],
+    "evidence_id": "E-WSO-002",
+    "kind": "command",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/live-doctor-20260720T1248Z.json",
+    "recorded_at": "2026-07-20T12:51:13.742847Z",
+    "schema_version": 1,
+    "sha256": "2df01bbaca86a20478e408769018f98badab4824a90b11154440a8462b6d0c65",
+    "summary": "Live project doctor returned zero errors and zero warnings with read-only tmux inspection"
+  },
+  {
+    "claim_refs": [
+      "local-control-plane-slice"
+    ],
+    "evidence_id": "E-WSO-003",
+    "kind": "limitation",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/degraded-multimodel-review-20260720.json",
+    "recorded_at": "2026-07-20T12:52:00.471499Z",
+    "schema_version": 1,
+    "sha256": "b2bba5ed144d1a75ad6b0debba856bceffb475dde24a1d2ba026cbee2b844c63",
+    "summary": "Independent multimodel review unavailable after quota/runtime gate; degraded packet records zero independent votes and no certification claim"
+  },
+  {
+    "claim_refs": [
+      "profile-portfolio-convergence"
+    ],
+    "evidence_id": "E-WSO-004",
+    "kind": "command",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-verify-20260720T1255Z.json",
+    "recorded_at": "2026-07-20T12:55:25.986897Z",
+    "schema_version": 1,
+    "sha256": "837d3600eee58f53ca2ce574797532906917bbed8f84c65b0ae4dd5e015e1c76",
+    "summary": "Portfolio strict verify ok=true, zero errors; two unrelated pre-existing profile-only warnings remain"
+  },
+  {
+    "claim_refs": [
+      "profile-portfolio-convergence"
+    ],
+    "evidence_id": "E-WSO-005",
+    "kind": "command",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-semantic-audit-20260720T1255Z.json",
+    "recorded_at": "2026-07-20T12:55:26.029462Z",
+    "schema_version": 1,
+    "sha256": "7802b54c3a093a7e990c4a4122d23ff60f25729085aa9dcb9143ce8853cba53a",
+    "summary": "Portfolio semantic audit ok=true, 100 percent coverage, target project verdict pass; one unrelated Context Engineering profile warning remains"
+  },
+  {
+    "claim_refs": [
+      "local-control-plane"
+    ],
+    "evidence_id": "E-WSO-006",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1308Z.log",
+    "recorded_at": "2026-07-20T13:10:30.160964Z",
+    "schema_version": 1,
+    "sha256": "f9361318529c0f542385f9670fc91fb768fddc48338d72f62debfed83d4afdd8",
+    "summary": "15 focused tests passed, including deterministic cross-process state-lock serialization for conflicting write claims"
+  },
+  {
+    "claim_refs": [
+      "local-control-plane"
+    ],
+    "evidence_id": "E-WSO-007",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1318Z.log",
+    "recorded_at": "2026-07-20T13:17:59.731083Z",
+    "schema_version": 1,
+    "sha256": "41aad5a6b9c3a373e115c21cb5eb9d3ad349af8035c9f1cd42fe1e5494e4da9b",
+    "summary": "16 focused tests passed, adding bounded TTL and project-relative scope traversal rejection"
+  },
+  {
+    "claim_refs": [
+      "single-session-trace"
+    ],
+    "evidence_id": "E-WSO-008",
+    "kind": "file",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/single-session-trace-readback-20260720T1320Z.json",
+    "recorded_at": "2026-07-20T13:22:01.049145Z",
+    "schema_version": 1,
+    "sha256": "975d8efd7ef2511c8a4b3cf98e9dc82a34a22c735441064c9d79407de8bf5357",
+    "summary": "Read-only Hermes session trace query resolved one prior same-project session and preserved chat as non-authoritative projection"
+  },
+  {
+    "claim_refs": [
+      "claim-cross-session-pilot-20260720"
+    ],
+    "evidence_id": "E-WSO-009",
+    "kind": "file",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/04-handoffs/sessions/handoff-cross-session-pilot-20260720.json",
+    "recorded_at": "2026-07-20T13:27:05.505046Z",
+    "schema_version": 1,
+    "sha256": "1453389887a044757fc3d2048513cafd352a5c6be402cfc6430791cf255c1ea0",
+    "summary": "Isolated Hermes session handoff was ingested canonically and read back with source session, review claim, 16-test result, doctor result, blocker and forbidden-assumption boundaries intact"
+  },
+  {
+    "claim_refs": [
+      "local-closeout"
+    ],
+    "evidence_id": "E-WSO-010",
+    "kind": "file",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/final-doctor-20260720T1328Z.json",
+    "recorded_at": "2026-07-20T13:28:14.732895Z",
+    "schema_version": 1,
+    "sha256": "d0e353cb0f9c8645bbf4fc870016b85d76d5e8d8f35c66aa600c515936890fde",
+    "summary": "Post-pilot final doctor returned ok=true with zero errors and zero warnings after bounded review claim release"
+  },
+  {
+    "claim_refs": [
+      "local-closeout"
+    ],
+    "evidence_id": "E-WSO-011",
+    "kind": "file",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-closeout-20260720T1329Z.json",
+    "recorded_at": "2026-07-20T13:28:50.039546Z",
+    "schema_version": 1,
+    "sha256": "ba93f6e94826319901ff31498025fc1a2207ec7b29e973a21539d631ca729d58",
+    "summary": "Fresh Portfolio strict verify and semantic audit passed after trace and cross-session handoff pilots; only two unrelated historical profile-only warnings remain"
+  },
+  {
+    "claim_refs": [
+      "local-closure-review-amendments"
+    ],
+    "evidence_id": "E-WSO-012",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1356Z.log",
+    "recorded_at": "2026-07-20T13:57:14.471651Z",
+    "schema_version": 1,
+    "sha256": "e6864b1ca48e779f9129c678e9f7bbbea82ec8a0195322bf73d3e9b91ddf25fb",
+    "summary": "22 focused tests passed after independent review amendments for init serialization, glob overlap, normalized payload guards, doctor schema, and output confinement"
+  },
+  {
+    "claim_refs": [
+      "local-closure-review-amendments"
+    ],
+    "evidence_id": "E-WSO-013",
+    "kind": "file",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/review-amendment-closeout-20260720T1400Z.json",
+    "recorded_at": "2026-07-20T14:00:34.848553Z",
+    "schema_version": 1,
+    "sha256": "c35f7431704479d0bc02eb75c7a0b54126f6714b62cfc4cb43f506b9da5bcac6",
+    "summary": "Independent AMEND findings remediated; 22 tests, Doctor, Portfolio strict verify, and semantic audit passed with authority boundaries closed"
+  },
+  {
+    "claim_refs": [
+      "local-closure-review-amendments-round-2"
+    ],
+    "evidence_id": "E-WSO-014",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1412Z.log",
+    "recorded_at": "2026-07-20T14:16:52.074003Z",
+    "schema_version": 1,
+    "sha256": "f638d26a9f770c009d81d5342c44faaa4c46b7c42090e4481f3631ccb2de1db4",
+    "summary": "23 focused tests passed after second exact-tree review amendments for external authority intake, strict handoff schema, and case-insensitive scope overlap"
+  },
+  {
+    "claim_refs": [
+      "local-closure-review-amendments-round-3"
+    ],
+    "evidence_id": "E-WSO-015",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1430Z.log",
+    "recorded_at": "2026-07-20T14:31:31.344518Z",
+    "schema_version": 1,
+    "sha256": "5409a733a0b5894129c4293f3f865d83e4ff0569ecfc87e4a4452a62854760e6",
+    "summary": "26 focused tests passed after third exact-tree review amendments for filesystem-equivalent scope canonicalization and malformed-manifest fail-atomic claim acquire/release"
+  },
+  {
+    "claim_refs": [
+      "local-closure-review-amendments-round-4"
+    ],
+    "evidence_id": "E-WSO-016",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1550Z.log",
+    "recorded_at": "2026-07-20T15:50:28.109721Z",
+    "schema_version": 1,
+    "sha256": "ba429a1328696835bd6c41c9127c9ff05be3c55f47721cdab70831dab1dfcdbd",
+    "summary": "30 focused tests passed after fourth exact-tree review amendments for NFKC payload-key rejection, full tmux/event/claim schemas, fail-before-mutation manifest validation, and symlink-safe Doctor output"
+  },
+  {
+    "claim_refs": [
+      "local-closure-review-amendments-round-5"
+    ],
+    "evidence_id": "E-WSO-017",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1605Z.log",
+    "recorded_at": "2026-07-20T16:05:37.227305Z",
+    "schema_version": 1,
+    "sha256": "20c7304402996d9a423ef022ca4c6f53071ab9535056972217aafcaa17ac813a",
+    "summary": "32 focused tests passed after fifth exact-tree review amendments for event-type payload binding, claim lifecycle schema relations, and evidence-backed handoff semantics"
+  },
+  {
+    "claim_refs": [
+      "local-closure-final"
+    ],
+    "evidence_id": "E-WSO-018",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260721T0015Z.log",
+    "recorded_at": "2026-07-20T16:08:57.942654Z",
+    "schema_version": 1,
+    "sha256": "e603229ca0b4608adccdd0552fdb7f357aaa6899de67de24ec9913dcb7ffa85d",
+    "summary": "32 focused tests passed after canonical historical handoff evidence-semantic migration"
+  },
+  {
+    "claim_refs": [
+      "local-closure-final-round-6"
+    ],
+    "evidence_id": "E-WSO-019",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1625Z.log",
+    "recorded_at": "2026-07-20T16:24:20.684817Z",
+    "schema_version": 1,
+    "sha256": "7bcc472e5973aca252b8caeb1b6fa51a42cdaae73ee31388e22b4edbbc1ab912",
+    "summary": "36 focused tests passed after sixth exact-tree review amendments for strict public event aliases/schema, resolved handoff evidence refs, temporal claim relations, and malformed-history fail-before-mutation"
+  },
+  {
+    "claim_refs": [
+      "local-closure-final-round-7"
+    ],
+    "evidence_id": "E-WSO-020",
+    "kind": "test",
+    "path": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1630Z.log",
+    "recorded_at": "2026-07-20T16:36:03.848399Z",
+    "schema_version": 1,
+    "sha256": "1b49028efca62c5c4e3e0dbd153e0b0fb144ca70d144d647387ef861dbcfb8f3",
+    "summary": "38 focused tests passed after seventh exact-tree review amendments for evidence artifact integrity prevalidation and natural-expiry claim reconciliation"
+  }
+]

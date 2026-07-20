@@ -1,0 +1,19 @@
+[
+  {
+    "claim_id": "claim-cross-session-pilot-20260720",
+    "created_at": "2026-07-20T13:20:56.137687Z",
+    "direction_id": "multi-session-fusion",
+    "expires_at": "2026-07-20T14:20:56.137687Z",
+    "mode": "review",
+    "owner_session": "hermes-subagent-cross-session-pilot-20260720",
+    "owner_type": "hermes-session",
+    "project_id": "single-session-multitopic-trace",
+    "released_at": "2026-07-20T13:27:05.547942Z",
+    "schema_version": 1,
+    "scope": [
+      "**/*"
+    ],
+    "status": "released",
+    "worktree": null
+  }
+]

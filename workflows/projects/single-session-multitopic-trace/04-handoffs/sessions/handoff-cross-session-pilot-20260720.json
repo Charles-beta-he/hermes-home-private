@@ -1,0 +1,59 @@
+{
+  "blockers": [
+    "Doctor warning tmux_runtime_missing: active claims exist but tmux session is absent; recovery is required. Path: 05-runtime/tmux-manifest.json."
+  ],
+  "changed_files": [],
+  "claim_id": "claim-cross-session-pilot-20260720",
+  "closure_state": "handoff-ready",
+  "completed": [
+    {
+      "evidence_refs": [
+        "E-WSO-007"
+      ],
+      "summary": "Read the canonical project SSOT, multi-session direction, task ledger, evidence index, active review claim, project metadata, current test source, and latest indexed test artifact."
+    },
+    {
+      "evidence_refs": [
+        "E-WSO-007"
+      ],
+      "summary": "Verified the indexed 16-test artifact and its evidence-index hash and coverage description."
+    },
+    {
+      "evidence_refs": [
+        "E-WSO-002"
+      ],
+      "summary": "Ran the required fresh read-only doctor with tmux inspection; it returned ok=true with zero errors and one tmux-runtime warning."
+    }
+  ],
+  "decisions": [
+    "Keep this source session strictly read-only and leave handoff persistence to the receiving session.",
+    "Treat canonical project artifacts as durable truth and fresh process output as current verification, without inventing a new indexed evidence identifier.",
+    "Preserve the tmux-runtime finding as an explicit warning rather than treating tmux absence as a test failure or as evidence of recovery.",
+    "Do not expand the review claim into write access or any closed project gate."
+  ],
+  "direction_id": "multi-session-fusion",
+  "forbidden_assumptions": [
+    "Do not treat chat text, tmux panes, terminal history, or this handoff as completion authority.",
+    "Do not infer that the absent tmux session has been recovered merely because doctor returned ok=true.",
+    "Do not treat prior indexed artifacts as substitutes for the fresh process readback reported here.",
+    "Do not infer production readiness, global certification, autonomous worker operation, or external-write permission from the passing local suite.",
+    "Do not infer write permission from the active review claim.",
+    "Do not mutate Taskpool, Mission, Git, tmux, workers, project files, or external systems based on this packet."
+  ],
+  "handoff_id": "handoff-cross-session-pilot-20260720",
+  "next_safe_step": "Persist this packet through conversation_workspace.py handoff-add from a session permitted to write the canonical handoff, then read back the stored packet and keep tmux recovery plan-only unless separately authorized.",
+  "objective": "Provide an evidence-grounded, read-only cross-session handoff for the multi-session fusion direction, preserving project SSOT as durable truth and reporting fresh test and doctor readback without mutating project or runtime state.",
+  "recorded_at": "2026-07-20T13:26:55.901018Z",
+  "source_session_id": "hermes-subagent-cross-session-pilot-20260720",
+  "verified_current_state": [
+    "The canonical SSOT identifies single-session-multitopic-trace as Hermes Conversation Workspace OS with status implementation-in-progress and defines project SSOT plus source readback as durable truth.",
+    "The multi-session-fusion direction is in-progress and records an implemented local slice covering canonical state domains, non-overwriting initialization, locked append-only events, claims, handoffs, evidence intake, read-only doctor behavior, and plan-only tmux reconstruction.",
+    "The tasks ledger records WSO-T1 through WSO-T5 as done with evidence references; this is a ledger observation and not independent promotion authority.",
+    "The evidence index contains E-WSO-001 through E-WSO-007. E-WSO-007 points to unittest-20260720T1318Z.log with SHA-256 41aad5a6b9c3a373e115c21cb5eb9d3ad349af8035c9f1cd42fe1e5494e4da9b and records 16 passing focused tests.",
+    "The active review claim claim-cross-session-pilot-20260720 belongs to hermes-subagent-cross-session-pilot-20260720, targets multi-session-fusion, has scope **/*, has no worktree, and expires at 2026-07-20T14:20:56.137687Z.",
+    "Fresh unittest discovery exited with code 0: 16 tests passed in 2.099 seconds.",
+    "Fresh doctor inspection exited with code 0 and returned ok=true, error count 0, warning count 1, runtime_inspected=true, and all reported side-effect flags false.",
+    "No project, Git, tmux, worker, Taskpool, Mission, or external state was intentionally modified."
+  ],
+  "worktree": null
+}

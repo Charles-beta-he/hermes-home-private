@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-07-20T13:28:14.694655Z",
+  "counts": {
+    "error": 0,
+    "warning": 0
+  },
+  "findings": [],
+  "ok": true,
+  "root": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace",
+  "runtime_inspected": true,
+  "schema": "conversation_workspace_doctor_v1",
+  "side_effects": {
+    "external": false,
+    "lifecycle_write": false,
+    "tmux_executed": false,
+    "worker_executed": false
+  }
+}

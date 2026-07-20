@@ -1,0 +1,22 @@
+{
+  "schema": "conversation_workspace_portfolio_closeout_v1",
+  "recorded_at": "2026-07-20T13:28:49.996080Z",
+  "strict_verify": {
+    "returncode": 0,
+    "ok": true,
+    "errors": 0,
+    "warnings": 2
+  },
+  "semantic_audit": {
+    "returncode": 0,
+    "ok": true,
+    "coverage_percent": 100.0,
+    "target_id": "single-session-multitopic-trace",
+    "target_verdict": "pass",
+    "target_coverage_status": "covered_by_current_readback"
+  },
+  "unrelated_warning_projects": [
+    "hermes-context-engineering-os",
+    "uaec-react-h5"
+  ]
+}

@@ -1,29 +1,41 @@
 {
   "id": "single-session-multitopic-trace",
   "project": "single-session-multitopic-trace",
-  "display_name": "Single Session Multitopic Trace",
-  "status": "initiated",
+  "display_name": "Hermes Conversation Workspace OS",
+  "status": "platform-framed+validated-local-slices",
   "project_type": "hermes-self-architecture",
   "ssot_root": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace",
   "progress_ledger": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md",
-  "role": "single-session multi-topic trace/query/current-state projection capability",
+  "role": "conversation workspace control plane for single-session trace and multi-session fusion through SSOT, claims, handoffs, evidence and plan-only tmux projection",
   "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
   "relations": [
     {
       "relation": "governed_by",
       "target": "project-portfolio-os",
       "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "relation": "related_to",
+      "target": "hermes-context-engineering-os",
+      "merge_policy": "relation_only"
     }
   ],
   "current_components": {
     "project_profile": "profiled",
     "progress_ledger": "ledgered",
     "governance_policies": "profile_scoped",
-    "trace_projection_capability": "initiated_needs_readback"
+    "trace_projection_capability": "validated_local_readback",
+    "multi_session_fusion_contract": "implemented_local",
+    "claim_lease_control": "implemented_local",
+    "handoff_evidence_intake": "validated_local_cross_session_pilot",
+    "tmux_projection": "plan_and_read_only_reconcile",
+    "workspace_doctor": "validated_local_38_tests_with_evidence_artifact_integrity_and_natural_expiry_reconciliation",
+    "taskpool_mission_integration": "closed_not_implemented",
+    "multimodel_certification": "degraded_unavailable"
   },
-  "updated_at": "2026-07-07T14:39:00+08:00",
+  "updated_at": "2026-07-20T16:36:03Z",
   "backend_contract_policy": {
-    "contract_scope": "Single-session multi-topic trace/query/current-state projection capability and local read-only indexing surfaces.",
+    "contract_scope": "Single-session trace plus multi-session fusion using project-scoped SSOT, append-only events, bounded claim leases, safe handoffs/evidence, read-only doctor and non-executing tmux plans.",
     "schema_rule": "Changes must preserve existing evidence/projection records; migrations must tolerate historical sparse profiles and malformed task evidence without global failure.",
     "compatibility_rule": "Projection/control-plane additions remain additive and fail closed; no external dispatch, hardware, deploy, credential, or lifecycle write without exact authority/readback.",
     "side_effect_boundary": "No push/deploy/external send/hardware action/credential entry/destructive mutation by default."
@@ -32,6 +44,8 @@
     "required_checks": [
       "focused Python tests or py_compile for touched scripts",
       "read-only sample trace/query readback",
+      "negative tests for secret/authority smuggling, duplicate writers, expiry, malformed ledger and evidence tampering",
+      "live project doctor and tmux plan/reconcile readback with executed=false",
       "no external dispatch or lifecycle mutation in projection-only changes"
     ],
     "blocked_closeout_conditions": [
@@ -82,9 +96,31 @@
   "governance_readbacks": {
     "a_plus_semantic_policy_refresh_20260707": "Added scoped semantic control-plane policies after selfcheck WARN readback; WARN-only policy preserved, no fail-closed downgrade."
   },
+  "verification_evidence": [
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1248Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1308Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1318Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/live-doctor-20260720T1248Z.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/degraded-multimodel-review-20260720.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-verify-20260720T1255Z.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-semantic-audit-20260720T1255Z.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/single-session-trace-readback-20260720T1320Z.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/04-handoffs/sessions/handoff-cross-session-pilot-20260720.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/final-doctor-20260720T1328Z.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-closeout-20260720T1329Z.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1356Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/review-amendment-closeout-20260720T1400Z.json",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1412Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1430Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1550Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1605Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260721T0015Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1625Z.log",
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1630Z.log"
+  ],
   "audit_semantics": {
-    "maturity_verdict": "initiated_needs_evidence",
-    "next_audit_action": "attach local read-only trace/query readback before validated claim",
+    "maturity_verdict": "validated_local_control_plane_slice_no_multimodel_certification",
+    "next_audit_action": "rerun independent multimodel certification when providers recover; keep runtime execution and Taskpool/Mission integration closed",
     "evidence_freshness_days": 30
   },
   "portfolio_profile": true

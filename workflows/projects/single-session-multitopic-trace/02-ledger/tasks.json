@@ -1,0 +1,44 @@
+[
+  {
+    "task_id": "WSO-T1",
+    "title": "Preserve stable project id and establish canonical SSOT",
+    "status": "done",
+    "evidence_refs": ["E-WSO-001", "E-WSO-002", "E-WSO-006", "E-WSO-007", "E-WSO-012", "E-WSO-014", "E-WSO-015", "E-WSO-016", "E-WSO-017", "E-WSO-018", "E-WSO-019", "E-WSO-020"]
+  },
+  {
+    "task_id": "WSO-T2",
+    "title": "Implement distinct state domains, append-only events, claims, handoffs and evidence contracts",
+    "status": "done",
+    "evidence_refs": ["E-WSO-001", "E-WSO-002", "E-WSO-006", "E-WSO-007", "E-WSO-012", "E-WSO-014", "E-WSO-015", "E-WSO-016", "E-WSO-017", "E-WSO-018", "E-WSO-019", "E-WSO-020"]
+  },
+  {
+    "task_id": "WSO-T3",
+    "title": "Implement read-only doctor and non-executing tmux plan/reconcile",
+    "status": "done",
+    "evidence_refs": ["E-WSO-001", "E-WSO-002", "E-WSO-006", "E-WSO-007", "E-WSO-012", "E-WSO-014", "E-WSO-015", "E-WSO-016", "E-WSO-017", "E-WSO-018", "E-WSO-019", "E-WSO-020"]
+  },
+  {
+    "task_id": "WSO-T4",
+    "title": "Run negative, recovery and evidence-integrity verification",
+    "status": "done",
+    "evidence_refs": ["E-WSO-001", "E-WSO-002", "E-WSO-003", "E-WSO-006", "E-WSO-007", "E-WSO-012", "E-WSO-014", "E-WSO-015", "E-WSO-016", "E-WSO-017", "E-WSO-018", "E-WSO-019", "E-WSO-020"]
+  },
+  {
+    "task_id": "WSO-T5",
+    "title": "Converge project profile, portfolio registry and final verification",
+    "status": "done",
+    "evidence_refs": ["E-WSO-002", "E-WSO-003", "E-WSO-004", "E-WSO-005", "E-WSO-011", "E-WSO-013", "E-WSO-014", "E-WSO-015", "E-WSO-016", "E-WSO-017", "E-WSO-018", "E-WSO-019", "E-WSO-020"]
+  },
+  {
+    "task_id": "WSO-T6",
+    "title": "Run a real read-only single-session trace query",
+    "status": "done",
+    "evidence_refs": ["E-WSO-008"]
+  },
+  {
+    "task_id": "WSO-T7",
+    "title": "Run isolated Hermes-session handoff intake and readback pilot",
+    "status": "done",
+    "evidence_refs": ["E-WSO-009", "E-WSO-010"]
+  }
+]

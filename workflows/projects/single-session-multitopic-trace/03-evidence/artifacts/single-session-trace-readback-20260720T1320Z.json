@@ -1,0 +1,26 @@
+{
+  "schema": "single_session_trace_query_readback_v1",
+  "recorded_at": "2026-07-20T13:20:56Z",
+  "query": "\"single-session-multitopic-trace\" OR \"Conversation Workspace OS\"",
+  "source_boundary": "Hermes local session DB only; not external-system or current-project-state proof",
+  "read_only": true,
+  "result_count": 1,
+  "result": {
+    "session_id": "20260720_203614_b2c683",
+    "source": "multi-brain",
+    "when": "July 20, 2026 at 08:36 PM",
+    "match_message_id": 830383,
+    "matched_context": "Earlier design-review session for the same stable project id, including explicit evidence-gap and no-model-authority boundaries."
+  },
+  "projection": {
+    "topic": "single-session-multitopic-trace / Conversation Workspace OS",
+    "trace_link": "session:20260720_203614_b2c683#message-830383",
+    "canonical_state_source": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace",
+    "chat_is_authority": false
+  },
+  "negative_evidence": {
+    "cross_project_content_merged": false,
+    "external_state_claimed": false,
+    "task_or_direction_state_mutated_by_query": false
+  }
+}

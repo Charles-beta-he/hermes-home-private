@@ -1,0 +1,54 @@
+{
+  "authority": {
+    "credential_entry": false,
+    "deploy_push": false,
+    "destructive_operations": false,
+    "external_dispatch": false,
+    "mission_lifecycle_write": false,
+    "taskpool_lifecycle_write": false,
+    "tmux_execution": false,
+    "worker_execution": false
+  },
+  "display_name": "Hermes Conversation Workspace OS",
+  "project_id": "single-session-multitopic-trace",
+  "schema_version": 1,
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace",
+  "state_domains": {
+    "chat_session": [
+      "active",
+      "archived",
+      "handoff-ready",
+      "stale"
+    ],
+    "direction": [
+      "contract-ready",
+      "in-progress",
+      "promoted",
+      "proposal",
+      "released",
+      "superseded",
+      "validated"
+    ],
+    "task": [
+      "backlog",
+      "blocked",
+      "cancelled",
+      "claimed",
+      "done",
+      "ready",
+      "review",
+      "running"
+    ],
+    "worker_runtime": [
+      "detached",
+      "exited",
+      "failed",
+      "killed",
+      "recovered",
+      "running",
+      "starting",
+      "stopping"
+    ]
+  },
+  "tmux_session": "hx-single-session-multitopic-trace"
+}

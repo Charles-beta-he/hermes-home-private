@@ -1,0 +1,19 @@
+{
+  "execute_commands": false,
+  "project_id": "single-session-multitopic-trace",
+  "schema_version": 1,
+  "session_name": "hx-single-session-multitopic-trace",
+  "windows": [
+    {
+      "claim_id": null,
+      "direction_id": null,
+      "name": "00-control",
+      "panes": [
+        {
+          "role": "control"
+        }
+      ],
+      "workdir": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace"
+    }
+  ]
+}

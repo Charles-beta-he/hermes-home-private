@@ -1,0 +1,28 @@
+{
+  "handoff_id": "handoff-001",
+  "direction_id": "frontend",
+  "source_session_id": "session-id",
+  "claim_id": "claim-001",
+  "objective": "Observable objective for the next session",
+  "verified_current_state": [
+    "Only facts backed by current source/test/API readback"
+  ],
+  "completed": [
+    {
+      "summary": "Completed slice",
+      "evidence_refs": ["E-001"]
+    }
+  ],
+  "changed_files": ["src/example.ts"],
+  "decisions": ["D-001"],
+  "blockers": [],
+  "next_safe_step": "Smallest reversible next action",
+  "forbidden_assumptions": [
+    "Do not treat chat or tmux output as completion authority"
+  ],
+  "worktree": {
+    "path": "/absolute/path/to/worktree",
+    "branch": "agent/example"
+  },
+  "closure_state": "handoff-ready"
+}

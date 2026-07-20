@@ -1,0 +1,11 @@
+**/__pycache__/
+*.pyc
+02-ledger/.events.lock
+05-runtime/.state.lock
+00-spec/*review-prompt.txt
+00-spec/multimodel-review-state.json
+
+# Durable project evidence and canonical handoffs override parent-repo ignores.
+!03-evidence/artifacts/*.log
+!04-handoffs/sessions/
+!04-handoffs/sessions/*.json

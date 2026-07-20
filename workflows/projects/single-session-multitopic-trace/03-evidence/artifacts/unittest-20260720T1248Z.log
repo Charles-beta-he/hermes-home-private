@@ -1,0 +1,19 @@
+test_doctor_detects_malformed_jsonl_and_command_replay (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_doctor_rejects_done_without_evidence (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_doctor_reports_missing_tmux_as_warning_not_completion_failure (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_event_append_rejects_secret_payload (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_evidence_hash_and_task_reference_are_verified (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_expired_active_claim_is_error (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_handoff_accepts_safe_packet_and_rejects_secret_and_authority_fields (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_init_is_idempotent_and_preserves_existing_project (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_overlapping_write_claim_is_rejected_and_release_is_idempotent (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_review_claim_can_coexist_with_write_claim (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_same_direction_single_writer_is_rejected_even_for_disjoint_scopes (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_tmux_plan_is_layout_only_and_does_not_execute (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_tmux_reconcile_is_non_destructive_plan_only (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+test_write_claim_requires_existing_worktree (test_conversation_workspace.ConversationWorkspaceCLITest) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 1.658s
+
+OK

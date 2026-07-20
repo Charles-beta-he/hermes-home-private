@@ -1,0 +1,42 @@
+{
+  "schema": "degraded_multimodel_review_packet_v1",
+  "project_id": "single-session-multitopic-trace",
+  "scope": "Conversation Workspace OS local control-plane slice",
+  "attempted_at": "2026-07-20T12:49:00Z",
+  "requested_review": {
+    "tier": 1,
+    "quorum": 2,
+    "embedded_sources": [
+      "00-spec/conversation-workspace-os-ssot.md",
+      "scripts/conversation_workspace.py",
+      "tests/test_conversation_workspace.py"
+    ],
+    "focus": [
+      "authority neutrality",
+      "secret and authority smuggling",
+      "append-only event safety",
+      "claim overlap and expiry",
+      "tmux non-execution",
+      "doctor false positives and negatives",
+      "idempotency and injection"
+    ]
+  },
+  "result": {
+    "status": "degraded_unavailable",
+    "reason": "consult_models returned no_planners_after_quota_gate; claude-opus-4-8 was marked unhealthy after claude_code_runtime_failed",
+    "independent_model_votes": 0,
+    "certified": false
+  },
+  "fallback_evidence": {
+    "focused_unittest": "E-WSO-001",
+    "live_doctor": "E-WSO-002",
+    "test_count": 14,
+    "test_result": "pass",
+    "doctor_errors": 0,
+    "doctor_warnings": 0,
+    "tmux_executed": false,
+    "worker_executed": false,
+    "external_side_effects": false
+  },
+  "boundary": "This packet records degraded review only. It is not a multi-model PASS and cannot promote the project to certified."
+}
