@@ -1,0 +1,123 @@
+{
+  "schema": "b2b_delivery_workflow_v1",
+  "engagement_id": "uaec-react-h5-workflow-trial-green",
+  "client_alias": "internal-financial-mobile-web-project",
+  "service_type": "ai_assisted_software_delivery_governance",
+  "completion_boundary": "pilot",
+  "closure_state": "accepted",
+  "confidentiality": "client_confidential",
+  "truth_sources": [
+    {
+      "id": "TS_LEDGER",
+      "type": "progress_ledger",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/progress-ledger.md",
+      "observed_at": "2026-07-14",
+      "scope": "historical project progress claim"
+    },
+    {
+      "id": "TS_PLAN",
+      "type": "module_alignment_plan",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-16-full-alignment-plan.md",
+      "observed_at": "2026-07-16",
+      "scope": "nine Android-to-H5 module alignment percentages"
+    },
+    {
+      "id": "TS_STATE",
+      "type": "runtime_state_projection",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/workflow/project-delivery-state.json",
+      "observed_at": "2026-07-20",
+      "scope": "repository cleanliness, branch synchronization and authority snapshot"
+    },
+    {
+      "id": "TS_AUDIT",
+      "type": "workflow_productization_audit",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/workflow-productization-audit.md",
+      "observed_at": "2026-07-20",
+      "scope": "workflow trial and claim-conflict analysis"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C_GLOBAL_100",
+      "text": "The 2026-07-14 ledger recorded a 100% Android functional parity statement",
+      "scope": "historical ledger statement only; denominator not established",
+      "status": "superseded",
+      "evidence_refs": ["TS_LEDGER", "TS_PLAN", "TS_AUDIT"],
+      "negative_evidence_refs": ["TS_PLAN"],
+      "limitations": ["must not be used as current whole-project or public completion claim"]
+    },
+    {
+      "id": "C_MODULE_GAPS",
+      "text": "The newer 2026-07-16 plan reports remaining module gaps and therefore blocks a current whole-project 100% claim",
+      "scope": "nine modules named by the plan; planning evidence rather than runtime acceptance",
+      "status": "verified",
+      "evidence_refs": ["TS_PLAN", "TS_AUDIT"],
+      "negative_evidence_refs": ["TS_LEDGER"],
+      "limitations": ["percentages do not independently prove current runtime completeness"]
+    },
+    {
+      "id": "C_REPO_STATE",
+      "text": "The 2026-07-20 state projection records a clean dev worktree synchronized with origin/dev and all external action authorities closed",
+      "scope": "repository and authority snapshot at observed_at; not business completion",
+      "status": "verified",
+      "evidence_refs": ["TS_STATE"],
+      "negative_evidence_refs": ["TS_STATE authority flags"],
+      "limitations": ["does not prove production deployment, real-device behavior, funds flows or client acceptance"]
+    },
+    {
+      "id": "C_WORKFLOW_PILOT",
+      "text": "The project contains enough profile, backlog, state, evidence and authority artifacts to test a delivery-governance pilot",
+      "scope": "internal workflow-structure pilot only",
+      "status": "verified",
+      "evidence_refs": ["TS_STATE", "TS_AUDIT"],
+      "negative_evidence_refs": ["public_case not_ready", "external actions false"],
+      "limitations": ["not a production delivery or publishable client case"]
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "X_SCOPE_100",
+      "claim_refs": ["C_GLOBAL_100", "C_MODULE_GAPS"],
+      "status": "resolved",
+      "resolution": "Preserve the 2026-07-14 statement as historical, mark it superseded, and treat the newer scoped plan as blocking any current whole-project 100% claim. No source was deleted."
+    }
+  ],
+  "authority": {
+    "local_read_only": true,
+    "local_reversible_write": true,
+    "external_actions": [
+      {"action":"push","allowed":false,"target":"","rollback":"","readback":""},
+      {"action":"deploy","allowed":false,"target":"","rollback":"","readback":""},
+      {"action":"external_send","allowed":false,"target":"","rollback":"","readback":""},
+      {"action":"credential_entry","allowed":false,"target":"","rollback":"","readback":""},
+      {"action":"payment_or_funds","allowed":false,"target":"","rollback":"","readback":""}
+    ]
+  },
+  "stages": [
+    {"id":"S0","name":"qualification","status":"accepted","owner":"internal-delivery-owner","artifacts":["spec-packet.md"],"evidence_refs":["TS_AUDIT"],"blockers":[]},
+    {"id":"S1","name":"discovery_baseline","status":"accepted","owner":"internal-delivery-owner","artifacts":["workflow-productization-audit.md","truth source set"],"evidence_refs":["TS_LEDGER","TS_PLAN","TS_STATE","TS_AUDIT"],"blockers":[]},
+    {"id":"S2","name":"commercial_spec_authority","status":"accepted","owner":"internal-delivery-owner","artifacts":["spec-packet.md","authority matrix in manifest"],"evidence_refs":["TS_STATE","TS_AUDIT"],"blockers":[]},
+    {"id":"S3","name":"solution_workspace","status":"accepted","owner":"internal-delivery-owner","artifacts":["project profile","parity backlog","SSOT","delivery manifest"],"evidence_refs":["TS_STATE","TS_AUDIT"],"blockers":[]},
+    {"id":"S4","name":"pilot_slice","status":"accepted","owner":"internal-delivery-owner","artifacts":["RED conflict fixture","reconciled GREEN manifest","workflow validator"],"evidence_refs":["TS_LEDGER","TS_PLAN","TS_STATE","TS_AUDIT"],"blockers":[]},
+    {"id":"S5","name":"production_delivery","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":["not in workflow trial completion boundary"]},
+    {"id":"S6","name":"acceptance_handover","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":["client acceptance not requested"]},
+    {"id":"S7","name":"operations_ratchet","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":["requires a real client operating cycle"]}
+  ],
+  "metrics": [
+    {"id":"M1","name":"claim_evidence_consistency","baseline":0,"target":1,"measurement_ref":"verify_delivery_workflow.py exit status"},
+    {"id":"M2","name":"unauthorized_external_actions","baseline":0,"target":0,"measurement_ref":"authority.external_actions all false"},
+    {"id":"M3","name":"pilot_stage_artifact_coverage","baseline":0,"target":1,"measurement_ref":"all S0-S4 stages have artifact and evidence refs"}
+  ],
+  "risks": [
+    {"id":"R_SCOPE","severity":"high","description":"scope-inflated completion claim","detection":"compare newer scoped evidence against global claims","mitigation":"preserve history and supersede or narrow the claim","rollback":"downgrade closure and affected stages to blocked"},
+    {"id":"R_CONFIDENTIALITY","severity":"high","description":"internal client/project facts leak into public case","detection":"public-case anonymization and rights gate","mitigation":"keep case not_ready until sanitized and authorized","rollback":"withdraw public artifact and revoke publication state"},
+    {"id":"R_EVIDENCE_PROMOTION","severity":"high","description":"local structural GREEN promoted to production/client acceptance","detection":"completion_boundary and limitations review","mitigation":"bind closure to pilot only","rollback":"mark over-broad claim superseded"}
+  ],
+  "public_case": {
+    "status": "not_ready",
+    "publication_rights_verified": false,
+    "anonymization_check": false,
+    "sensitive_markers": ["client name", "private repo path", "internal domain", "authentication fields", "commit and receipt identifiers"]
+  },
+  "client_acceptance": {"status":"not_requested","accepted_by":"","accepted_at":"","scope":""}
+}

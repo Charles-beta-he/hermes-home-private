@@ -1,0 +1,84 @@
+{
+  "schema": "b2b_delivery_workflow_v1",
+  "engagement_id": "replace-with-stable-id",
+  "client_alias": "anonymized-client",
+  "service_type": "ai_assisted_software_delivery_governance",
+  "completion_boundary": "pilot",
+  "closure_state": "in_progress",
+  "confidentiality": "internal",
+  "truth_sources": [
+    {
+      "id": "TS1",
+      "type": "canonical_requirement",
+      "ref": "replace-with-path-or-url",
+      "observed_at": "YYYY-MM-DD",
+      "scope": "bounded requirement scope"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C1",
+      "text": "bounded observable claim",
+      "scope": "component + environment + user state",
+      "status": "unverified",
+      "evidence_refs": [],
+      "negative_evidence_refs": [],
+      "limitations": ["name uncovered boundaries"]
+    }
+  ],
+  "contradictions": [],
+  "authority": {
+    "local_read_only": true,
+    "local_reversible_write": true,
+    "external_actions": [
+      {
+        "action": "push",
+        "allowed": false,
+        "target": "",
+        "rollback": "",
+        "readback": ""
+      }
+    ]
+  },
+  "stages": [
+    {"id":"S0","name":"qualification","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S1","name":"discovery_baseline","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S2","name":"commercial_spec_authority","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S3","name":"solution_workspace","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S4","name":"pilot_slice","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S5","name":"production_delivery","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S6","name":"acceptance_handover","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S7","name":"operations_ratchet","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]}
+  ],
+  "metrics": [
+    {
+      "id": "M1",
+      "name": "claim_evidence_consistency",
+      "baseline": null,
+      "target": 1.0,
+      "measurement_ref": "replace-with-query-or-report"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "high",
+      "description": "replace-with-risk",
+      "detection": "replace-with-detection",
+      "mitigation": "replace-with-mitigation",
+      "rollback": "replace-with-rollback"
+    }
+  ],
+  "public_case": {
+    "status": "not_ready",
+    "publication_rights_verified": false,
+    "anonymization_check": false,
+    "sensitive_markers": []
+  },
+  "client_acceptance": {
+    "status": "not_requested",
+    "accepted_by": "",
+    "accepted_at": "",
+    "scope": ""
+  }
+}

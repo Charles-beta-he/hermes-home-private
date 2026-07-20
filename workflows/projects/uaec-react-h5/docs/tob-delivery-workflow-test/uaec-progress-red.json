@@ -1,0 +1,92 @@
+{
+  "schema": "b2b_delivery_workflow_v1",
+  "engagement_id": "uaec-react-h5-workflow-trial-red",
+  "client_alias": "internal-financial-mobile-web-project",
+  "service_type": "ai_assisted_software_delivery_governance",
+  "completion_boundary": "pilot",
+  "closure_state": "accepted",
+  "confidentiality": "client_confidential",
+  "truth_sources": [
+    {
+      "id": "TS_LEDGER",
+      "type": "progress_ledger",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/progress-ledger.md",
+      "observed_at": "2026-07-14",
+      "scope": "project progress claim"
+    },
+    {
+      "id": "TS_PLAN",
+      "type": "module_alignment_plan",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-16-full-alignment-plan.md",
+      "observed_at": "2026-07-16",
+      "scope": "nine Android-to-H5 module alignment percentages"
+    },
+    {
+      "id": "TS_STATE",
+      "type": "runtime_state_projection",
+      "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/workflow/project-delivery-state.json",
+      "observed_at": "2026-07-20",
+      "scope": "repository and authority snapshot"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C_GLOBAL_100",
+      "text": "The entire frontend has 100% Android functional parity",
+      "scope": "whole project",
+      "status": "verified",
+      "evidence_refs": ["TS_LEDGER"],
+      "negative_evidence_refs": [],
+      "limitations": []
+    },
+    {
+      "id": "C_MODULE_GAPS",
+      "text": "A newer module plan reports alignment from 1% to 57% across nine modules",
+      "scope": "nine modules in the 2026-07-16 plan",
+      "status": "verified",
+      "evidence_refs": ["TS_PLAN"],
+      "negative_evidence_refs": [],
+      "limitations": ["line-count and plan percentages are not runtime acceptance by themselves"]
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "X_SCOPE_100",
+      "claim_refs": ["C_GLOBAL_100", "C_MODULE_GAPS"],
+      "status": "unresolved",
+      "resolution": ""
+    }
+  ],
+  "authority": {
+    "local_read_only": true,
+    "local_reversible_write": true,
+    "external_actions": [
+      {"action":"push","allowed":false,"target":"","rollback":"","readback":""},
+      {"action":"deploy","allowed":false,"target":"","rollback":"","readback":""},
+      {"action":"external_send","allowed":false,"target":"","rollback":"","readback":""}
+    ]
+  },
+  "stages": [
+    {"id":"S0","name":"qualification","status":"accepted","owner":"internal-delivery-owner","artifacts":["spec-packet.md"],"evidence_refs":["TS_LEDGER"],"blockers":[]},
+    {"id":"S1","name":"discovery_baseline","status":"accepted","owner":"internal-delivery-owner","artifacts":["workflow-productization-audit.md"],"evidence_refs":["TS_LEDGER","TS_PLAN","TS_STATE"],"blockers":[]},
+    {"id":"S2","name":"commercial_spec_authority","status":"accepted","owner":"internal-delivery-owner","artifacts":["spec-packet.md"],"evidence_refs":["TS_STATE"],"blockers":[]},
+    {"id":"S3","name":"solution_workspace","status":"accepted","owner":"internal-delivery-owner","artifacts":["project profile","parity backlog","SSOT"],"evidence_refs":["TS_STATE"],"blockers":[]},
+    {"id":"S4","name":"pilot_slice","status":"accepted","owner":"internal-delivery-owner","artifacts":["project evidence packets"],"evidence_refs":["TS_LEDGER"],"blockers":[]},
+    {"id":"S5","name":"production_delivery","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S6","name":"acceptance_handover","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]},
+    {"id":"S7","name":"operations_ratchet","status":"not_started","owner":"","artifacts":[],"evidence_refs":[],"blockers":[]}
+  ],
+  "metrics": [
+    {"id":"M1","name":"claim_evidence_consistency","baseline":0,"target":1,"measurement_ref":"workflow validator"}
+  ],
+  "risks": [
+    {"id":"R_SCOPE","severity":"high","description":"scope-inflated completion claim","detection":"compare newer scoped evidence against global claims","mitigation":"supersede or narrow the claim","rollback":"downgrade closure to blocked"}
+  ],
+  "public_case": {
+    "status": "not_ready",
+    "publication_rights_verified": false,
+    "anonymization_check": false,
+    "sensitive_markers": ["client name", "private repo path", "internal domain", "authentication fields"]
+  },
+  "client_acceptance": {"status":"not_requested","accepted_by":"","accepted_at":"","scope":""}
+}
