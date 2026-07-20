@@ -6,7 +6,7 @@ import hashlib
 import importlib.util
 import tempfile
 import unittest
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 SCRIPT = Path(__file__).with_name("verify_delivery_workflow.py")
@@ -490,6 +490,7 @@ class ValidatorTests(unittest.TestCase):
             "id": "G1", "type": "authority_grant", "action": "push",
             "target": "repository-target", "scope": "single change",
             "granted_by": "authorized-owner", "granted_at": date.today().isoformat(),
+            "expires_at": (date.today() + timedelta(days=1)).isoformat(), "revoked": False,
             "evidence_refs": ["TS_GRANT"],
         }]
         data["authority"]["external_actions"][0].update({
@@ -497,6 +498,28 @@ class ValidatorTests(unittest.TestCase):
             "grant_ref": "G1", "rollback": "revert change", "readback": "read target state",
         })
         self.assertEqual(validate(data), [])
+
+    def test_expired_or_revoked_authority_grant_is_rejected(self):
+        for field, value, expected in (
+            ("expires_at", (date.today() - timedelta(days=1)).isoformat(), "cannot be in the past"),
+            ("revoked", True, "is revoked"),
+        ):
+            with self.subTest(field=field):
+                data = valid_manifest()
+                grant = {
+                    "id": "G1", "type": "authority_grant", "action": "push",
+                    "target": "repository-target", "scope": "single change",
+                    "granted_by": "authorized-owner", "granted_at": date.today().isoformat(),
+                    "expires_at": (date.today() + timedelta(days=1)).isoformat(), "revoked": False,
+                    "evidence_refs": ["TS_GRANT"],
+                }
+                grant[field] = value
+                data["authority"]["authority_grants"] = [grant]
+                data["authority"]["external_actions"][0].update({
+                    "allowed": True, "target": "repository-target", "scope": "single change",
+                    "grant_ref": "G1", "rollback": "revert change", "readback": "read target state",
+                })
+                self.assertTrue(any(expected in e for e in validate(data)))
 
     def test_accepted_stage_requires_verified_claim_with_sufficient_max_stage(self):
         data = valid_manifest()

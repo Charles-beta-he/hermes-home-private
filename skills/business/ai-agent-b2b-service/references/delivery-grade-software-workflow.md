@@ -289,7 +289,7 @@ Classify actions:
 - payment;
 - production/destructive mutation.
 
-Only local read-only and reversible local writes are open by default. External action names must be allowlisted. Every allowed external action must include exact target, scope/payload, a `grant_ref` that resolves to a typed `authority_grants` record with grantor/date/evidence and the same action/target/scope, rollback/escape path and post-action readback. The grant evidence source must have type `authority_grant`. `credential_entry` and `payment_or_funds` are human-only and cannot be enabled by this Manifest. A manifest grant record is evidence about authority, not execution permission for the current Agent session; live execution still requires the applicable runtime/user authorization. Never type credentials or payment details.
+Only local read-only and reversible local writes are open by default. External action names must be allowlisted. Every allowed external action must include exact target, scope/payload, a `grant_ref` that resolves to a typed `authority_grants` record with grantor/date/evidence, non-past expiry, `revoked=false`, and the same action/target/scope, plus rollback/escape path and post-action readback. The grant evidence source must have type `authority_grant`. `credential_entry` and `payment_or_funds` are human-only and cannot be enabled by this Manifest. A manifest grant record is evidence about authority, not execution permission for the current Agent session; live execution still requires the applicable runtime/user authorization. Never type credentials or payment details.
 
 ## Change Control
 

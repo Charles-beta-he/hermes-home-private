@@ -16,7 +16,7 @@
 | Accepted stages require owner, known references, semantic artifacts and a linked verified claim bounded by both claim and cited-source `max_stage` | validator | unit tests | PASS | source capability is structural, not external authentication |
 | Absolute local evidence is present, hash-pinned and copied into the candidate evidence packet | RED/GREEN manifests and snapshots | missing/tamper/archive tests | PASS | local immutable bytes only |
 | Closure, stage order and maximum completion boundary are consistent; successor records require registered `successor_engagement` evidence | validator | draft/review/accepted/superseded/S6/beyond-boundary tests | PASS | snapshot state machine |
-| Allowed external actions require a typed authority grant bound to action/target/scope plus rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
+| Allowed external actions require a typed authority grant bound to action/target/scope, non-past expiry, `revoked=false`, rollback/readback; credential/payment remain human-only | validator | unit tests | PASS | does not grant runtime authority |
 | Public/client gates require purpose-specific evidence types; client identity/scope reject exact placeholder tokens and require S6 acceptance | validator | unit tests | PASS | case remains not_ready; client not_requested |
 | Malformed nested values do not crash validation | validator | 20,000 seeded mutations | PASS | robustness, not formal proof |
 | UAEC progress conflict fails closed | `uaec-progress-red.json` | validator returned 3 errors and expected exit 1 | PASS | negative evidence |
@@ -61,8 +61,8 @@ PASS .../uaec-progress-green.json: manifest gates passed (boundary=pilot, closur
 ## Regression evidence
 
 ```text
-...................................................
-Ran 51 tests in 0.013s
+....................................................
+Ran 52 tests in 0.013s
 OK
 ```
 

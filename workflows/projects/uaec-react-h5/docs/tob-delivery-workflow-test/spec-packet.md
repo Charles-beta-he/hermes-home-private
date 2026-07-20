@@ -49,7 +49,7 @@
    - accepted 或 ready_for_review stage 缺少 artifact/evidence、artifact 不存在、引用未知 ID，或缺少该阶段要求的语义类型；
    - 阶段越序、超出 completion boundary 仍处于活动状态，或 closure_state 与 completion boundary 不一致；
    - 本地绝对证据路径缺失、SHA-256 不匹配、日期损坏或位于未来；
-   - 未知外部动作、外部动作授权缺少目标、scope、与 action/target/scope 精确绑定的 typed authority grant、回滚或 readback，或 credential/payment 被错误启用；
+   - 未知外部动作，或外部动作授权缺少目标、scope、与 action/target/scope 精确绑定的 typed authority grant、grantor、未过期有效期、`revoked=false`、回滚或 readback，或 credential/payment 被错误启用；
    - accepted closure 没有任何 verified outcome、仍含 unverified/disputed claim，或 accepted_risk 缺少批准人、日期、补偿控制和证据；
    - public case 含敏感标记、未引用 typed 发布权/匿名化证据，或 confidentiality 不是 public；
    - client_acceptance=accepted 时 S6 未 accepted，或 S6/S7 在没有非 placeholder 身份/scope、有效日期和 typed acceptance 证据的明确客户验收时越级通过；

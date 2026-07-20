@@ -104,6 +104,19 @@ def validate_date(value: object, label: str, errors: list[str]) -> None:
         errors.append(f"{label} cannot be in the future")
 
 
+def validate_expiry(value: object, label: str, errors: list[str]) -> None:
+    if not isinstance(value, str) or not value.strip():
+        errors.append(f"{label} must be non-empty")
+        return
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError:
+        errors.append(f"{label} must be ISO date YYYY-MM-DD")
+        return
+    if parsed < date.today():
+        errors.append(f"{label} cannot be in the past")
+
+
 def validate_local_ref(item: dict, label: str, errors: list[str]) -> None:
     ref = item.get("ref")
     if not nonempty(ref):
@@ -380,6 +393,12 @@ def validate(data: object) -> list[str]:
                     elif is_placeholder(value):
                         errors.append(f"{label}.{key} contains placeholder")
                 validate_date(grant.get("granted_at"), f"{label}.granted_at", errors)
+                validate_expiry(grant.get("expires_at"), f"{label}.expires_at", errors)
+                revoked = grant.get("revoked")
+                if not isinstance(revoked, bool):
+                    errors.append(f"{label}.revoked must be boolean")
+                elif revoked:
+                    errors.append(f"{label} is revoked and cannot authorize an action")
                 validate_refs(grant.get("evidence_refs"), source_ids, f"{label}.evidence_refs", errors, required=True)
                 validate_semantic_refs(
                     grant.get("evidence_refs"), source_type_by_id, {"authority_grant"},

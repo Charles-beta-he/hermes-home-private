@@ -51,7 +51,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S0 qualification packet",
-      "sha256": "48206a6d9dc5bacf53ecf78d31b916ea17e24b0ea2495ef4d08bfcfdc65ec5eb"
+      "sha256": "0fc655ed740911009992926827eef0d2c4fc32ebf41d35710d3ae5b6af40e844"
     },
     {
       "id": "A_BASELINE",
@@ -67,7 +67,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 specification contract",
-      "sha256": "48206a6d9dc5bacf53ecf78d31b916ea17e24b0ea2495ef4d08bfcfdc65ec5eb"
+      "sha256": "0fc655ed740911009992926827eef0d2c4fc32ebf41d35710d3ae5b6af40e844"
     },
     {
       "id": "A_AUTHORITY_MATRIX",
@@ -75,7 +75,7 @@
       "ref": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/tob-delivery-workflow-test/spec-packet.md",
       "owner": "internal-delivery-owner",
       "scope": "S2 authority boundary",
-      "sha256": "48206a6d9dc5bacf53ecf78d31b916ea17e24b0ea2495ef4d08bfcfdc65ec5eb"
+      "sha256": "0fc655ed740911009992926827eef0d2c4fc32ebf41d35710d3ae5b6af40e844"
     },
     {
       "id": "A_SOLUTION_WORKSPACE",
@@ -99,7 +99,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 executable pilot gate",
-      "sha256": "3a0f6a12ba3771611059d67ea37ee5d77c0c10e4841e72acf72bad8cebdcbdd8"
+      "sha256": "d5138fd242db40d2c0a790c7a6e644181c27df67de9ae4a5fe932028dc233c64"
     },
     {
       "id": "A_TEST_EVIDENCE",
@@ -107,7 +107,7 @@
       "ref": "/Users/charles/.hermes/skills/business/ai-agent-b2b-service/scripts/test_verify_delivery_workflow.py",
       "owner": "internal-delivery-owner",
       "scope": "S4 regression evidence",
-      "sha256": "a94cb31e264bd97bcf2f21b10bf2e5ae7f5fa48fcc29e79afff12ab039d00c3b"
+      "sha256": "058c2442fab77e800be126d93feaea06540920c6ada70eef2e5f36207b2f9f77"
     }
   ],
   "contradictions": [
