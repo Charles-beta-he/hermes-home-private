@@ -31,7 +31,7 @@ Non-goals:
 
 ## Initial audit findings and repairs
 
-The adversarial audit rounds found twenty-five reproducible issues:
+The audit rounds found the reproducible issues listed below:
 
 | ID | Initial issue | Severity | Repair |
 |---|---|---:|---|
