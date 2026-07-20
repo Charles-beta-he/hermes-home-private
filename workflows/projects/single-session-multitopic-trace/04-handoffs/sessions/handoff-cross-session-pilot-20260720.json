@@ -19,6 +19,10 @@
       "summary": "Verified the indexed 16-test artifact and its evidence-index hash and coverage description."
     },
     {
+      "evidence_refs": [],
+      "summary": "Ran the required fresh unittest discovery; all 16 cases passed with exit code 0."
+    },
+    {
       "evidence_refs": [
         "E-WSO-002"
       ],

@@ -20,7 +20,7 @@ python3 scripts/conversation_workspace.py init \
   --display-name 'Display Name'
 ```
 
-Initialization is non-overwriting and serialized by the project-local cross-process state lock. Existing canonical files are preserved; re-initialization with a different project ID fails closed. Claim, handoff and evidence mutations use the same state lock; event append uses a separate append lock with `fsync`. The complete event history and evidence index are validated before dependent canonical mutation, so malformed history fails before any partial projection write.
+Initialization is non-overwriting. Existing canonical files are preserved. Mutating claim, handoff and evidence commands are serialized by a project-local cross-process state lock; event append uses a separate append lock with `fsync`.
 
 ## Acquire and release a write claim
 
@@ -40,7 +40,7 @@ python3 scripts/conversation_workspace.py claim-release \
   --claim-id claim-001
 ```
 
-A write claim requires an existing worktree. Scope patterns are normalized for Unicode NFC, case, repeated separators and internal `.` aliases before conflict checks. Active write claims may not own the same direction or conservatively overlapping glob/static path prefixes. Claim acquire/release prevalidate the tmux projection before changing canonical claim state. Releasing an elapsed lease reconciles it to `expired`, emits `claim.expired`, and removes its tmux projection without fabricating `released_at`.
+A write claim requires an existing worktree. Active write claims may not own the same direction or overlapping static path prefixes.
 
 ## Add a handoff
 
@@ -50,7 +50,7 @@ python3 scripts/conversation_workspace.py handoff-add \
   --file /absolute/path/to/handoff.json
 ```
 
-Use `00-spec/templates/handoff.template.json`. Intake uses a strict field allowlist and validates every required/optional field type. Secret-like, canonical authority/lifecycle flags and arbitrary command fields are rejected after NFKC/camelCase/separator normalization, so aliases such as `clientSecret`, `apiToken`, `externalDispatchRequested`, `taskStatus`, `execute_commands` and `mark-done` fail closed. Every completion evidence ID must resolve in the canonical evidence index and its artifact must still exist with the declared SHA-256 before dependent mutation.
+Use `00-spec/templates/handoff.template.json`. Secret-like and authority-smuggling fields are rejected.
 
 ## Add immutable evidence
 
@@ -75,8 +75,6 @@ python3 scripts/conversation_workspace.py doctor \
 ```
 
 `--inspect-tmux` lists sessions/windows only. It never creates, attaches, stops, or mutates tmux.
-
-Optional `--out` writes only beneath a real, non-symlinked `<root>/06-status`; absolute, relative, nested-symlink and status-root-symlink escapes are rejected.
 
 ## Tmux recovery plan and reconciliation
 
@@ -103,4 +101,4 @@ python3 scripts/conversation_workspace.py tmux-reconcile \
 
 ## Hard boundaries
 
-Do not treat tmux existence, pane output, chat summaries, worker reports, or model votes as completion evidence. Unicode NFKC and key-alias normalization precede secret/authority checks. Public events use exact type-specific payload schemas. Canonical events, evidence, claims, handoffs and tmux manifests use strict schemas; malformed history/projections fail before dependent mutation. Released claim timestamps must remain inside the original lease interval. Do not put secrets, credentials, raw tokens, arbitrary commands, external-write requests, or `mark_done` fields into handoffs/events/manifests.
+Do not treat tmux existence, pane output, chat summaries, worker reports, or model votes as completion evidence. Do not put secrets, credentials, raw tokens, arbitrary commands, external-write requests, or `mark_done` fields into handoffs/events/manifests.

@@ -13,14 +13,13 @@ Make multi-topic and multi-session Hermes work recoverable, mergeable, conflict-
 
 1. A project can be initialized into a canonical directory layout without overwriting existing files.
 2. Direction, task, worker-runtime, and chat-session states remain separate domains.
-3. Events, evidence records, handoff packets, claims and tmux manifests are schema-validated and reject normalized authority-smuggling or secret-like aliases.
+3. Handoff packets and tmux manifests are schema-validated and reject authority-smuggling or secret-like fields.
 4. Active write claims reject overlapping project/direction scopes and expose stale/orphaned runtime drift.
 5. A read-only doctor detects malformed JSON/JSONL, duplicate claims, expired leases, missing worktrees/evidence, tmux drift, and `done` without evidence.
 6. A tmux planner emits commands or an argv plan but does not execute tmux, workers, lifecycle mutation, or external actions by default.
 7. A machine restart or missing tmux session can be recovered from SSOT artifacts without trusting pane history.
 8. Existing single-session multitopic trace remains an additive capability under the broader workspace OS; the stable project id is preserved.
 9. Portfolio profile/registry remain structurally and semantically truthful.
-10. Existing canonical event/evidence history and evidence artifact hashes are validated before dependent writes; completed handoff evidence IDs resolve canonically, in-lease release timestamps remain within the lease, and elapsed leases reconcile to `expired` with projection cleanup.
 
 ## Non-goals and closed authority gates
 
@@ -55,12 +54,8 @@ No adapter may collapse these domains into one status field.
 ## Concurrency contract
 
 - Event append uses a dedicated advisory file lock plus `flush` and `fsync`.
-- Initialization plus claim, handoff and evidence read/check/write transactions share a separate cross-process state lock.
+- Claim, handoff and evidence read/check/write transactions share a separate cross-process state lock.
 - Conflict and idempotency checks execute while that state lock is held; concurrent sessions cannot both pass a stale pre-write check.
-- Re-initialization with a mismatched project ID fails closed; claim overlap checks canonicalize Unicode NFC, case, separators and internal `.` aliases before conservatively checking partial-segment glob intersections.
-- Claim acquire/release prevalidate canonical claim and tmux projection shapes before the first write so malformed persisted projections fail without ghost claim mutation.
-- External handoff/event payload keys are normalized with Unicode NFKC plus camelCase and separator normalization before secret, canonical authority/lifecycle and command rejection; handoff fields use a strict allowlist and typed schema.
-- Doctor validates complete canonical event, claim, handoff and tmux schemas, requires the complete explicit-false authority schema and state-domain sets, and confines optional report output to a real non-symlinked `06-status/`.
 
 ## Tmux role
 

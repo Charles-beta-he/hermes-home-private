@@ -11,18 +11,18 @@
       "systems": 27
     },
     "operational_health": {
-      "findings": 3,
+      "findings": 1,
       "state": "degraded"
     },
     "procedure_validation": {
-      "blocked_by_authority": 4,
+      "blocked_by_authority": 2,
       "can_claim_complete_procedure_validation": false,
-      "failed": 1,
-      "fully_connected": 7,
+      "failed": 0,
+      "fully_connected": 10,
       "global_certification_status": "not_certified",
       "inventory_complete": true,
       "inventory_gap_systems": 0,
-      "pending": 1,
+      "pending": 0,
       "procedures": 12,
       "required_procedures": 12,
       "score_semantics": "procedure E2E validation is separate from engineering coverage and current operational health",
@@ -31,7 +31,7 @@
       "unknown_receipts": 0
     }
   },
-  "generated_at": "2026-07-12T04:02:15.573592Z",
+  "generated_at": "2026-07-12T06:14:18.321072Z",
   "mode": "read_only_projection",
   "procedures": [
     {
@@ -77,16 +77,14 @@
       "validation_state": "blocked_by_authority"
     },
     {
-      "delivery_state": "blocked",
-      "findings": [
-        "procedure_authority_blocked"
-      ],
+      "delivery_state": "fully_connected",
+      "findings": [],
       "implementation_state": "enabled",
-      "latest_receipt_fresh": false,
+      "latest_receipt_fresh": true,
       "procedure_id": "delivery.telegram.send",
       "required": true,
       "system_id": "delivery:telegram",
-      "validation_state": "blocked_by_authority"
+      "validation_state": "e2e_passed"
     },
     {
       "delivery_state": "fully_connected",
@@ -119,16 +117,14 @@
       "validation_state": "e2e_passed"
     },
     {
-      "delivery_state": "partially_landed",
-      "findings": [
-        "procedure_e2e_failed"
-      ],
+      "delivery_state": "fully_connected",
+      "findings": [],
       "implementation_state": "enabled",
       "latest_receipt_fresh": true,
       "procedure_id": "lark.oauth.recovery",
       "required": true,
       "system_id": "profile:lark",
-      "validation_state": "e2e_failed"
+      "validation_state": "e2e_passed"
     },
     {
       "delivery_state": "blocked",
@@ -143,16 +139,14 @@
       "validation_state": "blocked_by_authority"
     },
     {
-      "delivery_state": "blocked",
-      "findings": [
-        "procedure_authority_blocked"
-      ],
+      "delivery_state": "fully_connected",
+      "findings": [],
       "implementation_state": "enabled",
-      "latest_receipt_fresh": false,
+      "latest_receipt_fresh": true,
       "procedure_id": "providers.multimodel.quorum",
       "required": true,
       "system_id": "model-providers",
-      "validation_state": "blocked_by_authority"
+      "validation_state": "e2e_passed"
     },
     {
       "delivery_state": "fully_connected",

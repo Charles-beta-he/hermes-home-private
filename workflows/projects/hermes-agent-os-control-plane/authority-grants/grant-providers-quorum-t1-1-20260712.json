@@ -1,0 +1,25 @@
+{
+  "schema": "hermes_procedure_authority_grant_v1",
+  "grant_id": "grant-providers-quorum-t1-1-20260712",
+  "status": "active",
+  "procedure_id": "providers.multimodel.quorum",
+  "system_id": "model-providers",
+  "action": "execute_live_e2e_validation",
+  "scope": "providers.multimodel.quorum",
+  "receipt_id": "providers-quorum-t1-1-20260712",
+  "issued_by": "human_authority",
+  "authority_source": "direct_user_message:允许后台点击 Lark 授权；授权 T1 双模型 quorum",
+  "target": "T1",
+  "payload": "Review final Agent OS certification evidence",
+  "valid_from": "2026-07-12T05:14:56.576569Z",
+  "expires_at": "2026-07-12T07:14:56.576569Z",
+  "prohibitions": [
+    "credential_entry",
+    "secret_exposure",
+    "broad_fanout",
+    "push",
+    "deploy",
+    "delete",
+    "git_reset"
+  ]
+}

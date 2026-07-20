@@ -1,0 +1,25 @@
+{
+  "schema": "hermes_procedure_authority_grant_v1",
+  "grant_id": "grant-lark-oauth-3-20260712",
+  "status": "active",
+  "procedure_id": "lark.oauth.recovery",
+  "system_id": "profile:lark",
+  "action": "execute_live_e2e_validation",
+  "scope": "lark.oauth.recovery",
+  "receipt_id": "lark-oauth-3-20260712",
+  "issued_by": "human_authority",
+  "authority_source": "direct_user_message:允许后台点击 Lark 授权；授权 T1 双模型 quorum",
+  "target": "profile:lark",
+  "payload": "Automatic single-flight OAuth recovery without credential entry",
+  "valid_from": "2026-07-12T05:32:15.140880Z",
+  "expires_at": "2026-07-12T07:32:15.140880Z",
+  "prohibitions": [
+    "credential_entry",
+    "secret_exposure",
+    "lark_write",
+    "push",
+    "deploy",
+    "delete",
+    "git_reset"
+  ]
+}

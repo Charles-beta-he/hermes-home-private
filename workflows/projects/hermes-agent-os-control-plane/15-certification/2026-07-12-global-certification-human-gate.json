@@ -1,0 +1,88 @@
+{
+  "schema": "hermes_decision_continuation_packet_v1",
+  "updated_at": "2026-07-12T06:15:06Z",
+  "objective": "Complete all required Agent OS procedure axes and obtain fresh global certified_healthy/eligible readback.",
+  "current_conclusion": "NOT_GLOBAL_CERTIFIED",
+  "completed_evidence": [
+    {
+      "claim": "delivery.telegram.send has two valid exact-grant live E2E receipts",
+      "evidence": "/Users/charles/.hermes/state/selfcheck/procedure_validation_registry.json",
+      "readback": "e2e_passed; fully_connected; successful_receipt_count=2"
+    },
+    {
+      "claim": "lark.oauth.recovery has two valid exact-grant live E2E receipts",
+      "evidence": "/Users/charles/.hermes/state/selfcheck/procedure_validation_registry.json",
+      "readback": "e2e_passed; fully_connected; successful_receipt_count=2; latest OAuth action=login_success; token_status.valid=true; lock and callback port released; no Lark write"
+    },
+    {
+      "claim": "providers.multimodel.quorum has two independent T1 exact-grant live E2E receipts",
+      "evidence": "/Users/charles/.hermes/state/selfcheck/procedure_validation_registry.json",
+      "readback": "e2e_passed; fully_connected; successful_receipt_count=2; two successful providers per run"
+    },
+    {
+      "claim": "Current provider runtime health is verified from recent two-provider evidence",
+      "evidence": "/Users/charles/.hermes/state/selfcheck/provider_health_snapshot.json",
+      "readback": "actual_calls=2; successful_calls=2; min_quorum=2; runtime.status=verified; summary.ok=true"
+    },
+    {
+      "claim": "Fresh procedure projection is fail-closed only at the two remaining authority boundaries",
+      "evidence": "/Users/charles/.hermes/state/selfcheck/procedure_validation_registry.json",
+      "readback": "required=12; fully_connected=10; blocked_by_authority=2; failed=0; stale=0; inventory_complete=true"
+    }
+  ],
+  "pending_actions": [
+    "After exact human authority, execute lark.task.readonly identity/list/pagination/detail read-only E2E twice and emit two exact-grant receipts. Evidence must redact task content and credentials; no task mutation is permitted.",
+    "Bind delivery.origin.send to an exact real platform/chat/thread and authorize two minimal identifiable probes with post-send readback, or make an explicit governance decision that the CLI-only origin axis is not applicable and update the required-procedure specification with independent negative evidence.",
+    "Refresh dynamic coverage, procedure registry, operational health and Agent OS status after both axes close.",
+    "Run an independent latest-byte verifier; only then may certified_healthy/eligible be promoted."
+  ],
+  "human_gate": {
+    "reason": "Two required external procedures remain blocked by authority. OAuth consent does not itself authorize the agent to inspect task data, and this CLI session has no externally addressable origin target.",
+    "requested_authority": {
+      "lark_task_readonly": {
+        "procedure_id": "lark.task.readonly",
+        "target": "profile:lark",
+        "requested_operations": ["identity read", "task list read", "pagination readback", "one task-detail read when a task exists"],
+        "runs": 2,
+        "validity": "2 hours from grant creation",
+        "data_boundary": "Raw task content remains local and is not copied into the receipt or final report; evidence contains only booleans, counts and non-reversible hashes.",
+        "prohibitions": ["task create", "task update", "task delete", "comment write", "credential exposure", "external forwarding"]
+      },
+      "delivery_origin_send": {
+        "procedure_id": "delivery.origin.send",
+        "required_input": "exact platform:chat_id:thread_id (or exact platform:chat_id where the platform has no threads)",
+        "requested_operations": ["send two minimal Agent OS certification probes", "read back exact message receipts"],
+        "runs": 2,
+        "prohibitions": ["broadcast", "target inference", "Telegram substitution without explicit binding", "credential exposure"]
+      }
+    }
+  },
+  "rollback_escape_hatch": [
+    "Lark readonly calls perform no mutation; on any scope/token/API error, stop and emit no PASS receipt.",
+    "Origin probes remain prohibited until an exact target and payload are authorized.",
+    "Provider reviews remain advisory and authorize no mutation.",
+    "No push, deploy, reset, deletion, credential entry or broad fanout is authorized."
+  ],
+  "post_action_verification": [
+    "lark.task.readonly shows e2e_passed/fully_connected with two valid receipts and negative no-write evidence.",
+    "delivery.origin.send shows e2e_passed/fully_connected with two valid target-bound receipts, or the specification records an independently verified not-applicable decision before removing it from required axes.",
+    "procedure registry reports all required procedures fully_connected and no invalid procedure axis.",
+    "provider and Lark operational-health snapshots report summary.ok=true.",
+    "hermes agent-os status --json reports certified_healthy=true and eligible=true.",
+    "Independent verifier reads the latest on-disk grants, receipts, status and worktree bytes."
+  ],
+  "resume_state": {
+    "branch": "master",
+    "latest_owned_commit": "5f43178f",
+    "procedure_summary": {
+      "fully_connected": 10,
+      "blocked_by_authority": 2,
+      "failed": 0,
+      "stale": 0,
+      "global_certification_status": "not_certified"
+    },
+    "blocked_procedures": ["delivery.origin.send", "lark.task.readonly"],
+    "latest_status_evidence": "/tmp/agent-os-status-after-oauth-v9.json",
+    "next_safe_action_after_authority": "Create two exact lark.task.readonly grants, execute the redacting readonly harness twice, verify no-write boundaries, emit receipts, then refresh dynamic coverage."
+  }
+}

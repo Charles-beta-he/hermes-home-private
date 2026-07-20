@@ -318,16 +318,16 @@
       "audit_semantics": {
         "evidence_freshness_days": 30,
         "maturity_verdict": "validated_local_control_plane_slice_no_multimodel_certification",
-        "next_audit_action": "rerun independent multimodel certification when providers recover; keep runtime execution and Taskpool/Mission integration closed"
+        "next_audit_action": "add real cross-session handoff/readback pilot and rerun independent multimodel certification when providers recover"
       },
       "current_components": {
         "governance_policies": "profile_scoped",
-        "handoff_evidence_intake": "validated_local_cross_session_pilot",
+        "handoff_evidence_intake": "implemented_local",
         "multi_session_fusion_contract": "implemented_local",
         "progress_ledger": "ledgered",
         "project_profile": "profiled",
         "tmux_projection": "plan_and_read_only_reconcile",
-        "trace_projection_capability": "validated_local_readback"
+        "trace_projection_capability": "initiated_needs_readback"
       },
       "id": "single-session-multitopic-trace",
       "portfolio_profile": true,
@@ -337,7 +337,7 @@
       "ssot_root": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace",
       "status": "platform-framed+validated-local-slices",
       "type": "hermes-self-architecture",
-      "updated_at": "2026-07-21T00:36:03+08:00"
+      "updated_at": "2026-07-20T20:52:00+08:00"
     },
     {
       "audit_semantics": {

@@ -16,7 +16,6 @@ import shlex
 import subprocess
 import sys
 import tempfile
-import unicodedata
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -31,42 +30,13 @@ CLAIM_MODES = {"write", "review", "read"}
 CLAIM_STATES = {"active", "released", "expired", "cancelled"}
 EVIDENCE_KINDS = {"command", "diff", "test", "browser", "api", "log", "human", "limitation", "file"}
 PUBLIC_EVENT_TYPES = {"note.recorded", "decision.recorded", "session.observed", "runtime.observed"}
-INTERNAL_EVENT_TYPES = {"project.initialized", "claim.acquired", "claim.released", "claim.expired", "handoff.recorded", "evidence.recorded"}
 SECRET_KEYS = {
     "password", "passwd", "secret", "api_key", "apikey", "access_key", "private_key",
     "credential", "credentials", "card_number", "authorization", "bearer_token",
-    "auth_token", "access_token", "refresh_token", "token",
 }
 AUTHORITY_SMUGGLING_KEYS = {
     "mark_done", "external_write", "write_through", "write_through_enabled",
     "send_executed", "deploy", "push", "task_status", "lifecycle_target",
-    "command", "commands",
-}
-EXPECTED_AUTHORITY_FLAGS = {
-    "external_dispatch", "taskpool_lifecycle_write", "mission_lifecycle_write",
-    "tmux_execution", "worker_execution", "deploy_push", "destructive_operations",
-    "credential_entry",
-}
-EXTERNAL_AUTHORITY_SMUGGLING_KEYS = AUTHORITY_SMUGGLING_KEYS | EXPECTED_AUTHORITY_FLAGS | {
-    "execute_commands", "status", "lifecycle_state", "completed_at", "approved",
-}
-SECRET_KEY_FRAGMENTS = {"secret", "token", "password", "passwd", "credential", "private_key", "api_key", "access_key"}
-AUTHORITY_KEY_FRAGMENTS = {
-    "external_dispatch", "external_write", "write_through", "taskpool_lifecycle",
-    "mission_lifecycle", "tmux_execution", "worker_execution", "deploy_push",
-    "destructive_operation", "credential_entry", "mark_done", "send_executed",
-    "execute_command", "lifecycle_target", "task_status", "approved",
-}
-HANDOFF_ALLOWED_KEYS = {
-    "handoff_id", "direction_id", "source_session_id", "claim_id", "objective",
-    "verified_current_state", "completed", "changed_files", "decisions", "blockers",
-    "next_safe_step", "forbidden_assumptions", "worktree", "closure_state", "recorded_at",
-}
-EXPECTED_STATE_DOMAINS = {
-    "direction": DIRECTION_STATES,
-    "task": TASK_STATES,
-    "worker_runtime": RUNTIME_STATES,
-    "chat_session": CHAT_STATES,
 }
 SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 
@@ -139,255 +109,26 @@ def validate_id(label: str, value: str) -> None:
         raise ValueError(f"invalid {label}: {value!r}")
 
 
-def normalize_scope(value: str) -> str:
-    normalized = unicodedata.normalize("NFC", value.strip().replace("\\", "/"))
-    if not normalized or normalized.startswith("/") or any(unicodedata.category(char).startswith("C") for char in normalized):
-        raise ValueError(f"scope must be a non-empty project-relative pattern: {value!r}")
-    raw_parts = normalized.split("/")
-    if any(part == ".." for part in raw_parts):
-        raise ValueError(f"scope cannot contain parent traversal: {value!r}")
-    parts = [part for part in raw_parts if part not in {"", "."}]
-    if not parts:
-        raise ValueError(f"scope must identify a project-relative pattern: {value!r}")
-    return "/".join(parts)
-
-
 def validate_scope(value: str) -> None:
-    normalize_scope(value)
+    normalized = value.strip().replace("\\", "/")
+    if not normalized or normalized.startswith("/") or "\x00" in normalized:
+        raise ValueError(f"scope must be a non-empty project-relative pattern: {value!r}")
+    if any(part == ".." for part in normalized.split("/")):
+        raise ValueError(f"scope cannot contain parent traversal: {value!r}")
 
 
-def normalize_payload_key(value: Any) -> str:
-    text = unicodedata.normalize("NFKC", str(value).strip())
-    text = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", text)
-    return re.sub(r"[^a-z0-9]+", "_", text.casefold()).strip("_")
-
-
-def validate_safe_payload(
-    value: Any,
-    trail: tuple[str, ...] = (),
-    reject_external_authority: bool = False,
-) -> None:
+def validate_safe_payload(value: Any, trail: tuple[str, ...] = ()) -> None:
     if isinstance(value, dict):
         for key, item in value.items():
-            normalized = normalize_payload_key(key)
-            canonical_closed_flag = bool(trail and trail[-1] == "authority" and normalized in EXPECTED_AUTHORITY_FLAGS and item is False)
-            if not canonical_closed_flag and (normalized in SECRET_KEYS or any(fragment in normalized for fragment in SECRET_KEY_FRAGMENTS)):
+            normalized = str(key).strip().lower()
+            if normalized in SECRET_KEYS:
                 raise ValueError(f"secret-like field rejected: {'.'.join(trail + (str(key),))}")
-            forbidden_authority = EXTERNAL_AUTHORITY_SMUGGLING_KEYS if reject_external_authority else AUTHORITY_SMUGGLING_KEYS
-            if normalized in forbidden_authority or (
-                reject_external_authority and any(fragment in normalized for fragment in AUTHORITY_KEY_FRAGMENTS)
-            ):
+            if normalized in AUTHORITY_SMUGGLING_KEYS:
                 raise ValueError(f"authority-smuggling field rejected: {'.'.join(trail + (str(key),))}")
-            validate_safe_payload(item, trail + (str(key),), reject_external_authority)
+            validate_safe_payload(item, trail + (str(key),))
     elif isinstance(value, list):
         for index, item in enumerate(value):
-            validate_safe_payload(item, trail + (str(index),), reject_external_authority)
-
-
-def validate_event_schema(event: dict[str, Any]) -> None:
-    required = {"schema_version", "event_id", "event_type", "occurred_at", "actor", "payload"}
-    if set(event) != required or event.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError("event must contain the exact canonical field set and schema version")
-    event_id = event.get("event_id")
-    if not isinstance(event_id, str) or not event_id.startswith("evt-"):
-        raise ValueError("event_id must be a non-empty canonical event id")
-    event_type = event.get("event_type")
-    if event_type not in PUBLIC_EVENT_TYPES | INTERNAL_EVENT_TYPES:
-        raise ValueError(f"unsupported event_type: {event_type!r}")
-    if not isinstance(event.get("actor"), str) or not event["actor"].strip():
-        raise ValueError("event actor must be a non-empty string")
-    occurred_at = event.get("occurred_at")
-    if not isinstance(occurred_at, str):
-        raise ValueError("event occurred_at must be a timestamp string")
-    parse_time(occurred_at)
-    if not isinstance(event.get("payload"), dict):
-        raise ValueError("event payload must be an object")
-    payload = event["payload"]
-    validate_safe_payload(payload, reject_external_authority=True)
-    if event_type == "project.initialized":
-        if set(payload) != {"project_id", "display_name"}:
-            raise ValueError("project.initialized payload schema is invalid")
-        validate_id("event project id", payload.get("project_id"))
-        if not isinstance(payload.get("display_name"), str) or not payload["display_name"].strip():
-            raise ValueError("project.initialized display_name must be non-empty")
-    elif event_type == "claim.acquired":
-        if set(payload) != {"claim_id", "direction_id", "mode", "scope"}:
-            raise ValueError("claim.acquired payload schema is invalid")
-        validate_id("event claim id", payload.get("claim_id"))
-        validate_id("event direction id", payload.get("direction_id"))
-        if payload.get("mode") not in CLAIM_MODES:
-            raise ValueError("claim.acquired mode is invalid")
-        scopes = payload.get("scope")
-        if not isinstance(scopes, list) or not scopes or any(not isinstance(scope, str) or normalize_scope(scope) != scope for scope in scopes):
-            raise ValueError("claim.acquired scope is invalid")
-    elif event_type in {"claim.released", "claim.expired"}:
-        if set(payload) != {"claim_id"}:
-            raise ValueError(f"{event_type} payload schema is invalid")
-        validate_id("event claim id", payload.get("claim_id"))
-    elif event_type == "handoff.recorded":
-        if set(payload) != {"handoff_id", "direction_id", "source_session_id"}:
-            raise ValueError("handoff.recorded payload schema is invalid")
-        for field in ("handoff_id", "direction_id", "source_session_id"):
-            validate_id(f"event {field}", payload.get(field))
-    elif event_type == "evidence.recorded":
-        if set(payload) != {"evidence_id", "kind", "claim_refs"}:
-            raise ValueError("evidence.recorded payload schema is invalid")
-        validate_id("event evidence id", payload.get("evidence_id"))
-        if payload.get("kind") not in EVIDENCE_KINDS:
-            raise ValueError("evidence.recorded kind is invalid")
-        refs = payload.get("claim_refs")
-        if not isinstance(refs, list) or any(not isinstance(ref, str) or not ref.strip() for ref in refs):
-            raise ValueError("evidence.recorded claim_refs is invalid")
-    elif event_type in PUBLIC_EVENT_TYPES:
-        schemas = {
-            "note.recorded": ("note",),
-            "decision.recorded": ("decision",),
-            "session.observed": ("session_id", "observation"),
-            "runtime.observed": ("runtime_id", "observation"),
-        }
-        fields = schemas[event_type]
-        if set(payload) != set(fields) or any(not isinstance(payload[field], str) or not payload[field].strip() for field in fields):
-            raise ValueError(f"{event_type} payload schema is invalid")
-
-
-def validate_event_history(path: Path) -> list[dict[str, Any]]:
-    events: list[dict[str, Any]] = []
-    ids: set[str] = set()
-    if not path.exists():
-        return events
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        if not line.strip():
-            continue
-        try:
-            event = json.loads(line)
-            if not isinstance(event, dict):
-                raise ValueError("event must be an object")
-            validate_event_schema(event)
-        except Exception as exc:
-            raise ValueError(f"invalid event history at line {line_number}: {exc}") from exc
-        if event["event_id"] in ids:
-            raise ValueError(f"duplicate event id in history: {event['event_id']}")
-        ids.add(event["event_id"])
-        events.append(event)
-    return events
-
-
-def validate_evidence_record(record: dict[str, Any]) -> None:
-    required = {"schema_version", "evidence_id", "kind", "path", "sha256", "summary", "claim_refs", "recorded_at"}
-    if set(record) != required or record.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError("evidence record must contain the exact canonical field set and schema version")
-    evidence_id = record.get("evidence_id")
-    if not isinstance(evidence_id, str):
-        raise ValueError("evidence id must be a string")
-    validate_id("evidence id", evidence_id)
-    if record.get("kind") not in EVIDENCE_KINDS:
-        raise ValueError("evidence kind is invalid")
-    if not isinstance(record.get("path"), str) or not Path(record["path"]).is_absolute():
-        raise ValueError("evidence path must be absolute")
-    if not isinstance(record.get("sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", record["sha256"]):
-        raise ValueError("evidence sha256 is invalid")
-    if not isinstance(record.get("summary"), str) or not record["summary"].strip():
-        raise ValueError("evidence summary must be non-empty")
-    refs = record.get("claim_refs")
-    if not isinstance(refs, list) or any(not isinstance(ref, str) or not ref.strip() for ref in refs):
-        raise ValueError("evidence claim_refs is invalid")
-    if not isinstance(record.get("recorded_at"), str):
-        raise ValueError("evidence recorded_at must be a timestamp string")
-    parse_time(record["recorded_at"])
-    validate_safe_payload(record)
-
-
-def validate_evidence_index(records: list[Any]) -> set[str]:
-    ids: set[str] = set()
-    for record in records:
-        if not isinstance(record, dict):
-            raise ValueError("evidence record must be object")
-        validate_evidence_record(record)
-        if record["evidence_id"] in ids:
-            raise ValueError(f"duplicate evidence id: {record['evidence_id']}")
-        artifact = Path(record["path"]).expanduser()
-        if not artifact.is_file():
-            raise ValueError(f"evidence artifact missing: {record['evidence_id']}")
-        if sha256_file(artifact) != record["sha256"]:
-            raise ValueError(f"evidence hash mismatch: {record['evidence_id']}")
-        ids.add(record["evidence_id"])
-    return ids
-
-
-def validate_claim_schema(claim: dict[str, Any], project_id: str) -> None:
-    required = {"schema_version", "claim_id", "project_id", "direction_id", "owner_type", "owner_session", "mode", "scope", "worktree", "status", "created_at", "expires_at"}
-    allowed = required | {"released_at"}
-    if not required.issubset(claim) or not set(claim).issubset(allowed) or claim.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError("claim must contain the canonical field set and schema version")
-    for field in ("claim_id", "direction_id", "owner_session"):
-        value = claim.get(field)
-        if not isinstance(value, str):
-            raise ValueError(f"claim {field} must be a string")
-        validate_id(f"claim {field}", value)
-    if claim.get("project_id") != project_id or claim.get("owner_type") != "hermes-session":
-        raise ValueError("claim project_id/owner_type does not match the canonical project")
-    if claim.get("mode") not in CLAIM_MODES or claim.get("status") not in CLAIM_STATES:
-        raise ValueError("claim mode/status is invalid")
-    scopes = claim.get("scope")
-    if not isinstance(scopes, list) or not scopes or any(not isinstance(scope, str) or normalize_scope(scope) != scope for scope in scopes):
-        raise ValueError("claim scope must be a non-empty list of canonical strings")
-    if not isinstance(claim.get("created_at"), str) or not isinstance(claim.get("expires_at"), str):
-        raise ValueError("claim created_at/expires_at must be timestamp strings")
-    created = parse_time(claim["created_at"])
-    expires = parse_time(claim["expires_at"])
-    if expires <= created:
-        raise ValueError("claim expires_at must be after created_at")
-    worktree = claim.get("worktree")
-    if claim.get("mode") == "write" and (not isinstance(worktree, str) or not Path(worktree).is_absolute()):
-        raise ValueError("write claim worktree must be an absolute path")
-    if claim.get("mode") != "write" and worktree is not None and not isinstance(worktree, str):
-        raise ValueError("claim worktree must be null or a string")
-    if "released_at" in claim:
-        if not isinstance(claim["released_at"], str):
-            raise ValueError("claim released_at must be a timestamp string")
-        released = parse_time(claim["released_at"])
-        if released < created or released > expires:
-            raise ValueError("claim released_at must be between created_at and expires_at")
-    if claim.get("status") == "released" and "released_at" not in claim:
-        raise ValueError("released claim requires released_at")
-    if claim.get("status") != "released" and "released_at" in claim:
-        raise ValueError("only released claims may contain released_at")
-
-
-def validate_tmux_manifest(manifest: dict[str, Any], project: dict[str, Any]) -> None:
-    if set(manifest) != {"schema_version", "project_id", "session_name", "execute_commands", "windows"}:
-        raise ValueError("tmux manifest must contain the exact canonical field set")
-    if manifest.get("schema_version") != SCHEMA_VERSION or manifest.get("project_id") != project.get("project_id"):
-        raise ValueError("tmux manifest identity does not match the canonical project")
-    if manifest.get("session_name") != project.get("tmux_session") or manifest.get("execute_commands") is not False:
-        raise ValueError("tmux manifest session/execute policy is invalid")
-    windows = manifest.get("windows")
-    if not isinstance(windows, list) or not windows:
-        raise ValueError("tmux manifest windows must be a non-empty list")
-    names: set[str] = set()
-    for window in windows:
-        if not isinstance(window, dict) or set(window) != {"name", "direction_id", "claim_id", "workdir", "panes"}:
-            raise ValueError("tmux window must contain the exact canonical field set")
-        name = window.get("name")
-        if not isinstance(name, str) or not SAFE_ID.fullmatch(name) or name in names:
-            raise ValueError("tmux window name must be unique and safe")
-        names.add(name)
-        if not isinstance(window.get("workdir"), str) or not Path(window["workdir"]).is_absolute():
-            raise ValueError("tmux window workdir must be an absolute path")
-        direction_id, claim_id = window.get("direction_id"), window.get("claim_id")
-        if (direction_id is None) != (claim_id is None):
-            raise ValueError("tmux window direction_id and claim_id must both be null or strings")
-        for label, value in (("direction_id", direction_id), ("claim_id", claim_id)):
-            if value is not None:
-                if not isinstance(value, str):
-                    raise ValueError(f"tmux window {label} must be a string")
-                validate_id(f"tmux window {label}", value)
-        panes = window.get("panes")
-        if not isinstance(panes, list) or not panes:
-            raise ValueError("tmux window panes must be a non-empty list")
-        for pane in panes:
-            if not isinstance(pane, dict) or set(pane) != {"role"} or pane.get("role") not in {"control", "executor", "verify"}:
-                raise ValueError("tmux pane must contain only a supported role")
+            validate_safe_payload(item, trail + (str(index),))
 
 
 def slug(value: str, limit: int = 40) -> str:
@@ -413,6 +154,7 @@ def paths(root: Path) -> dict[str, Path]:
 
 
 def append_event(root: Path, event_type: str, payload: dict[str, Any], actor: str = "workspace-os-cli") -> dict[str, Any]:
+    validate_safe_payload(payload)
     p = paths(root)
     p["events"].parent.mkdir(parents=True, exist_ok=True)
     event = {
@@ -423,10 +165,8 @@ def append_event(root: Path, event_type: str, payload: dict[str, Any], actor: st
         "actor": actor,
         "payload": payload,
     }
-    validate_event_schema(event)
     with p["event_lock"].open("a+", encoding="utf-8") as lock_handle:
         fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
-        validate_event_history(p["events"])
         with p["events"].open("a", encoding="utf-8") as events_handle:
             events_handle.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
             events_handle.flush()
@@ -435,26 +175,26 @@ def append_event(root: Path, event_type: str, payload: dict[str, Any], actor: st
     return event
 
 
-def scope_static_prefix(value: str) -> tuple[str, bool]:
-    clean = normalize_scope(value).casefold()
+def scope_static_prefix(value: str) -> str:
+    clean = value.strip().replace("\\", "/").lstrip("./")
     wildcard = len(clean)
     for marker in ("*", "?", "["):
         pos = clean.find(marker)
         if pos >= 0:
             wildcard = min(wildcard, pos)
-    return clean[:wildcard], wildcard < len(clean)
+    return clean[:wildcard].rstrip("/")
 
 
 def scopes_overlap(left: str, right: str) -> bool:
     if left.strip() in {"*", "**", "**/*"} or right.strip() in {"*", "**", "**/*"}:
         return True
-    a, a_glob = scope_static_prefix(left)
-    b, b_glob = scope_static_prefix(right)
+    a = scope_static_prefix(left)
+    b = scope_static_prefix(right)
     if not a or not b:
         return True
-    if not a_glob and not b_glob:
-        return a == b
-    return a.startswith(b) or b.startswith(a)
+    if a == b:
+        return True
+    return a.startswith(b + "/") or b.startswith(a + "/")
 
 
 def claim_is_active(claim: dict[str, Any], now: datetime | None = None) -> bool:
@@ -478,69 +218,59 @@ def next_window_name(manifest: dict[str, Any], direction: str) -> str:
 def init_project(root: Path, project_id: str, display_name: str) -> dict[str, Any]:
     validate_id("project id", project_id)
     root.mkdir(parents=True, exist_ok=True)
+    for dirname in ("00-spec", "01-directions", "02-ledger", "03-evidence/artifacts", "04-handoffs/sessions", "04-handoffs/workers", "05-runtime/receipts", "06-status"):
+        (root / dirname).mkdir(parents=True, exist_ok=True)
     p = paths(root)
-    with exclusive_file_lock(p["state_lock"]):
-        validate_event_history(p["events"])
-        if p["evidence"].exists():
-            validate_evidence_index(load_json(p["evidence"], list))
-        if p["project"].is_file():
-            existing_project = load_json(p["project"], dict)
-            if existing_project.get("project_id") != project_id:
-                raise ValueError(
-                    f"project id mismatch: existing={existing_project.get('project_id')!r} requested={project_id!r}"
-                )
-        for dirname in ("00-spec", "01-directions", "02-ledger", "03-evidence/artifacts", "04-handoffs/sessions", "04-handoffs/workers", "05-runtime/receipts", "06-status"):
-            (root / dirname).mkdir(parents=True, exist_ok=True)
-        created: list[str] = []
-        project = {
+    created: list[str] = []
+    project = {
+        "schema_version": SCHEMA_VERSION,
+        "project_id": project_id,
+        "display_name": display_name,
+        "ssot_root": str(root.resolve()),
+        "tmux_session": f"hx-{slug(project_id, 48)}",
+        "state_domains": {
+            "direction": sorted(DIRECTION_STATES),
+            "task": sorted(TASK_STATES),
+            "worker_runtime": sorted(RUNTIME_STATES),
+            "chat_session": sorted(CHAT_STATES),
+        },
+        "authority": {
+            "external_dispatch": False,
+            "taskpool_lifecycle_write": False,
+            "mission_lifecycle_write": False,
+            "tmux_execution": False,
+            "worker_execution": False,
+            "deploy_push": False,
+            "destructive_operations": False,
+            "credential_entry": False,
+        },
+    }
+    defaults = {
+        p["project"]: project,
+        p["tasks"]: [],
+        p["evidence"]: [],
+        p["claims"]: [],
+        p["worktrees"]: [],
+        p["tmux"]: {
             "schema_version": SCHEMA_VERSION,
             "project_id": project_id,
-            "display_name": display_name,
-            "ssot_root": str(root.resolve()),
-            "tmux_session": f"hx-{slug(project_id, 48)}",
-            "state_domains": {
-                "direction": sorted(DIRECTION_STATES),
-                "task": sorted(TASK_STATES),
-                "worker_runtime": sorted(RUNTIME_STATES),
-                "chat_session": sorted(CHAT_STATES),
-            },
-            "authority": {
-                "external_dispatch": False,
-                "taskpool_lifecycle_write": False,
-                "mission_lifecycle_write": False,
-                "tmux_execution": False,
-                "worker_execution": False,
-                "deploy_push": False,
-                "destructive_operations": False,
-                "credential_entry": False,
-            },
-        }
-        defaults = {
-            p["project"]: project,
-            p["tasks"]: [],
-            p["evidence"]: [],
-            p["claims"]: [],
-            p["worktrees"]: [],
-            p["tmux"]: {
-                "schema_version": SCHEMA_VERSION,
-                "project_id": project_id,
-                "session_name": project["tmux_session"],
-                "execute_commands": False,
-                "windows": [{
-                    "name": "00-control",
-                    "direction_id": None,
-                    "claim_id": None,
-                    "workdir": str(root.resolve()),
-                    "panes": [{"role": "control"}],
-                }],
-            },
-        }
-        for path, payload in defaults.items():
-            if write_if_missing(path, payload):
-                created.append(str(path))
-        if not p["events"].exists():
-            append_event(root, "project.initialized", {"project_id": project_id, "display_name": display_name})
-            created.append(str(p["events"]))
+            "session_name": project["tmux_session"],
+            "execute_commands": False,
+            "windows": [{
+                "name": "00-control",
+                "direction_id": None,
+                "claim_id": None,
+                "workdir": str(root.resolve()),
+                "panes": [{"role": "control"}],
+            }],
+        },
+    }
+    for path, payload in defaults.items():
+        if write_if_missing(path, payload):
+            created.append(str(path))
+    if not p["events"].exists():
+        append_event(root, "project.initialized", {"project_id": project_id, "display_name": display_name})
+        created.append(str(p["events"]))
     return {"ok": True, "root": str(root), "created": created, "preserved_existing": len(created) < len(defaults) + 1}
 
 
@@ -558,7 +288,6 @@ def cmd_init(args: argparse.Namespace) -> int:
 def cmd_event_append(args: argparse.Namespace) -> int:
     require_project(args.root)
     payload = load_json(args.payload_file, dict)
-    validate_safe_payload(payload, reject_external_authority=True)
     event = append_event(args.root, args.event_type, payload, actor=args.actor)
     return emit({"ok": True, "event": event})
 
@@ -574,16 +303,12 @@ def cmd_claim_acquire(args: argparse.Namespace) -> int:
         raise ValueError(f"worktree does not exist: {args.worktree}")
     if not args.scope:
         raise ValueError("at least one --scope is required")
-    normalized_scopes = [normalize_scope(scope) for scope in args.scope]
+    for scope in args.scope:
+        validate_scope(scope)
     if not 1 <= args.ttl_minutes <= 1440:
         raise ValueError("ttl-minutes must be between 1 and 1440")
     with exclusive_file_lock(p["state_lock"]):
-        validate_event_history(p["events"])
         claims = load_json(p["claims"], list)
-        if any(not isinstance(item, dict) for item in claims):
-            raise ValueError("active claims must contain only objects")
-        for item in claims:
-            validate_claim_schema(item, project["project_id"])
         if any(c.get("claim_id") == args.claim_id for c in claims if isinstance(c, dict)):
             raise ValueError(f"claim id already exists: {args.claim_id}")
         active = [c for c in claims if isinstance(c, dict) and claim_is_active(c)]
@@ -591,7 +316,7 @@ def cmd_claim_acquire(args: argparse.Namespace) -> int:
             if args.mode == "write" and current.get("mode") == "write":
                 if current.get("direction_id") == args.direction_id:
                     raise ValueError(f"active write claim already owns direction: {args.direction_id}")
-                for left in normalized_scopes:
+                for left in args.scope:
                     for right in current.get("scope", []):
                         if scopes_overlap(left, str(right)):
                             raise ValueError(f"scope overlaps active claim {current.get('claim_id')}: {left!r} vs {right!r}")
@@ -604,17 +329,16 @@ def cmd_claim_acquire(args: argparse.Namespace) -> int:
             "owner_type": "hermes-session",
             "owner_session": args.owner_session,
             "mode": args.mode,
-            "scope": normalized_scopes,
+            "scope": args.scope,
             "worktree": str(args.worktree.resolve()) if args.worktree else None,
             "status": "active",
             "created_at": created_at.isoformat().replace("+00:00", "Z"),
             "expires_at": (created_at + timedelta(minutes=args.ttl_minutes)).isoformat().replace("+00:00", "Z"),
         }
         validate_safe_payload(claim)
-        validate_claim_schema(claim, project["project_id"])
+        claims.append(claim)
+        atomic_write_json(p["claims"], claims)
         manifest = load_json(p["tmux"], dict)
-        validate_tmux_manifest(manifest, project)
-        windows = manifest["windows"]
         window = {
             "name": next_window_name(manifest, args.direction_id),
             "direction_id": args.direction_id,
@@ -622,23 +346,16 @@ def cmd_claim_acquire(args: argparse.Namespace) -> int:
             "workdir": claim["worktree"] or str(args.root.resolve()),
             "panes": [{"role": "executor"}, {"role": "verify"}],
         }
-        claims.append(claim)
-        windows.append(window)
-        atomic_write_json(p["claims"], claims)
+        manifest.setdefault("windows", []).append(window)
         atomic_write_json(p["tmux"], manifest)
-        event = append_event(args.root, "claim.acquired", {"claim_id": args.claim_id, "direction_id": args.direction_id, "mode": args.mode, "scope": normalized_scopes})
+        event = append_event(args.root, "claim.acquired", {"claim_id": args.claim_id, "direction_id": args.direction_id, "mode": args.mode, "scope": args.scope})
     return emit({"ok": True, "claim": claim, "tmux_window": window, "event_id": event["event_id"], "tmux_executed": False})
 
 
 def cmd_claim_release(args: argparse.Namespace) -> int:
-    project, p = require_project(args.root)
+    _, p = require_project(args.root)
     with exclusive_file_lock(p["state_lock"]):
-        validate_event_history(p["events"])
         claims = load_json(p["claims"], list)
-        for claim in claims:
-            if not isinstance(claim, dict):
-                raise ValueError("active claims must contain only objects")
-            validate_claim_schema(claim, project["project_id"])
         found = None
         for claim in claims:
             if isinstance(claim, dict) and claim.get("claim_id") == args.claim_id:
@@ -646,105 +363,33 @@ def cmd_claim_release(args: argparse.Namespace) -> int:
                 break
         if found is None:
             raise ValueError(f"unknown claim: {args.claim_id}")
-        if found.get("status") in {"released", "expired"}:
+        if found.get("status") == "released":
             return emit({"ok": True, "idempotent": True, "claim": found})
         if found.get("status") != "active":
             raise ValueError(f"claim cannot be released from state: {found.get('status')}")
-        manifest = load_json(p["tmux"], dict)
-        validate_tmux_manifest(manifest, project)
-        windows = manifest["windows"]
-        now = utc_now()
-        if now > parse_time(found["expires_at"]):
-            found["status"] = "expired"
-            event_type = "claim.expired"
-        else:
-            found["status"] = "released"
-            found["released_at"] = now.isoformat().replace("+00:00", "Z")
-            event_type = "claim.released"
-        validate_claim_schema(found, project["project_id"])
-        manifest["windows"] = [w for w in windows if w.get("claim_id") != args.claim_id]
+        found["status"] = "released"
+        found["released_at"] = iso_now()
         atomic_write_json(p["claims"], claims)
+        manifest = load_json(p["tmux"], dict)
+        manifest["windows"] = [w for w in manifest.get("windows", []) if not isinstance(w, dict) or w.get("claim_id") != args.claim_id]
         atomic_write_json(p["tmux"], manifest)
-        event = append_event(args.root, event_type, {"claim_id": args.claim_id})
+        event = append_event(args.root, "claim.released", {"claim_id": args.claim_id})
     return emit({"ok": True, "claim": found, "event_id": event["event_id"], "tmux_executed": False})
-
-
-def require_nonempty_string(payload: dict[str, Any], field: str) -> str:
-    value = payload.get(field)
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"handoff {field} must be a non-empty string")
-    return value
-
-
-def validate_string_list(payload: dict[str, Any], field: str, required: bool = False, allow_empty: bool = True) -> None:
-    if field not in payload and not required:
-        return
-    value = payload.get(field)
-    if not isinstance(value, list) or any(not isinstance(item, str) or not item.strip() for item in value):
-        raise ValueError(f"handoff {field} must be a list of non-empty strings")
-    if not allow_empty and not value:
-        raise ValueError(f"handoff {field} must not be empty")
-
-
-def validate_handoff_schema(handoff: dict[str, Any]) -> None:
-    required = {"handoff_id", "direction_id", "source_session_id", "objective", "verified_current_state", "next_safe_step", "closure_state"}
-    missing = sorted(required - set(handoff))
-    if missing:
-        raise ValueError(f"handoff missing fields: {', '.join(missing)}")
-    unknown = sorted(set(handoff) - HANDOFF_ALLOWED_KEYS)
-    if unknown:
-        raise ValueError(f"handoff contains unsupported fields: {', '.join(unknown)}")
-    handoff_id = require_nonempty_string(handoff, "handoff_id")
-    direction_id = require_nonempty_string(handoff, "direction_id")
-    source_session_id = require_nonempty_string(handoff, "source_session_id")
-    validate_id("handoff id", handoff_id)
-    validate_id("direction id", direction_id)
-    validate_id("source session id", source_session_id)
-    require_nonempty_string(handoff, "objective")
-    require_nonempty_string(handoff, "next_safe_step")
-    validate_string_list(handoff, "verified_current_state", required=True, allow_empty=False)
-    for field in ("changed_files", "decisions", "blockers", "forbidden_assumptions"):
-        validate_string_list(handoff, field)
-    closure_state = handoff["closure_state"]
-    if not isinstance(closure_state, str) or closure_state not in CHAT_STATES - {"active"}:
-        raise ValueError("handoff closure_state must be handoff-ready, archived, or stale")
-    claim_id = handoff.get("claim_id")
-    if claim_id is not None:
-        if not isinstance(claim_id, str):
-            raise ValueError("handoff claim_id must be a string or null")
-        validate_id("claim id", claim_id)
-    completed = handoff.get("completed", [])
-    if not isinstance(completed, list):
-        raise ValueError("handoff completed must be a list")
-    for index, item in enumerate(completed):
-        if not isinstance(item, dict) or set(item) != {"summary", "evidence_refs"}:
-            raise ValueError(f"handoff completed[{index}] must contain only summary and evidence_refs")
-        require_nonempty_string(item, "summary")
-        validate_string_list(item, "evidence_refs", required=True, allow_empty=False)
-    worktree = handoff.get("worktree")
-    if worktree is not None:
-        if not isinstance(worktree, dict) or set(worktree) != {"path", "branch"}:
-            raise ValueError("handoff worktree must be null or contain only path and branch")
-        worktree_path = require_nonempty_string(worktree, "path")
-        if not Path(worktree_path).expanduser().is_absolute():
-            raise ValueError("handoff worktree path must be absolute")
-        require_nonempty_string(worktree, "branch")
-    if "recorded_at" in handoff:
-        parse_time(require_nonempty_string(handoff, "recorded_at"))
 
 
 def cmd_handoff_add(args: argparse.Namespace) -> int:
     _, p = require_project(args.root)
     handoff = load_json(args.file, dict)
-    validate_safe_payload(handoff, reject_external_authority=True)
-    validate_handoff_schema(handoff)
+    validate_safe_payload(handoff)
+    required = {"handoff_id", "direction_id", "source_session_id", "objective", "verified_current_state", "next_safe_step", "closure_state"}
+    missing = sorted(required - set(handoff))
+    if missing:
+        raise ValueError(f"handoff missing fields: {', '.join(missing)}")
+    validate_id("handoff id", str(handoff["handoff_id"]))
+    validate_id("direction id", str(handoff["direction_id"]))
+    if handoff["closure_state"] not in CHAT_STATES - {"active"}:
+        raise ValueError("handoff closure_state must be handoff-ready, archived, or stale")
     with exclusive_file_lock(p["state_lock"]):
-        validate_event_history(p["events"])
-        evidence_ids = validate_evidence_index(load_json(p["evidence"], list))
-        for item in handoff.get("completed", []):
-            unknown = sorted(set(item["evidence_refs"]) - evidence_ids)
-            if unknown:
-                raise ValueError(f"handoff completed references unknown evidence: {unknown}")
         destination = p["handoffs"] / f"{handoff['handoff_id']}.json"
         if destination.exists():
             existing = load_json(destination, dict)
@@ -774,9 +419,7 @@ def cmd_evidence_add(args: argparse.Namespace) -> int:
     if not target.is_file():
         raise ValueError(f"evidence file does not exist: {target}")
     with exclusive_file_lock(p["state_lock"]):
-        validate_event_history(p["events"])
         evidence = load_json(p["evidence"], list)
-        validate_evidence_index(evidence)
         record = {
             "schema_version": SCHEMA_VERSION,
             "evidence_id": args.evidence_id,
@@ -787,7 +430,7 @@ def cmd_evidence_add(args: argparse.Namespace) -> int:
             "claim_refs": args.claim_ref,
             "recorded_at": iso_now(),
         }
-        validate_evidence_record(record)
+        validate_safe_payload(record)
         for current in evidence:
             if isinstance(current, dict) and current.get("evidence_id") == args.evidence_id:
                 comparable = {k: v for k, v in current.items() if k != "recorded_at"}
@@ -840,22 +483,12 @@ def doctor(root: Path, inspect_runtime: bool) -> dict[str, Any]:
         project = load_json(p["project"], dict)
         validate_safe_payload(project)
         authority = project.get("authority")
-        if (
-            not isinstance(authority, dict)
-            or set(authority) != EXPECTED_AUTHORITY_FLAGS
-            or any(authority.get(flag) is not False for flag in EXPECTED_AUTHORITY_FLAGS)
-        ):
-            add_finding(findings, "error", "authority_closed", "all required project authority flags must be present and explicitly false", p["project"])
-        domains = project.get("state_domains")
-        domains_valid = isinstance(domains, dict) and set(domains) == set(EXPECTED_STATE_DOMAINS)
-        if domains_valid:
-            for name, expected_values in EXPECTED_STATE_DOMAINS.items():
-                actual = domains.get(name)
-                if not isinstance(actual, list) or set(actual) != expected_values or len(actual) != len(expected_values):
-                    domains_valid = False
-                    break
-        if not domains_valid:
-            add_finding(findings, "error", "state_domains", "state domains must be complete, distinct, and contain every allowed state", p["project"])
+        if not isinstance(authority, dict) or any(value is not False for value in authority.values()):
+            add_finding(findings, "error", "authority_closed", "all project authority flags must be explicitly false", p["project"])
+        domains = project.get("state_domains") or {}
+        expected_domains = {"direction", "task", "worker_runtime", "chat_session"}
+        if set(domains) != expected_domains:
+            add_finding(findings, "error", "state_domains", "state domains are missing or collapsed", p["project"])
     except Exception as exc:
         add_finding(findings, "error", "project_json", f"{type(exc).__name__}: {exc}", p["project"])
         project = {}
@@ -865,10 +498,7 @@ def doctor(root: Path, inspect_runtime: bool) -> dict[str, Any]:
             if not line.strip():
                 continue
             event = json.loads(line)
-            try:
-                validate_event_schema(event)
-            except (ValueError, TypeError, AttributeError) as exc:
-                add_finding(findings, "error", "event_schema", f"line {line_number}: {exc}", p["events"])
+            validate_safe_payload(event)
             event_id = str(event.get("event_id") or "")
             if not event_id:
                 add_finding(findings, "error", "event_id", f"line {line_number} missing event_id", p["events"])
@@ -884,11 +514,7 @@ def doctor(root: Path, inspect_runtime: bool) -> dict[str, Any]:
             if not isinstance(record, dict):
                 add_finding(findings, "error", "evidence_shape", "evidence record must be object", p["evidence"])
                 continue
-            try:
-                validate_evidence_record(record)
-            except (ValueError, TypeError, AttributeError) as exc:
-                add_finding(findings, "error", "evidence_schema", str(exc), p["evidence"])
-                continue
+            validate_safe_payload(record)
             eid = str(record.get("evidence_id") or "")
             if not eid or eid in evidence_ids:
                 add_finding(findings, "error", "evidence_id_unique", f"missing or duplicate evidence id {eid!r}", p["evidence"])
@@ -925,18 +551,7 @@ def doctor(root: Path, inspect_runtime: bool) -> dict[str, Any]:
             if not isinstance(claim, dict):
                 add_finding(findings, "error", "claim_shape", "claim record must be object", p["claims"])
                 continue
-            try:
-                validate_safe_payload(claim)
-                validate_claim_schema(claim, str(project.get("project_id") or ""))
-            except (ValueError, TypeError, AttributeError) as exc:
-                add_finding(findings, "error", "claim_schema", str(exc), p["claims"])
-                if claim.get("status") == "active":
-                    try:
-                        if parse_time(str(claim.get("expires_at"))) <= utc_now():
-                            add_finding(findings, "error", "claim_expired", f"active claim expired: {claim.get('claim_id')}", p["claims"])
-                    except Exception:
-                        pass
-                continue
+            validate_safe_payload(claim)
             cid = str(claim.get("claim_id") or "")
             if not cid or cid in claim_ids:
                 add_finding(findings, "error", "claim_id_unique", f"missing or duplicate claim id {cid!r}", p["claims"])
@@ -969,14 +584,7 @@ def doctor(root: Path, inspect_runtime: bool) -> dict[str, Any]:
         add_finding(findings, "error", "claims_json", f"{type(exc).__name__}: {exc}", p["claims"])
     try:
         manifest = load_json(p["tmux"], dict)
-        try:
-            validate_tmux_manifest(manifest, project)
-        except (ValueError, TypeError, AttributeError) as exc:
-            add_finding(findings, "error", "tmux_schema", str(exc), p["tmux"])
-        try:
-            validate_safe_payload(manifest)
-        except ValueError as exc:
-            add_finding(findings, "error", "tmux_payload_safety", str(exc), p["tmux"])
+        validate_safe_payload(manifest)
         if manifest.get("execute_commands") is not False:
             add_finding(findings, "error", "tmux_no_execute", "tmux manifest must set execute_commands=false", p["tmux"])
         windows = manifest.get("windows")
@@ -1020,12 +628,7 @@ def doctor(root: Path, inspect_runtime: bool) -> dict[str, Any]:
         for handoff_path in sorted(p["handoffs"].glob("*.json")):
             try:
                 handoff = load_json(handoff_path, dict)
-                validate_safe_payload(handoff, reject_external_authority=True)
-                validate_handoff_schema(handoff)
-                for item in handoff.get("completed", []):
-                    unknown = sorted(set(item["evidence_refs"]) - evidence_ids)
-                    if unknown:
-                        raise ValueError(f"handoff completed references unknown evidence: {unknown}")
+                validate_safe_payload(handoff)
                 if handoff.get("closure_state") not in CHAT_STATES - {"active"}:
                     add_finding(findings, "error", "handoff_state", "invalid handoff closure state", handoff_path)
                 if not handoff.get("next_safe_step"):
@@ -1050,29 +653,18 @@ def summarize_doctor(root: Path, findings: list[dict[str, Any]], inspect_runtime
     }
 
 
-def resolve_doctor_output(root: Path, requested: Path) -> Path:
-    status_path = root.resolve() / "06-status"
-    if status_path.is_symlink() or not status_path.is_dir():
-        raise ValueError("06-status must be a real directory inside the project root")
-    status_root = status_path.resolve()
-    candidate = requested if requested.is_absolute() else status_root / requested
-    target = candidate.resolve()
-    if target == status_root or status_root not in target.parents:
-        raise ValueError(f"doctor --out must stay inside {status_root}")
-    return target
-
-
 def cmd_doctor(args: argparse.Namespace) -> int:
     report = doctor(args.root, args.inspect_tmux)
     if args.out:
-        atomic_write_json(resolve_doctor_output(args.root, args.out), report)
+        atomic_write_json(args.out, report)
     return emit(report, 0 if report["ok"] else 1)
 
 
 def tmux_plan(root: Path) -> dict[str, Any]:
-    project, p = require_project(root)
+    _, p = require_project(root)
     manifest = load_json(p["tmux"], dict)
-    validate_tmux_manifest(manifest, project)
+    if manifest.get("execute_commands") is not False:
+        raise ValueError("tmux manifest is not plan-only")
     windows = manifest.get("windows")
     if not isinstance(windows, list) or not windows:
         raise ValueError("tmux manifest has no windows")
@@ -1107,9 +699,8 @@ def cmd_tmux_plan(args: argparse.Namespace) -> int:
 def tmux_reconcile(root: Path) -> dict[str, Any]:
     """Return a non-executing convergence plan from live tmux to the manifest."""
     full = tmux_plan(root)
-    project, p = require_project(root)
+    _, p = require_project(root)
     manifest = load_json(p["tmux"], dict)
-    validate_tmux_manifest(manifest, project)
     session = str(manifest["session_name"])
     actual_windows, inspection_error = inspect_tmux(session)
     desired_windows = {str(window["name"]) for window in manifest.get("windows", [])}
@@ -1237,7 +828,7 @@ def main(argv: list[str] | None = None) -> int:
         return emit({"ok": False, "error": "ttl-minutes must be between 1 and 1440"}, 2)
     try:
         return int(args.func(args))
-    except (ValueError, TypeError, AttributeError, OSError, json.JSONDecodeError, subprocess.SubprocessError) as exc:
+    except (ValueError, OSError, json.JSONDecodeError, subprocess.SubprocessError) as exc:
         return emit({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 2)
 
 

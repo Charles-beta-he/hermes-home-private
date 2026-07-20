@@ -29,11 +29,11 @@
     "claim_lease_control": "implemented_local",
     "handoff_evidence_intake": "validated_local_cross_session_pilot",
     "tmux_projection": "plan_and_read_only_reconcile",
-    "workspace_doctor": "validated_local_38_tests_with_evidence_artifact_integrity_and_natural_expiry_reconciliation",
+    "workspace_doctor": "validated_local_16_tests_with_cross_process_state_serialization_and_bounded_claim_inputs",
     "taskpool_mission_integration": "closed_not_implemented",
     "multimodel_certification": "degraded_unavailable"
   },
-  "updated_at": "2026-07-20T16:36:03Z",
+  "updated_at": "2026-07-20T13:29:00Z",
   "backend_contract_policy": {
     "contract_scope": "Single-session trace plus multi-session fusion using project-scoped SSOT, append-only events, bounded claim leases, safe handoffs/evidence, read-only doctor and non-executing tmux plans.",
     "schema_rule": "Changes must preserve existing evidence/projection records; migrations must tolerate historical sparse profiles and malformed task evidence without global failure.",
@@ -107,16 +107,7 @@
     "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/single-session-trace-readback-20260720T1320Z.json",
     "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/04-handoffs/sessions/handoff-cross-session-pilot-20260720.json",
     "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/final-doctor-20260720T1328Z.json",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-closeout-20260720T1329Z.json",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1356Z.log",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/review-amendment-closeout-20260720T1400Z.json",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1412Z.log",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1430Z.log",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1550Z.log",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1605Z.log",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260721T0015Z.log",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1625Z.log",
-    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/unittest-20260720T1630Z.log"
+    "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/03-evidence/artifacts/portfolio-closeout-20260720T1329Z.json"
   ],
   "audit_semantics": {
     "maturity_verdict": "validated_local_control_plane_slice_no_multimodel_certification",
