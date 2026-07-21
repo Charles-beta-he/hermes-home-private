@@ -199,6 +199,87 @@ class TestStableEvidenceBundleContract(unittest.TestCase):
             self.assertEqual(Path(receipt["quarantine_dir"]).resolve(), quarantine[0].resolve())
             self.assertNotIn("readback_verified", receipt)
 
+    def test_quarantine_rename_failure_preserves_primary_and_secondary_diagnostics(self):
+        """A quarantine failure must not erase the verification failure that triggered it."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+            final = stable / "providers-quorum-contract"
+            real_sha256_path = consult._sha256_path
+            real_rename = consult.os.rename
+            hash_calls = 0
+
+            def fail_only_first_final_artifact_readback(path):
+                nonlocal hash_calls
+                hash_calls += 1
+                if hash_calls == 5:
+                    return "0" * 64
+                return real_sha256_path(Path(path))
+
+            def fail_only_quarantine_rename(source, destination):
+                if Path(source) == final and Path(destination).parent.name == ".quarantine":
+                    raise OSError("injected quarantine rename failure")
+                return real_rename(source, destination)
+
+            with mock.patch.object(
+                consult,
+                "_sha256_path",
+                side_effect=fail_only_first_final_artifact_readback,
+            ), mock.patch.object(consult.os, "rename", side_effect=fail_only_quarantine_rename):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "postpublication verification failed.*stable evidence artifact readback mismatch.*"
+                    "quarantine failed.*injected quarantine rename failure",
+                ):
+                    self.persist(tick, stable)
+
+            self.assertTrue(final.is_dir(), "failed quarantine leaves bytes outside verified success semantics")
+            self.assertEqual(list((stable / ".quarantine").glob("providers-quorum-contract-*")), [])
+            self.assertFalse((stable / ".failure-receipts").exists())
+
+    def test_failure_receipt_publication_failure_preserves_primary_and_secondary_diagnostics(self):
+        """Receipt failure is diagnostic-only after quarantine, but must be visible to the caller."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+            final = stable / "providers-quorum-contract"
+            real_sha256_path = consult._sha256_path
+            real_rename = consult.os.rename
+            hash_calls = 0
+
+            def fail_only_first_final_artifact_readback(path):
+                nonlocal hash_calls
+                hash_calls += 1
+                if hash_calls == 5:
+                    return "0" * 64
+                return real_sha256_path(Path(path))
+
+            def fail_only_receipt_publication(source, destination):
+                if Path(destination).parent.name == ".failure-receipts":
+                    raise OSError("injected failure receipt publication failure")
+                return real_rename(source, destination)
+
+            with mock.patch.object(
+                consult,
+                "_sha256_path",
+                side_effect=fail_only_first_final_artifact_readback,
+            ), mock.patch.object(consult.os, "rename", side_effect=fail_only_receipt_publication):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "postpublication verification failed.*stable evidence artifact readback mismatch.*"
+                    "failure receipt publication failed.*injected failure receipt publication failure",
+                ):
+                    self.persist(tick, stable)
+
+            self.assertFalse(final.exists())
+            quarantine = list((stable / ".quarantine").glob("providers-quorum-contract-*"))
+            self.assertEqual(len(quarantine), 1, "quarantine remains authoritative without a receipt")
+            receipt_root = stable / ".failure-receipts"
+            self.assertEqual(list(receipt_root.glob("providers-quorum-contract-*.json")), [])
+            self.assertEqual(list(receipt_root.glob(".*.tmp-*")), [])
+
 
 if __name__ == "__main__":
     unittest.main()

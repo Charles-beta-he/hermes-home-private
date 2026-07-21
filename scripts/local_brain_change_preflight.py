@@ -114,6 +114,32 @@ def text_blob(summary: str, files: Sequence[str]) -> str:
 DOC_SUFFIXES = {".md", ".markdown", ".txt", ".rst", ".adoc"}
 
 
+def is_generated_precommit_file_summary(summary: str) -> bool:
+    """Return true for the hook's mechanical staged-file summary."""
+    return summary.lower().startswith("git pre-commit staged files:")
+
+
+def has_lifecycle_implementation_path(files: Sequence[str]) -> bool:
+    """Identify staged paths that can actually implement lifecycle mutation.
+
+    Mission-named receipts and other evidence paths describe provenance; their
+    filenames must not turn a mechanical pre-commit summary into action intent.
+    Keep this allowlist narrow so genuine taskpool/mission/cron code and canonical
+    lifecycle state remain fail-closed.
+    """
+    markers = (
+        "scripts/brain_task_",
+        "scripts/taskpool_",
+        "scripts/task_pool_",
+        "scripts/agent_team_controller.py",
+        "scripts/mission_tick_",
+        "cron/",
+        "gateway/taskpool/",
+        "hermes-agent/hermes_cli/taskpool/",
+    )
+    return any(f.lower().startswith(markers) for f in files)
+
+
 def is_docs_only_change(files: Sequence[str]) -> bool:
     """Return true when every touched file is documentation/reference prose.
 
@@ -142,6 +168,10 @@ def classify_surfaces(summary: str, files: Sequence[str]) -> list[str]:
         surfaces = [s for s in surfaces if s != "taskpool"]
         if "retrieval" not in surfaces:
             surfaces.append("retrieval")
+    if is_generated_precommit_file_summary(summary) and not has_lifecycle_implementation_path(files):
+        # The summary is generated from the same paths below. Provenance tokens
+        # such as ``mission`` in a receipt filename are not lifecycle intent.
+        surfaces = [s for s in surfaces if s != "taskpool"]
     return surfaces or ["docs"]
 
 
@@ -192,7 +222,13 @@ def classify_side_effect(summary: str, files: Sequence[str]) -> str:
         # Editing the dry-run preflight classifier changes local gate logic but is
         # still a local script/test write, not a taskpool/mission lifecycle write.
         return "local_write"
-    if any(marker in text_blob(summary, files) for marker in ["taskpool", "lifecycle", "mission", "cron", "done transition", "任务池", "生命周期"]):
+    lifecycle_blob = text_blob(summary, files)
+    if is_generated_precommit_file_summary(summary) and not has_lifecycle_implementation_path(files):
+        # Ignore lifecycle nouns that came only from generated staged paths.
+        # Explicit human summaries still classify by intent, and known lifecycle
+        # implementation paths remain lifecycle_write.
+        lifecycle_blob = ""
+    if any(marker in lifecycle_blob for marker in ["taskpool", "lifecycle", "mission", "cron", "done transition", "任务池", "生命周期"]):
         return "lifecycle_write"
     if any(marker in text_blob(summary, files) for marker in ["write", "commit", "patch", "file", "本地写入", "提交"]):
         return "local_write"

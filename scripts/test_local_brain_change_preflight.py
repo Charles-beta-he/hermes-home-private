@@ -113,6 +113,34 @@ class LocalBrainChangePreflightTestCase(unittest.TestCase):
         self.assertEqual(route["classification"]["side_effect_class"], "external_dispatch")
         self.assertEqual(route["classification"]["risk_tier"], "T3")
 
+    def test_generated_summary_mission_named_receipt_is_not_lifecycle_intent(self):
+        files = [
+            "scripts/test_consult_models_stable_evidence_bundle_contract.py",
+            "workflows/projects/hermes-agent-os-control-plane/08-receipts/mission-msn_example-stable-evidence-secondary-failure-contract.md",
+        ]
+        route = preflight.build_route_review_record(
+            summary=f"git pre-commit staged files: {', '.join(files)}",
+            files=files,
+            evidence=[],
+        )
+
+        self.assertEqual(route["classification"]["side_effect_class"], "local_write")
+        self.assertNotIn("taskpool", route["classification"]["surfaces"])
+        self.assertNotIn("task_record", route["evidence_state"]["required_evidence"])
+        self.assertNotIn("proof_log", route["evidence_state"]["required_evidence"])
+        self.assertNotIn("lifecycle_readback", route["evidence_state"]["required_evidence"])
+
+    def test_generated_summary_real_taskpool_path_remains_lifecycle_write(self):
+        route = preflight.build_route_review_record(
+            summary="git pre-commit staged files: scripts/taskpool_dynamic_runner_cron.py",
+            files=["scripts/taskpool_dynamic_runner_cron.py"],
+            evidence=[],
+        )
+
+        self.assertEqual(route["classification"]["side_effect_class"], "lifecycle_write")
+        self.assertIn("taskpool", route["classification"]["surfaces"])
+        self.assertEqual(route["classification"]["risk_tier"], "T3")
+
     def test_t3_precommit_with_full_deterministic_evidence_gets_local_certification_not_multimodel(self):
         evidence = [
             "diff:git diff --cached --name-only readback",
