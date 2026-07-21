@@ -666,19 +666,23 @@ def persist_stable_evidence_bundle(tick_dir: str, stable_root: str, bundle_id: s
             suffix = uuid.uuid4().hex
             quarantine_root = root / ".quarantine"
             receipt_root = root / ".failure-receipts"
-            if quarantine_root.exists() and (quarantine_root.is_symlink() or not quarantine_root.is_dir()):
-                raise RuntimeError(f"invalid stable evidence diagnostic root: {quarantine_root}") from verification_error
-            quarantine_root.mkdir(mode=0o700, exist_ok=True)
             quarantine_dir = quarantine_root / f"{bundle_id}-{suffix}"
             receipt_path = receipt_root / f"{bundle_id}-{suffix}.json"
+            primary_summary = f"{type(verification_error).__name__}: {verification_error}"
 
-            os.rename(final_dir, quarantine_dir)
-            _fsync_directory(quarantine_root)
-            _fsync_directory(root)
+            try:
+                if quarantine_root.exists() and (quarantine_root.is_symlink() or not quarantine_root.is_dir()):
+                    raise RuntimeError(f"invalid stable evidence diagnostic root: {quarantine_root}")
+                quarantine_root.mkdir(mode=0o700, exist_ok=True)
+                os.rename(final_dir, quarantine_dir)
+                _fsync_directory(quarantine_root)
+                _fsync_directory(root)
+            except Exception as quarantine_error:
+                raise RuntimeError(
+                    f"postpublication verification failed: {primary_summary}; "
+                    f"quarantine failed: {type(quarantine_error).__name__}: {quarantine_error}"
+                ) from verification_error
 
-            if receipt_root.exists() and (receipt_root.is_symlink() or not receipt_root.is_dir()):
-                raise RuntimeError(f"invalid stable evidence diagnostic root: {receipt_root}") from verification_error
-            receipt_root.mkdir(mode=0o700, exist_ok=True)
             failure_receipt = {
                 "schema_version": STABLE_EVIDENCE_FAILURE_SCHEMA_VERSION,
                 "bundle_id": bundle_id,
@@ -686,10 +690,14 @@ def persist_stable_evidence_bundle(tick_dir: str, stable_root: str, bundle_id: s
                 "failure_kind": "postpublication_readback_failed",
                 "quarantine_dir": str(quarantine_dir),
                 "generated_at": _utc_now_iso(),
-                "error_summary": f"{type(verification_error).__name__}: {verification_error}"[:500],
+                "error_summary": primary_summary[:500],
             }
-            receipt_temp = receipt_root / f".{receipt_path.name}.tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+            receipt_temp: Optional[Path] = None
             try:
+                if receipt_root.exists() and (receipt_root.is_symlink() or not receipt_root.is_dir()):
+                    raise RuntimeError(f"invalid stable evidence diagnostic root: {receipt_root}")
+                receipt_root.mkdir(mode=0o700, exist_ok=True)
+                receipt_temp = receipt_root / f".{receipt_path.name}.tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}"
                 with receipt_temp.open("x", encoding="utf-8") as handle:
                     json.dump(failure_receipt, handle, indent=2, ensure_ascii=False, sort_keys=True)
                     handle.write("\n")
@@ -697,9 +705,24 @@ def persist_stable_evidence_bundle(tick_dir: str, stable_root: str, bundle_id: s
                     os.fsync(handle.fileno())
                 os.rename(receipt_temp, receipt_path)
                 _fsync_directory(receipt_root)
-            finally:
-                if receipt_temp.exists():
-                    receipt_temp.unlink()
+            except Exception as receipt_error:
+                cleanup_error: Optional[Exception] = None
+                if receipt_temp is not None and receipt_temp.exists():
+                    try:
+                        receipt_temp.unlink()
+                    except Exception as exc:
+                        cleanup_error = exc
+                cleanup_summary = ""
+                if cleanup_error is not None:
+                    cleanup_summary = (
+                        f"; temporary receipt cleanup failed: "
+                        f"{type(cleanup_error).__name__}: {cleanup_error}"
+                    )
+                raise RuntimeError(
+                    f"postpublication verification failed: {primary_summary}; "
+                    f"failure receipt publication failed: {type(receipt_error).__name__}: {receipt_error}"
+                    f"{cleanup_summary}"
+                ) from verification_error
             raise
     finally:
         if not published and temp_dir.exists():

@@ -218,7 +218,14 @@ class TestStableEvidenceBundleContract(unittest.TestCase):
                 return real_sha256_path(Path(path))
 
             def fail_only_quarantine_rename(source, destination):
-                if Path(source) == final and Path(destination).parent.name == ".quarantine":
+                # stable_root is canonicalized by the helper; on macOS a
+                # TemporaryDirectory may be spelled through /var while its
+                # resolved path is /private/var. Match the operation boundary,
+                # not the caller's non-canonical path spelling.
+                if (
+                    Path(source).name == final.name
+                    and Path(destination).parent.name == ".quarantine"
+                ):
                     raise OSError("injected quarantine rename failure")
                 return real_rename(source, destination)
 
