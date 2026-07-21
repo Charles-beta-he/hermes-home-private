@@ -449,7 +449,20 @@
       "controls": {"generated_subject_build": "pass", "worker_typecheck": "pass", "upstream_tests": "14/14", "upstream_conformance": "pass"},
       "cannot_prove": ["production userinfo audience enforcement", "production callback exploitability", "authenticated cross-client or cross-server access"]
     },
-    "boundary": "executable scaffold conformance gap only; production exploit not established without authenticated cross-client and cross-resource tests"
+    "local_remediation_prototype": {
+      "evidence_level": "L3",
+      "mode": "isolated_generated_subject_no_real_credentials",
+      "path": "runs/raft-public-reference-review-20260721/p4-auth-conformance-harness/p5-evidence.json",
+      "evidence_sha256": "0f16cf1cd5920c97e31337c0d7b33e1cc28470e07b43fd9f4759fe7ce35551c4",
+      "closed_app_local_contracts": ["exact client_id binding", "required sub and server_id", "strict human or agent type", "openid and profile scopes", "server_id-bound audit actor", "mutable-presentation-independent audit actor"],
+      "hardened_green": {"tests": 8, "passed": 8, "failed": 0, "exit": 0},
+      "callback_normative_red": {"tests": 1, "passed": 0, "failed": 1, "exit": 1, "actual_status": 302, "required_status": 400},
+      "controls": {"generated_subject_build": "pass", "worker_typecheck": "pass", "proposal_tests": "14/14", "proposal_conformance": "pass", "patch_apply_check": "pass"},
+      "review_patch": {"path": "runs/raft-public-reference-review-20260721/p4-auth-conformance-harness/upstream-review.patch", "sha256": "68fd9feb64a5a55777f18977d2849488f88d7f41e08f6d08d5b7f93a2cf35a3b", "status": "reviewable_not_pr_ready_semantic_harness_external"},
+      "remaining_protocol_boundary": "callback transaction binding requires server-supported state, nonce, PKCE, or equivalent plus authenticated browser-session tests",
+      "cannot_prove": ["production compatibility of stricter client binding", "production callback exploitability", "upstream acceptance"]
+    },
+    "boundary": "executable scaffold gap and isolated remediation only; production exploit or closure not established without authenticated cross-client, cross-resource, and callback-transaction tests"
   },
   "unsupported_claims": [
     "Raft 1.4 is the latest public release",

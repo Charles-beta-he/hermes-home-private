@@ -905,3 +905,91 @@ worker TypeScript: tsc --noEmit -> exit 0
 - 任一生产 Raft app 可被实际跨 client 或跨 server 利用。
 
 下一有效跃迁只能来自 L4 认证运行时矩阵，或上游将这些负向用例加入真实 conformance。继续扩展同一 mock 不能替代这两个证据面。
+
+## 21. 第五轮：隔离 remediation 原型与协议剩余边界
+
+本轮没有修改固定上游快照，而是复制生成 subject app 到隔离目录，实现并验证 app 本地可执行的 fail-closed 合同：
+
+```text
+runs/raft-public-reference-review-20260721/p4-auth-conformance-harness/hardened-subject-app/
+```
+
+证据包：
+
+```text
+p5-evidence.json
+sha256: 0f16cf1cd5920c97e31337c0d7b33e1cc28470e07b43fd9f4759fe7ce35551c4
+```
+
+### 21.1 App 可本地关闭的合同
+
+原型将 `resolvePrincipal` 收敛为：
+
+```text
+expected RAFT_CLIENT_ID configured
++ userinfo.client_id exact match
++ sub present
++ server_id present
++ type in {human, agent}
++ openid/profile scopes present
++ audit actor = raft:${sub}@${server_id}
+```
+
+这使 canonical/audit identity 不再依赖可变的 `preferred_username`、`name` 或 `server_slug`。本地 semantic harness 结果：
+
+```text
+8 tests
+8 pass
+0 fail
+exit 0
+```
+
+完整生成 app build 和 worker TypeScript 校验均通过。
+
+### 21.2 Callback transaction binding 仍为协议边界
+
+独立 normative 测试仍保持 RED：
+
+```text
+1 test
+0 pass
+1 fail
+actual callback status: 302
+required status:        400
+```
+
+公开 setup/callback 协议只返回 `code`，且 `return_to` 需要精确注册；仅有 pending-login cookie 不能证明 callback code 与本地 login-init transaction 相关。未在 app 侧伪造未经服务端支持的 state、nonce 或 PKCE。
+
+关闭此项至少需要服务端支持的 transaction correlation（state、nonce、PKCE 或等价机制），再以 attacker/victim browser-session 矩阵验证。当前 RED 不能提升为生产 session-swap 漏洞。
+
+### 21.3 上游审查 patch
+
+生成了只覆盖两个上游文件的本地 patch：
+
+```text
+runs/raft-public-reference-review-20260721/p4-auth-conformance-harness/upstream-review.patch
+sha256: 68fd9feb64a5a55777f18977d2849488f88d7f41e08f6d08d5b7f93a2cf35a3b
+```
+
+控制结果：
+
+```text
+git apply --check: pass
+proposal npm test: 14/14 pass
+proposal conformance: pass
+```
+
+patch 内测试是生成模板的静态 regression guard；8/8 semantic proof 仍位于外部隔离 harness。因此该 patch 是 reviewable prototype，不是未经补齐语义测试即可发布的 PR-ready 交付物。
+
+### 21.4 结论边界
+
+本轮证明：固定公开 scaffold 的六类 app-local principal 合同可以在不访问 Raft、不使用凭据的情况下被 fail-closed，并保持现有生成/build/conformance 回归通过。
+
+本轮仍不能证明：
+
+- 更严格 client binding 与生产 token/userinfo 发行语义完全兼容；
+- 生产 callback 可被利用；
+- 上游会接受该 patch；
+- 认证后的跨 client、跨 resource 行为已经关闭。
+
+没有修改上游、push、创建 issue/PR、使用凭据或产生产品侧副作用。

@@ -401,7 +401,33 @@ executable scaffold behavior
 
 A callback probe may prove that the app does not bind login-init context to the callback code. It does not prove session swap against production unless the real authorization server, browser cookie policy, code/client binding, and victim/attacker transaction matrix are exercised.
 
-### 22. Validate protocol discovery as a typed document
+### 22. Split app-enforceable identity checks from protocol-required callback binding
+
+After a scaffold probe exposes several authentication gaps, partition remediation by authority layer instead of pretending one local patch can close all of them.
+
+An app can usually fail closed on claims already returned by authenticated userinfo:
+
+```text
+expected client configured and matched
++ stable subject present
++ stable resource/server present
++ strict principal type
++ required scopes
++ canonical actor derived from stable identifiers
+```
+
+A callback transaction cannot be locally bound if the authorization protocol does not carry a server-verifiable correlation value. A pending-login cookie only proves that this browser previously initiated some login; it does not bind a foreign callback code to that transaction. Do not invent unsupported `state`, nonce, or PKCE semantics, and do not report the boundary closed because a cookie exists.
+
+Use separate gates:
+
+1. hardened GREEN for every app-local contract;
+2. retained normative RED for the protocol-level callback gap;
+3. build/upstream regression controls;
+4. an authenticated attacker/victim browser-session matrix before any production exploit or closure claim.
+
+A source patch with static generated-code assertions can be reviewable, but it is not PR-ready semantic conformance while the executable negative harness remains external.
+
+### 23. Validate protocol discovery as a typed document
 
 A discovery probe must check all of:
 
@@ -417,7 +443,7 @@ An SPA fallback can return `200 text/html` for an unknown `/.well-known` path. N
 
 Public deployed bundles are a separate evidence channel. They can reveal deployed asset hashes, compatibility aliases, and candidate protocol strings, but minified strings are not canonical semantics and do not prove authenticated server behavior.
 
-### 23. Govern brand and wire-protocol migrations separately
+### 24. Govern brand and wire-protocol migrations separately
 
 A product rename must not silently rename protocol identifiers. Track:
 
