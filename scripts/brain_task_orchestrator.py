@@ -7966,7 +7966,8 @@ concepts: [local-brain-task-console, obsidian-trigger, task-inbox]
 然后任选一种触发方式：
 
 1. 对 Hermes 说：`处理本地大脑任务收件箱`。
-2. 终端运行：
+2. 对 Hermes 说：`多模型分解本地大脑任务池并排序`。
+3. 终端运行：
 
 ```bash
 python3 ~/.hermes/scripts/brain_task_orchestrator.py ingest-inbox --write

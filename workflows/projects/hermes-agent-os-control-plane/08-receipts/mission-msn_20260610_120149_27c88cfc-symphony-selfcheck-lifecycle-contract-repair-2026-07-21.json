@@ -1,0 +1,55 @@
+{
+  "schema": "mission_stage_evidence_v1",
+  "mission_id": "msn_20260610_120149_27c88cfc",
+  "slice": "symphony_selfcheck_lifecycle_contract_repair",
+  "status": "implemented_and_verified",
+  "objective_model": {
+    "success": "Restore the deterministic Symphony task-orchestrator selfcheck without moving an archived done task back into the active task pool.",
+    "constraints": [
+      "preserve canonical done-task archival",
+      "preserve the documented multimodel control-center trigger across dashboard regeneration",
+      "local-only reversible changes",
+      "no parent review-to-done transition"
+    ],
+    "root_cause": [
+      "render_control_center omitted a literal contract still required by the selfcheck",
+      "the selfcheck only resolved the original active task path after canonical lifecycle archival moved the done task to tasks-archived"
+    ],
+    "chosen_path": "Add an explicit archived fallback only for the historical task_log, preserve its archived readback in the selfcheck result, restore the trigger in the renderer, regenerate derived views, and update two stale wikilinks to the canonical archived path."
+  },
+  "red_evidence": {
+    "command": "python3 -m pytest -q scripts/test_symphony_task_orchestrator_selfcheck.py",
+    "result": "2 failed: archived task_log rejected; rendered control center missing multimodel trigger"
+  },
+  "green_evidence": [
+    {
+      "command": "python3 -m pytest -q scripts/test_symphony_task_orchestrator_selfcheck.py",
+      "result": "2 passed"
+    },
+    {
+      "command": "python3 -m pytest -q scripts/test_symphony_task_orchestrator_selfcheck.py scripts/test_brain_task_orchestrator.py -k 'review_gap or rendered_control_center or selfcheck_accepts_done_task_log'",
+      "result": "6 passed, 115 deselected"
+    },
+    {
+      "command": "python3 scripts/symphony_task_orchestrator_selfcheck.py --json",
+      "result": "PASS; failures=[]; warnings=[]; task_log archived=true"
+    },
+    {
+      "command": "python3 -m py_compile scripts/brain_task_orchestrator.py scripts/symphony_task_orchestrator_selfcheck.py scripts/test_symphony_task_orchestrator_selfcheck.py && git diff --check -- ...",
+      "result": "rc=0"
+    }
+  ],
+  "vault_readback": {
+    "control_center": "/Users/charles/Documents/brain/07-仪表盘/待完成任务控制台.md",
+    "archived_task_log": "/Users/charles/Documents/brain/05-实践与项目/tasks-archived/2026-05-08-symphony-inspired-task-orchestrator-landing-log.md",
+    "wikilinks_updated": [
+      "/Users/charles/Documents/brain/05-实践与项目/projects/symphony-inspired-local-task-orchestrator/Project - Symphony-inspired Local Task Orchestrator.md",
+      "/Users/charles/Documents/brain/06-治理与评审/进化日志/2026-05-08-Symphony-inspired本地任务编排落地.md"
+    ]
+  },
+  "risk": [
+    "This repairs a scoped deterministic selfcheck; it does not certify the global Agent OS or close the four review parents.",
+    "The local brain vault remains a separate canonical surface from the Hermes git repository and its mirror may still contain unrelated pre-existing drift."
+  ],
+  "rollback": "Revert the scoped git commit and restore the two vault wikilinks plus regenerated control-center text from their prior versions; no remote state was changed."
+}

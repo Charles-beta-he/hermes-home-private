@@ -34,6 +34,10 @@ REQUIRED_FILES = {
     "ai_system": "04-知识原子/ai-systems/OpenAI Symphony - Codex Orchestration.md",
 }
 
+ARCHIVED_FALLBACKS = {
+    "task_log": "05-实践与项目/tasks-archived/2026-05-08-symphony-inspired-task-orchestrator-landing-log.md",
+}
+
 REQUIRED_PHRASES = {
     "project": [
         "selective extraction, not runtime adoption",
@@ -147,6 +151,18 @@ def read_rel(rel: str) -> str:
     return (VAULT / rel).read_text(encoding="utf-8")
 
 
+def resolve_required_path(key: str, rel: str) -> tuple[Path, bool]:
+    primary = VAULT / rel
+    if primary.exists():
+        return primary, False
+    archived_rel = ARCHIVED_FALLBACKS.get(key)
+    if archived_rel:
+        archived = VAULT / archived_rel
+        if archived.exists():
+            return archived, True
+    return primary, False
+
+
 def check() -> dict:
     failures: list[str] = []
     warnings: list[str] = []
@@ -157,9 +173,9 @@ def check() -> dict:
         return {"status": "FAIL", "vault": str(VAULT), "failures": failures, "warnings": warnings}
 
     for key, rel in REQUIRED_FILES.items():
-        path = VAULT / rel
+        path, archived = resolve_required_path(key, rel)
         exists = path.exists()
-        files[key] = {"path": str(path), "exists": exists}
+        files[key] = {"path": str(path), "exists": exists, "archived": archived}
         if not exists:
             failures.append(f"missing required file: {rel}")
             continue
@@ -184,7 +200,7 @@ def check() -> dict:
 
     # Narrow wikilink check for links introduced by this landing package.
     for key, rel in REQUIRED_FILES.items():
-        path = VAULT / rel
+        path, _ = resolve_required_path(key, rel)
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
