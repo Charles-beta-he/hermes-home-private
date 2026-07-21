@@ -7010,6 +7010,7 @@ def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
     """
     actor = args.actor
     reason = args.reason or "auto-close review after proof-gated evidence"
+    dry_run = str(getattr(args, "authority", "") or "") == "dry-run"
     max_tasks = max(1, int(args.max_tasks or 1))
     candidates = [find_task(args.task)] if args.task else [t for t in sorted_tasks(include_done=False) if t.status == "review"]
     candidates = candidates[:max_tasks]
@@ -7067,6 +7068,24 @@ def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
                 or any("ratification" in str(f).lower() or "multimodel" in str(f).lower() for f in base_failures)
             )
         )
+        # A dry-run must be a strict no-write probe. Certification itself is
+        # mutating: it claims the task, writes model state, and transitions the
+        # lifecycle before returning a verdict. Proof minting and closeout are
+        # likewise forbidden in this mode.
+        if dry_run:
+            skipped.append({
+                "action": "dry_run_probe",
+                "task_id": task.id,
+                "title": task.title,
+                "lane": task.lane,
+                "would_close": not bool(base_failures),
+                "would_trigger_certification": should_trigger_certification,
+                "failures": base_failures,
+                "warnings": base_warnings,
+                "evidence": base_evidence,
+                "safety": "dry-run is read-only: no certification, proof minting, lifecycle mutation, task save, or derived refresh",
+            })
+            continue
         if should_trigger_certification:
             def _return_certification_result(current_task: Task, outcome: str, certification: dict[str, Any] | None = None, failures: list[str] | None = None, uncertain: bool = False) -> dict[str, Any]:
                 failures = [str(x) for x in (failures or []) if str(x)]

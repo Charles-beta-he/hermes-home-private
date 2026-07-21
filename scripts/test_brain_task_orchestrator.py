@@ -4583,6 +4583,38 @@ def test_auto_close_review_fails_closed_on_negative_closeout_proof_marker():
         td.cleanup()
 
 
+def test_auto_close_review_dry_run_never_starts_certification_or_mutates_task(monkeypatch):
+    mod = load_orchestrator_module()
+    task = SimpleNamespace(
+        id="dry-run-review-task", title="Dry-run review task",
+        lane="evolution", status="review", fm={},
+    )
+    monkeypatch.setattr(mod, "find_task", lambda _task_id: task)
+    monkeypatch.setattr(mod, "auto_close_review_evidence", lambda _task: ["proof:existing"])
+    monkeypatch.setattr(mod, "lifecycle_gate", lambda *_args, **_kwargs: (["multimodel_certification_required"], []))
+    monkeypatch.setattr(mod, "task_multimodel_intervention_required", lambda _task: True)
+    monkeypatch.setattr(mod, "task_multimodel_passed", lambda _task: False)
+    monkeypatch.setattr(mod, "is_mission_envelope_fm", lambda _fm: True)
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("dry-run must not invoke a mutating closeout path")
+
+    monkeypatch.setattr(mod, "command_multimodel_intervention_step", forbidden)
+    monkeypatch.setattr(mod, "append_autorun_proof_event", forbidden)
+    monkeypatch.setattr(mod, "apply_lifecycle_status", forbidden)
+    monkeypatch.setattr(mod, "save_task", forbidden)
+    result = mod.command_auto_close_review(SimpleNamespace(
+        task=task.id, actor="dry-run-test", reason="", max_tasks=1, authority="dry-run",
+    ))
+    assert result["status"] == "OK", result
+    assert result["closed_count"] == 0, result
+    probe = result["skipped"][0]
+    assert probe["action"] == "dry_run_probe", probe
+    assert probe["would_close"] is False, probe
+    assert probe["would_trigger_certification"] is True, probe
+    assert task.status == "review"
+
+
 def test_review_gap_scan_write_skips_parent_that_leaves_review_before_refresh(monkeypatch):
     mod = load_orchestrator_module()
     stale = SimpleNamespace(id="review-parent", status="review", fm={})
