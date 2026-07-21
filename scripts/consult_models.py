@@ -539,6 +539,7 @@ def _write_json_atomic(path: str, data: Any) -> None:
 
 
 STABLE_EVIDENCE_BUNDLE_SCHEMA_VERSION = "consult_models_stable_evidence_bundle_v1"
+STABLE_EVIDENCE_FAILURE_SCHEMA_VERSION = "consult_models_stable_evidence_failure_v1"
 
 
 def _sha256_path(path: Path) -> str:
@@ -647,19 +648,59 @@ def persist_stable_evidence_bundle(tick_dir: str, stable_root: str, bundle_id: s
         _fsync_directory(root)
 
         final_manifest_path = final_dir / "manifest.json"
-        with final_manifest_path.open("r", encoding="utf-8") as handle:
-            readback = json.load(handle)
-        if readback != manifest:
-            raise RuntimeError("stable evidence manifest readback mismatch")
-        for relative, metadata in readback["files"].items():
-            copied = final_dir / relative
-            if copied.stat().st_size != metadata["size_bytes"] or _sha256_path(copied) != metadata["sha256"]:
-                raise RuntimeError(f"stable evidence artifact readback mismatch: {relative}")
-        return {
-            "bundle_dir": str(final_dir),
-            "manifest_sha256": _sha256_path(final_manifest_path),
-            "readback_verified": True,
-        }
+        try:
+            with final_manifest_path.open("r", encoding="utf-8") as handle:
+                readback = json.load(handle)
+            if readback != manifest:
+                raise RuntimeError("stable evidence manifest readback mismatch")
+            for relative, metadata in readback["files"].items():
+                copied = final_dir / relative
+                if copied.stat().st_size != metadata["size_bytes"] or _sha256_path(copied) != metadata["sha256"]:
+                    raise RuntimeError(f"stable evidence artifact readback mismatch: {relative}")
+            return {
+                "bundle_dir": str(final_dir),
+                "manifest_sha256": _sha256_path(final_manifest_path),
+                "readback_verified": True,
+            }
+        except Exception as verification_error:
+            suffix = uuid.uuid4().hex
+            quarantine_root = root / ".quarantine"
+            receipt_root = root / ".failure-receipts"
+            if quarantine_root.exists() and (quarantine_root.is_symlink() or not quarantine_root.is_dir()):
+                raise RuntimeError(f"invalid stable evidence diagnostic root: {quarantine_root}") from verification_error
+            quarantine_root.mkdir(mode=0o700, exist_ok=True)
+            quarantine_dir = quarantine_root / f"{bundle_id}-{suffix}"
+            receipt_path = receipt_root / f"{bundle_id}-{suffix}.json"
+
+            os.rename(final_dir, quarantine_dir)
+            _fsync_directory(quarantine_root)
+            _fsync_directory(root)
+
+            if receipt_root.exists() and (receipt_root.is_symlink() or not receipt_root.is_dir()):
+                raise RuntimeError(f"invalid stable evidence diagnostic root: {receipt_root}") from verification_error
+            receipt_root.mkdir(mode=0o700, exist_ok=True)
+            failure_receipt = {
+                "schema_version": STABLE_EVIDENCE_FAILURE_SCHEMA_VERSION,
+                "bundle_id": bundle_id,
+                "status": "quarantined",
+                "failure_kind": "postpublication_readback_failed",
+                "quarantine_dir": str(quarantine_dir),
+                "generated_at": _utc_now_iso(),
+                "error_summary": f"{type(verification_error).__name__}: {verification_error}"[:500],
+            }
+            receipt_temp = receipt_root / f".{receipt_path.name}.tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+            try:
+                with receipt_temp.open("x", encoding="utf-8") as handle:
+                    json.dump(failure_receipt, handle, indent=2, ensure_ascii=False, sort_keys=True)
+                    handle.write("\n")
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                os.rename(receipt_temp, receipt_path)
+                _fsync_directory(receipt_root)
+            finally:
+                if receipt_temp.exists():
+                    receipt_temp.unlink()
+            raise
     finally:
         if not published and temp_dir.exists():
             shutil.rmtree(temp_dir)
