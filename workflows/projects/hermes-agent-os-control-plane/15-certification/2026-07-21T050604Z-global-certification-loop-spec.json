@@ -1,0 +1,58 @@
+{
+  "schema": "hermes_agent_os_global_certification_loop_spec_v2",
+  "created_at": "2026-07-21T05:06:04Z",
+  "mission_id": "msn_20260610_120149_27c88cfc",
+  "user_intent": "loop推进至certified",
+  "objective": "Drain every safe local and reversible certification gap, then obtain global certification only if fresh procedure E2E, operational health, and independent hash-bound verification all pass.",
+  "success_criteria": [
+    "procedure inventory remains complete with no unattested systems",
+    "all 12 required procedures are fresh and fully_connected",
+    "operational health has zero active findings without hiding unrelated state or disabling required behavior",
+    "an independent verifier receipt binds the final projection and implementation bytes",
+    "hermes agent-os status reports certified_healthy=true and eligible=true"
+  ],
+  "non_goals": [
+    "weakening validators or changing required procedures to manufacture green status",
+    "fabricating or refreshing external receipts without real execution",
+    "inferring a new external target or payload from expired grants",
+    "typing credentials or completing OAuth consent for the user",
+    "resetting, cleaning, stashing, deleting, or bulk-committing unrelated worktree state",
+    "push, deploy, payment, destructive operations, or broad fanout"
+  ],
+  "source_facts": {
+    "initial_agent_os_status_generated_at": "2026-07-21T04:29:39.261152Z",
+    "procedure_summary": {"required": 12, "fully_connected": 7, "stale": 4, "failed": 1},
+    "inventory_complete": true,
+    "operational_findings": 6,
+    "global_certification_status": "not_certified",
+    "certified_healthy": false,
+    "eligible": false,
+    "mission_state": "active 98/120 with no open decisions or pending/stale signals",
+    "parent_worktree_entries": 4745,
+    "hermes_agent_worktree_entries": 12
+  },
+  "gap_classification": [
+    {"gap": "cron.scheduler.status_readback stale", "class": "safe_local_reversible", "path": "refresh dynamic selfcheck twice and read back registry"},
+    {"gap": "providers.multimodel.quorum failed", "class": "safe_local_diagnosis_then_exact_model_call_grant", "path": "repair retained evidence contract locally; real calls require fresh exact prompt/tier/cost grant"},
+    {"gap": "delivery.origin.send stale", "class": "needs_exact_target_payload_and_external_readback", "path": "do not infer from expired Telegram grants"},
+    {"gap": "delivery.telegram.send stale", "class": "needs_exact_target_payload_and_external_readback", "path": "do not infer from expired Telegram grants"},
+    {"gap": "lark.task.readonly stale plus auth degraded", "class": "needs_fresh_exact_read_scope_and_human_OAuth_if_token_invalid", "path": "no task read before grant; no credential entry"},
+    {"gap": "dirty_worktree_observed", "class": "needs_scope_ownership_or_explicit_reviewed_baseline_waiver", "path": "preserve unrelated work"},
+    {"gap": "three enabled cron jobs currently error", "class": "mixed external_dependency_and_delivery", "path": "diagnose; do not pause or resend merely to clear health"},
+    {"gap": "independent global verifier", "class": "safe_read_only_after_all_other_axes_pass", "path": "bind exact final hashes; no early promotion"}
+  ],
+  "chosen_path": [
+    "refresh local read-only procedure evidence",
+    "repair deterministic local evidence-retention or validation defects with tests",
+    "refresh authoritative projections after each safe batch",
+    "prepare exact authority requests for remaining external/credential/ownership boundaries",
+    "run final independent verifier only after all prerequisite axes are genuinely green"
+  ],
+  "negative_acceptance": [
+    "external send count remains zero until an exact current grant exists",
+    "Lark task read count remains zero until an exact current grant exists",
+    "no worktree cleanup or waiver is synthesized",
+    "a model panel or local PASS alone cannot set certified_healthy"
+  ],
+  "closure_rule": "Continue while a safe local reversible slice remains. Stop as blocked, not certified, when only exact authority, human OAuth, external readback, or unrelated worktree ownership remains."
+}

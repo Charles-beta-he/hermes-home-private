@@ -476,6 +476,7 @@
     "profile:hermes-control-console": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-embodied-workflow-os": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-fitness-posture-coach": "project profile artifact only; runtime procedures belong to its project registry",
+    "profile:hermes-ios-native-entry": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-persona-wake-stage": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-self-extension-os": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-skill-learning": "project profile artifact only; runtime procedures belong to its project registry",
@@ -489,63 +490,63 @@
   },
   "system_inventory_attestations": {
     "cron": {
-      "basis": "cron jobs.json plus output/status readback surface audit",
+      "basis": "fresh static audit: cron jobs/status/readback contract; dynamic selfcheck cron projection; 107 targeted tests PASS",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "delivery:local": {
-      "basis": "local-only delivery path and repair packet boundary audit",
+      "basis": "fresh local delivery rehearsal receipt/readback PASS; no external send; 107 targeted tests PASS",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "delivery:origin": {
-      "basis": "origin delivery declaration and authority boundary audit",
+      "basis": "fresh authority-boundary audit plus agent_os_origin_send_e2e --preflight PASS; no external send",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "delivery:telegram": {
-      "basis": "Telegram delivery declaration and authority boundary audit",
+      "basis": "fresh authority-boundary audit plus origin/Telegram preflight PASS; no external send",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "experience-ratchet": {
-      "basis": "experience ratchet watchdog and lifecycle projection audit",
+      "basis": "fresh isolated lifecycle rehearsal PASS; watchdog validation checked 23 with no direct mutation; targeted tests PASS",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "hermes-core": {
-      "basis": "dynamic_selfcheck_coverage.py entrypoint and readback audit",
+      "basis": "fresh dynamic selfcheck and Hermes Agent OS CLI projection audit; targeted tests PASS",
       "freshness_seconds": 2592000,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "model-providers": {
-      "basis": "consult_models planner/quorum/runtime-evidence audit; static selfcheck 57/57 PASS and active route status read back on 2026-07-11",
+      "basis": "fresh consult_models static selfcheck 57/57 PASS and route status readback; runtime quorum remains separately uncertified",
       "freshness_seconds": 86400,
-      "reviewed_at": "2026-07-11T19:55:36Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "profile:hermes-agent-os-control-plane": {
-      "basis": "workflow_kernel_loop_v2 and workflow_loop_evaluator contract audit",
+      "basis": "fresh workflow loop, evaluator, and trusted read-only projection audit; agent-os control-plane tests PASS",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "profile:lark": {
-      "basis": "lark_task_flow OAuth, auth health, and readonly task entrypoint audit",
+      "basis": "fresh status-only auth guard and readonly verifier contract tests PASS; no OAuth, task read, or Lark write",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     },
     "scripts:selfcheck": {
-      "basis": "dynamic selfcheck run and artifact readback audit",
+      "basis": "fresh dynamic selfcheck entrypoint/artifact/readback audit; targeted tests PASS",
       "freshness_seconds": 604800,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-20T15:45:36Z",
       "scope_complete": true
     }
   }

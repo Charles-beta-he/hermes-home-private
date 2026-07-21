@@ -232,6 +232,76 @@ def test_recent_real_planner_calls_are_runtime_evidence_not_global_certification
     assert snapshot["certification_status"] == "runtime_quorum_verified_not_global_certification"
 
 
+def test_recent_scheduler_native_multi_model_smoke_is_runtime_evidence(tmp_path):
+    home = make_home(tmp_path)
+    output_dir = home / ".hermes" / "cron" / "output" / "smoke-job"
+    output_dir.mkdir(parents=True)
+    receipt = {
+        "timestamp": dsc.utc_now(),
+        "status": "ok",
+        "returncode": 0,
+        "scheduler_native": True,
+        "model_records": 3,
+        "failed_models": [],
+        "summary": {"models": 3, "passed": 3, "status": "pass"},
+        "records": [
+            {"provider": "openai-codex", "model": "gpt", "ok": True},
+            {"provider": "xiaomi", "model": "mimo", "ok": True},
+            {"provider": "deepseek", "model": "deepseek", "ok": True},
+        ],
+    }
+    output_path = output_dir / "2026-07-12_18-18-08.md"
+    output_path.write_text("# Cron Job: multi-model-smoke-every-4h\n\n---\n\n" + json.dumps(receipt), encoding="utf-8")
+
+    evidence = dsc.discover_recent_provider_runtime_evidence(home=home, min_quorum=2)
+
+    assert evidence is not None
+    assert evidence["status"] == "PASS"
+    assert evidence["actual_calls"] == 3
+    assert evidence["successful_calls"] == 3
+    assert evidence["evidence_refs"] == [str(output_path)]
+    assert evidence["global_certification_status"] == "runtime_smoke_not_global_certification"
+
+
+def test_provider_runtime_evidence_skips_cron_output_removed_during_scan(tmp_path, monkeypatch):
+    home = make_home(tmp_path)
+    output_dir = home / ".hermes" / "cron" / "output" / "smoke-job"
+    output_dir.mkdir(parents=True)
+    vanished_path = output_dir / "vanished.md"
+    vanished_path.write_text("removed while scanning", encoding="utf-8")
+    valid_path = output_dir / "valid.md"
+    receipt = {
+        "timestamp": dsc.utc_now(),
+        "status": "ok",
+        "returncode": 0,
+        "scheduler_native": True,
+        "model_records": 2,
+        "failed_models": [],
+        "summary": {"models": 2, "passed": 2, "status": "pass"},
+        "records": [
+            {"provider": "openai-codex", "model": "gpt", "ok": True},
+            {"provider": "xiaomi", "model": "mimo", "ok": True},
+        ],
+    }
+    valid_path.write_text(
+        "# Cron Job: multi-model-smoke-every-4h\n\n---\n\n" + json.dumps(receipt),
+        encoding="utf-8",
+    )
+    original_stat = Path.stat
+
+    def disappearing_stat(path, *args, **kwargs):
+        if path == vanished_path:
+            raise FileNotFoundError(path)
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", disappearing_stat)
+
+    evidence = dsc.discover_recent_provider_runtime_evidence(home=home, min_quorum=2)
+
+    assert evidence is not None
+    assert evidence["evidence_refs"] == [str(valid_path)]
+
+
 def test_registry_has_full_explicit_classification_and_no_empty_check_attachment(tmp_path):
     home = make_home(tmp_path)
     registry = dsc.build_coverage_registry(dsc.discover_user_system_profile(home=home))
@@ -522,9 +592,28 @@ def test_emit_cron_status_receipt_requires_readback_without_job_execution(tmp_pa
     jobs_path = out / "jobs.json"
     clusters_path = out / "cron_error_clusters.json"
     diagnostics_path = out / "delivery_proxy_diagnostics.json"
-    jobs_path.write_text(json.dumps({"jobs": [{"id": "job-1", "last_status": "ok"}]}), encoding="utf-8")
-    clusters_path.write_text(json.dumps({"summary": {"error_jobs": 0}}), encoding="utf-8")
-    diagnostics_path.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+    output_one = out / "job-error-1.md"
+    output_two = out / "job-error-2.md"
+    output_one.write_text("first error readback\n", encoding="utf-8")
+    output_two.write_text("second error readback\n", encoding="utf-8")
+    jobs_path.write_text(json.dumps({"jobs": [
+        {"id": "job-1", "last_status": "error"},
+        {"id": "job-2", "last_status": "error"},
+    ]}), encoding="utf-8")
+    clusters_path.write_text(json.dumps({
+        "summary": {"error_jobs": 2},
+        "clusters": [
+            {"cluster_id": "delivery_proxy", "jobs": [{"id": "job-1"}]},
+            {"cluster_id": "other_cron_error", "jobs": [{"id": "job-2"}]},
+        ],
+    }), encoding="utf-8")
+    diagnostics_path.write_text(json.dumps({
+        "jobs": [{"id": "job-1", "latest_output_path": str(output_one)}],
+        "all_error_output_readbacks": [
+            {"id": "job-1", "latest_output_path": str(output_one)},
+            {"id": "job-2", "latest_output_path": str(output_two)},
+        ],
+    }), encoding="utf-8")
     last_run = out / "last_run.json"
     last_run.write_text("{}\n", encoding="utf-8")
     result = {

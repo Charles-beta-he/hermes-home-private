@@ -753,6 +753,66 @@ def discover_recent_provider_runtime_evidence(home: Path | None = None, freshnes
                 "age_seconds": round(age_seconds, 1),
                 "global_certification_status": manifest.get("status"),
             }
+
+    smoke_output_records: list[tuple[float, Path]] = []
+    for output_path in (home / ".hermes" / "cron" / "output").glob("*/*.md"):
+        try:
+            smoke_output_records.append((output_path.stat().st_mtime, output_path))
+        except OSError:
+            continue
+    smoke_outputs = [
+        output_path
+        for _, output_path in sorted(smoke_output_records, key=lambda item: item[0], reverse=True)
+    ]
+    for output_path in smoke_outputs:
+        try:
+            raw = output_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if "# Cron Job: multi-model-smoke-every-4h" not in raw:
+            continue
+        payload_start = raw.find("{")
+        if payload_start < 0:
+            continue
+        try:
+            payload = json.loads(raw[payload_start:])
+        except (json.JSONDecodeError, TypeError):
+            continue
+        observed_raw = str(payload.get("timestamp") or "")
+        try:
+            observed = datetime.fromisoformat(observed_raw.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        age_seconds = max(0.0, (now - observed).total_seconds())
+        if age_seconds > freshness_seconds:
+            continue
+        records = [record for record in payload.get("records", []) if isinstance(record, dict) and record.get("ok") is True and record.get("provider")]
+        providers = {str(record["provider"]) for record in records}
+        summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+        actual_calls = int(payload.get("model_records") or summary.get("models") or 0)
+        successful_calls = int(summary.get("passed") or len(records))
+        valid = (
+            payload.get("scheduler_native") is True
+            and payload.get("status") == "ok"
+            and int(payload.get("returncode") or 0) == 0
+            and not payload.get("failed_models")
+            and summary.get("status") == "pass"
+            and actual_calls >= min_quorum
+            and successful_calls >= min_quorum
+            and len(providers) >= min_quorum
+        )
+        if valid:
+            return {
+                "status": "PASS",
+                "actual_calls": actual_calls,
+                "successful_calls": successful_calls,
+                "min_quorum": min_quorum,
+                "evidence_refs": [str(output_path)],
+                "observed_at": observed_raw,
+                "freshness_seconds": freshness_seconds,
+                "age_seconds": round(age_seconds, 1),
+                "global_certification_status": "runtime_smoke_not_global_certification",
+            }
     return None
 
 
@@ -1014,14 +1074,21 @@ def latest_output_excerpt(home: Path, job_id: str, limit: int = 1200) -> dict[st
 def build_delivery_proxy_diagnostics(home: Path | None, cron_clusters: dict[str, Any], runner: Any | None = None) -> dict[str, Any]:
     home = Path(home or Path.home())
     command_runner = runner or (lambda cmd: run_command(cmd, timeout=20))
-    delivery_clusters = [c for c in cron_clusters.get("clusters", []) if c.get("cluster_id") == "delivery_proxy"]
-    jobs = [j for c in delivery_clusters for j in c.get("jobs", [])]
-    diagnosed = []
-    for job in jobs:
+    all_error_jobs = [j for c in cron_clusters.get("clusters", []) for j in c.get("jobs", [])]
+    all_error_output_readbacks = []
+    for job in all_error_jobs:
         job_id = str(job.get("id") or "")
         if not job_id:
             continue
-        diagnosed.append({**job, **latest_output_excerpt(home, job_id)})
+        all_error_output_readbacks.append({**job, **latest_output_excerpt(home, job_id)})
+    delivery_clusters = [c for c in cron_clusters.get("clusters", []) if c.get("cluster_id") == "delivery_proxy"]
+    delivery_job_ids = {
+        str(job.get("id") or "")
+        for cluster in delivery_clusters
+        for job in cluster.get("jobs", [])
+        if str(job.get("id") or "")
+    }
+    diagnosed = [item for item in all_error_output_readbacks if str(item.get("id") or "") in delivery_job_ids]
     commands = [
         command_runner(["bash", "-lc", "ps aux | egrep 'hermes_cli.main gateway|gateway run|telegram' | egrep -v 'egrep' | head -20"]),
         command_runner(["bash", "-lc", "env | egrep -i '^(http_proxy|https_proxy|all_proxy|no_proxy|NO_PROXY)=' || true"]),
@@ -1036,8 +1103,13 @@ def build_delivery_proxy_diagnostics(home: Path | None, cron_clusters: dict[str,
         "may_send_external": False,
         "side_effects": "local_read",
         "jobs": diagnosed,
+        "all_error_output_readbacks": all_error_output_readbacks,
         "commands": normalized_commands,
-        "summary": {"diagnosed_jobs": len(diagnosed), "commands": len(normalized_commands)},
+        "summary": {
+            "diagnosed_jobs": len(diagnosed),
+            "error_output_readbacks": len(all_error_output_readbacks),
+            "commands": len(normalized_commands),
+        },
         "requires_authority_for": ["external_send", "resend", "disruptive_gateway_restart", "proxy_config_write"],
     }
 
@@ -1235,14 +1307,23 @@ def emit_selfcheck_procedure_receipts(result: dict[str, Any], output_dir: Path, 
         cron_clusters = read_json(cron_paths[1], {})
         delivery_diagnostics = read_json(cron_paths[2], {})
         jobs = cron_data.get("jobs") if isinstance(cron_data, dict) else None
-        diagnosed = delivery_diagnostics.get("jobs") if isinstance(delivery_diagnostics, dict) else None
+        error_output_readbacks = (
+            delivery_diagnostics.get("all_error_output_readbacks")
+            if isinstance(delivery_diagnostics, dict)
+            else None
+        )
         error_jobs = (cron_clusters.get("summary") or {}).get("error_jobs") if isinstance(cron_clusters, dict) else None
         status_fields_readable = isinstance(jobs, list) and all(isinstance(job, dict) and job.get("id") and "last_status" in job for job in jobs)
         output_refs_resolved = (
             isinstance(error_jobs, int)
-            and isinstance(diagnosed, list)
-            and len(diagnosed) == error_jobs
-            and all(str(item.get("output_path") or "").strip() for item in diagnosed if isinstance(item, dict))
+            and isinstance(error_output_readbacks, list)
+            and len(error_output_readbacks) == error_jobs
+            and all(
+                isinstance(item, dict)
+                and str(item.get("latest_output_path") or "").strip()
+                and Path(str(item.get("latest_output_path"))).is_file()
+                for item in error_output_readbacks
+            )
         )
         if status_fields_readable and output_refs_resolved:
             definitions["cron.scheduler.status_readback"] = {
