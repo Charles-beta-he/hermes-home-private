@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Failing contract tests for durable consult_models evidence bundles.
+"""Contract tests for durable consult_models evidence bundles.
 
-These tests intentionally describe the next implementation boundary. They must
-remain red until consult_models.persist_stable_evidence_bundle() is implemented;
-no live model/provider call is made.
+These tests exercise only the isolated persistence helper; no live
+model/provider call is made and no production retention root is selected.
 """
 
 import hashlib
@@ -12,6 +11,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 SCRIPT = Path(__file__).parent / "consult_models.py"
 spec = importlib.util.spec_from_file_location("consult_models_stable_contract", SCRIPT)
@@ -95,6 +95,67 @@ class TestStableEvidenceBundleContract(unittest.TestCase):
             self.assertTrue(result["readback_verified"])
             self.assertEqual(result["manifest_sha256"], sha256_file(bundle / "manifest.json"))
             self.assertEqual(list(bundle.parent.glob(".providers-quorum-contract.tmp-*")), [])
+
+    def test_rejects_malformed_required_json_without_publication(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            (tick / "merged_plan.json").write_text("{not-json\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "malformed or unreadable required artifact.*merged_plan.json"):
+                self.persist(tick, root / "stable")
+            self.assertFalse((root / "stable" / "providers-quorum-contract").exists())
+
+    def test_rejects_symlinked_required_artifact(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            external = root / "external.json"
+            external.write_text('{"status": "external"}\n', encoding="utf-8")
+            artifact = tick / "discussion_result.json"
+            artifact.unlink()
+            artifact.symlink_to(external)
+
+            with self.assertRaisesRegex(ValueError, "invalid required artifact.*discussion_result.json"):
+                self.persist(tick, root / "stable")
+            self.assertFalse((root / "stable" / "providers-quorum-contract").exists())
+
+    def test_rejects_unsafe_bundle_ids(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+            for bundle_id in ("", ".hidden", "../escape", "nested/name", "space name"):
+                with self.subTest(bundle_id=bundle_id):
+                    with self.assertRaisesRegex(ValueError, "bundle_id must be a filesystem-safe name"):
+                        consult.persist_stable_evidence_bundle(str(tick), str(stable), bundle_id=bundle_id)
+            self.assertFalse(stable.exists())
+
+    def test_existing_destination_is_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            existing = root / "stable" / "providers-quorum-contract"
+            existing.mkdir(parents=True)
+            sentinel = existing / "sentinel.txt"
+            sentinel.write_text("preserve-me\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(FileExistsError, "stable evidence bundle already exists"):
+                self.persist(tick, root / "stable")
+            self.assertEqual(sentinel.read_text(encoding="utf-8"), "preserve-me\n")
+            self.assertEqual(sorted(path.name for path in existing.iterdir()), ["sentinel.txt"])
+
+    def test_prepublication_copy_failure_cleans_temporary_directory(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+
+            with mock.patch.object(consult.shutil, "copyfileobj", side_effect=OSError("injected copy failure")):
+                with self.assertRaisesRegex(OSError, "injected copy failure"):
+                    self.persist(tick, stable)
+            self.assertFalse((stable / "providers-quorum-contract").exists())
+            self.assertEqual(list(stable.glob(".providers-quorum-contract.tmp-*")), [])
 
 
 if __name__ == "__main__":
