@@ -66,7 +66,11 @@ def run(env, *args, check=True):
     # Disable real taskpool event hooks for subprocess-based CLI calls so tests
     # cannot race against background multimodel/autorun side effects; direct
     # hook-specific tests monkeypatch maybe_fire_taskpool_event_hook in-process.
+    # The mission bridge runs before the general event-hook disabled guard, so it
+    # needs its own isolation flag or fixture tasks leak into the durable mission
+    # ledger and wake event-driven cron ticks after their temp vault is deleted.
     proc_env.setdefault("HERMES_TASKPOOL_EVENT_HOOK_DISABLED", "1")
+    proc_env.setdefault("HERMES_TASKPOOL_MISSION_BRIDGE_DISABLED", "1")
     r = subprocess.run(cmd, capture_output=True, text=True, env=proc_env)
     if check and r.returncode != 0:
         raise AssertionError(f"command failed {cmd}\nstdout={r.stdout}\nstderr={r.stderr}")

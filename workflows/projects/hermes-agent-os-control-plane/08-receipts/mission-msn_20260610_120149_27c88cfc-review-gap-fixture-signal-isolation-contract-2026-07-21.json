@@ -1,0 +1,69 @@
+{
+  "schema": "mission_stage_evidence_v1",
+  "mission_id": "msn_20260610_120149_27c88cfc",
+  "slice": "review_gap_fixture_signal_producer_isolation",
+  "status": "implemented_and_focused_verified",
+  "objective_model": {
+    "success": "Stop isolated orchestrator tests from writing ephemeral review-gap fixture tasks into the durable self-architecture mission ledger.",
+    "constraints": [
+      "one local bounded slice",
+      "preserve production mission bridging",
+      "no canonical task lifecycle mutation",
+      "no external send, push, deploy, payment, credentials, deletion, or config expansion"
+    ],
+    "current_state": "The subprocess test helper set HERMES_TASKPOOL_EVENT_HOOK_DISABLED=1, but maybe_fire_taskpool_event_hook invokes maybe_append_taskpool_mission_signal before checking that flag. Review-gap fixtures therefore produced durable taskpool_status_changed events whose task_path vanished with the temporary vault.",
+    "chosen_path": "Set the existing dedicated HERMES_TASKPOOL_MISSION_BRIDGE_DISABLED=1 isolation flag in the subprocess test helper, leaving production bridge semantics unchanged.",
+    "verification_requirement": "The two triggering review-gap tests must pass, and rerunning them must not increase durable mission event count or matching fixture-event counts."
+  },
+  "spec_brief": {
+    "goal": "Prevent test fixture provenance from entering the production mission control plane.",
+    "non_goals": [
+      "Do not redesign MissionStore signal disposition in this slice.",
+      "Do not remove historical stale events.",
+      "Do not weaken review-gap lifecycle gates."
+    ],
+    "source_facts": [
+      "brain_task_orchestrator.py:563 calls the mission bridge before the general hook-disabled guard at line 564.",
+      "scripts/test_brain_task_orchestrator.py run() previously disabled only the general event hook.",
+      "The triggered task IDs have zero matches in the canonical 853-task ledger including done tasks."
+    ],
+    "negative_case": "Production callers without the test-only environment flag continue to bridge mission-relevant canonical tasks."
+  },
+  "change": {
+    "file": "/Users/charles/.hermes/scripts/test_brain_task_orchestrator.py",
+    "summary": "Added proc_env.setdefault('HERMES_TASKPOOL_MISSION_BRIDGE_DISABLED', '1') with a comment documenting ordering and fixture-leak risk."
+  },
+  "evidence": [
+    {
+      "command": "python3 -m py_compile scripts/test_brain_task_orchestrator.py",
+      "result": "rc=0"
+    },
+    {
+      "command": "python3 -m pytest -q scripts/test_brain_task_orchestrator.py::test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_task scripts/test_brain_task_orchestrator.py::test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task",
+      "result": "rc=0; 2 passed in 0.85s"
+    },
+    {
+      "command": "mission_events before/after query around the focused pytest run",
+      "result": "event count remained 19157 -> 19157; exact fixture needle counts remained 9/6/12 with no increment"
+    },
+    {
+      "command": "python3 ~/.hermes/scripts/brain_task_orchestrator.py list --include-done --json",
+      "result": "rc=0; canonical task_count=853; all three triggered 2026-07-21 fixture task IDs had 0 matches"
+    },
+    {
+      "file": "/tmp/mission-review-gap-test-isolation-20260721.log",
+      "result": "focused test and before/after ledger readback log"
+    }
+  ],
+  "converge": {
+    "fixture_signal_producer_isolated": "verified by unchanged mission event count and exact needle counts",
+    "review_gap_behavior_preserved": "verified by two focused passing tests",
+    "production_bridge_unchanged": "verified by limiting the patch to the subprocess test helper",
+    "historical_stale_events_removed": "not attempted"
+  },
+  "risk": [
+    "Historical stale fixture events remain in the mission ledger; this patch prevents new emissions from this test helper but does not provide a general consumer-side canonical resolver.",
+    "Other test harnesses that invoke the orchestrator without the dedicated bridge-disabled flag may still leak fixture events."
+  ],
+  "next_step": "Audit other subprocess/in-process orchestrator test entrypoints for missing HERMES_TASKPOOL_MISSION_BRIDGE_DISABLED isolation, then add a general consumer-side stale_noncanonical disposition in a clean Hermes core source slice."
+}
