@@ -429,7 +429,27 @@
     "tests": {"passed": 14, "failed": 0},
     "upstream_pr": {"number": 18, "merged_at": "2026-07-13T11:57:43Z", "design_statement": "resolvePrincipal verifies any Raft access token via /api/oauth/userinfo", "issue_comments": 0, "reviews": 0},
     "static_readback": {"userinfo_fetch": true, "parses_sub": true, "parses_server_id": true, "parses_client_id": false, "compares_client_id_to_config": false, "requires_server_id": false, "stable_actor_uses_sub_server_id": false, "unknown_type_defaults_human": true, "fallback_server_literal": true},
-    "boundary": "coverage gap only; production exploit not established without authenticated cross-client and cross-resource tests"
+    "local_executable_probe": {
+      "evidence_level": "L3",
+      "mode": "mock_userinfo_no_real_credentials",
+      "path": "runs/raft-public-reference-review-20260721/p4-auth-conformance-harness/evidence.json",
+      "evidence_sha256": "0ce0e8381debce1dcf2fe40d159b7cd6d5dbd4b5111d0eb11537e83762ac6491",
+      "normative_red": {"tests": 8, "passed": 1, "failed": 7, "exit": 1},
+      "descriptive_green": {
+        "exit": 0,
+        "complete_principal_status": 200,
+        "cross_client_status": 200,
+        "missing_server_id_status": 200,
+        "unknown_type_status": 200,
+        "scope_mismatch_status": 200,
+        "cross_resource_actor_collision": true,
+        "actor_changed_with_mutable_handle": true,
+        "unbound_callback_status": 302
+      },
+      "controls": {"generated_subject_build": "pass", "worker_typecheck": "pass", "upstream_tests": "14/14", "upstream_conformance": "pass"},
+      "cannot_prove": ["production userinfo audience enforcement", "production callback exploitability", "authenticated cross-client or cross-server access"]
+    },
+    "boundary": "executable scaffold conformance gap only; production exploit not established without authenticated cross-client and cross-resource tests"
   },
   "unsupported_claims": [
     "Raft 1.4 is the latest public release",

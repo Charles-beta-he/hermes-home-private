@@ -382,7 +382,26 @@ Tests that confirm `userinfo` appears in generated code, that a template builds,
 
 Passing scaffold tests while these cases are absent is a coverage gap, not proof of an exploitable production vulnerability. Keep exploit claims blocked until authenticated cross-client and cross-resource runtime tests exist.
 
-### 21. Validate protocol discovery as a typed document
+### 21. Pair normative RED with descriptive GREEN for external scaffold probes
+
+When reviewing a pinned scaffold without authority to patch upstream, use two executable views of the same fixture:
+
+1. a **normative RED suite** that asserts the required fail-closed contract and must fail on every uncovered negative case;
+2. a **descriptive GREEN probe** that asserts and serializes the exact current behavior.
+
+This avoids two opposite errors: treating a deliberately failing security test as broken evidence, or turning a green observational test into proof that the behavior is safe. Bind both to the same source commit, generated-source hash, fixture payloads, command exit, and output hash. Include a complete-principal positive control so harness-wide failure cannot masquerade as a security finding.
+
+For mocked OAuth/userinfo tests, state `mock-only` in the evidence and keep these claims separate:
+
+```text
+executable scaffold behavior
+!= production authorization-server behavior
+!= authenticated exploitability
+```
+
+A callback probe may prove that the app does not bind login-init context to the callback code. It does not prove session swap against production unless the real authorization server, browser cookie policy, code/client binding, and victim/attacker transaction matrix are exercised.
+
+### 22. Validate protocol discovery as a typed document
 
 A discovery probe must check all of:
 
@@ -398,7 +417,7 @@ An SPA fallback can return `200 text/html` for an unknown `/.well-known` path. N
 
 Public deployed bundles are a separate evidence channel. They can reveal deployed asset hashes, compatibility aliases, and candidate protocol strings, but minified strings are not canonical semantics and do not prove authenticated server behavior.
 
-### 22. Govern brand and wire-protocol migrations separately
+### 23. Govern brand and wire-protocol migrations separately
 
 A product rename must not silently rename protocol identifiers. Track:
 
@@ -513,6 +532,7 @@ Incremental patterns from this source set:
 - [ ] Authenticated principals bind issuer, expected client/audience, server resource, stable subject, strict type, and required scopes.
 - [ ] Mutable handles, names, slugs, and avatars are not canonical account or audit identity.
 - [ ] Conformance includes cross-client/resource tokens, missing identity fields, unknown principal types, scope mismatch, and callback-binding negatives.
+- [ ] External scaffold probes pair normative RED with descriptive GREEN, share one fixture/source hash, include a positive control, and label mock-only limits.
 - [ ] Protocol discovery validates endpoint, status, JSON content type, schema/issuer, and origin policy; SPA fallbacks fail.
 - [ ] Legacy wire aliases are isolated, observable, and have an explicit removal gate.
 - [ ] Every architecture claim names its own L0–L5 evidence level and `cannot_prove` boundary.

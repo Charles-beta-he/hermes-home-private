@@ -813,3 +813,95 @@ conformance passed
 7. public deployed artifact 是独立证据通道，但不能覆盖 private core 或认证行为。
 
 下一证据边界仍是认证后的多 client、多 server 运行时：只有它能验证 token audience、安装边界、Agent Login、event delivery 和跨 server 负向行为。
+
+## 20. 第四轮：本地可执行 auth-contract 负向证据
+
+为避免把静态代码审查升级成未经执行的安全结论，本轮从固定 commit `21a01daeeffed2a7136e0b30275543c039f007d1` 重新生成 Hono subject app，并建立无真实凭据、无 Raft 网络调用的 mock-userinfo harness：
+
+```text
+runs/raft-public-reference-review-20260721/p4-auth-conformance-harness/
+```
+
+Spec 边界：
+
+- 目标：把 scaffold 的身份绑定、资源绑定、稳定审计身份、scope 和 callback 语义变成可执行负向用例；
+- 非目标：不创建 Raft app/account，不使用 token/secret，不请求认证端点，不改上游源码，不发布 issue；
+- 证据合同：同一 fixture 同时运行 normative RED 和 descriptive GREEN；
+- `evidence.json` sha256：`0ce0e8381debce1dcf2fe40d159b7cd6d5dbd4b5111d0eb11537e83762ac6491`。
+
+### 20.1 Normative RED
+
+命令：
+
+```text
+node --test auth-contract.expected.test.mjs
+```
+
+结果：
+
+```text
+8 tests
+1 pass   # 完整 principal 正向控制
+7 fail   # 预期的 fail-closed 合同尚未满足
+exit 1
+```
+
+七个 RED 语义是：
+
+1. `client_id != RAFT_CLIENT_ID` 仍返回 200；
+2. 缺失 `server_id` 仍返回 200；
+3. 未知 `type=service` 仍返回 200 并被降级为 human；
+4. 返回 scope 缺失 `profile` 仍返回 200；
+5. 不同 `server_id`、相同 slug/handle 折叠到同一个 audit actor；
+6. 相同 `(sub, server_id)` 改变 handle 后 audit actor 随之改变；
+7. login-init cookie 仅证明“曾发起过登录”，与 synthetic foreign transaction code 没有关联，callback 仍 302 到 `/`。
+
+RED 退出码 1 是规范断言命中覆盖缺口，不是 harness 崩溃；正向控制通过，排除了所有请求都失败造成的假阳性。
+
+### 20.2 Descriptive GREEN
+
+`node probe.mjs` 以当前真实 scaffold 行为为断言，退出 0，并生成 `observed.json`：
+
+```text
+complete_principal_status:        200
+cross_client_status:              200
+missing_server_id_status:         200
+unknown_type_status:              200
+scope_mismatch_status:            200
+cross_resource_actor_collision:   true
+actor_changed_with_mutable_handle:true
+callback_status:                  302
+callback_location:                /
+network:                          mock-only
+```
+
+双视图的意义：
+
+```text
+normative RED = 所需安全合同尚未满足
+observational GREEN = 当前行为被稳定复现
+```
+
+不能把 RED 当作测试设施失败，也不能把 GREEN 当作当前行为安全。
+
+### 20.3 回归和构建控制
+
+```text
+生成 subject app: npm run build -> exit 0
+worker TypeScript: tsc --noEmit -> exit 0
+上游 create-raft-app: 14/14 pass
+上游 conformance: passed
+固定上游 worktree: clean
+```
+
+因此差异不是生成失败、依赖失败或模板无法构建，而是现有 conformance 没有编码上述负向合同。
+
+### 20.4 结论边界
+
+本轮把证据从“L2 静态 scaffold 读回”提升为“L3 本地可执行 mock conformance gap”。它仍然不能证明：
+
+- 生产 userinfo 未实施 client/audience 检查；
+- 真实 authorization code 可被跨浏览器/session swap；
+- 任一生产 Raft app 可被实际跨 client 或跨 server 利用。
+
+下一有效跃迁只能来自 L4 认证运行时矩阵，或上游将这些负向用例加入真实 conformance。继续扩展同一 mock 不能替代这两个证据面。
