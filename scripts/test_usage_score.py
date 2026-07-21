@@ -141,6 +141,129 @@ class UsageScoreTests(unittest.TestCase):
             self.assertGreater(data["components"]["ensemble_executed"]["score"], 0)
             self.assertNotIn("ensemble_executed", data["semantic_grades"]["evidence_readiness"]["missing"])
 
+    def test_usage_score_daily_wrapper_records_timeout_and_degraded_receipts(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            wrapper_path = Path.home() / ".hermes" / "scripts" / "usage-score-daily-wrapper.py"
+            spec = importlib.util.spec_from_file_location("usage_score_daily_wrapper_under_test", wrapper_path)
+            assert spec and spec.loader
+            wrapper = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(wrapper)
+
+            wrapper.H = root
+            wrapper.SCRIPT = root / "scripts" / "usage-score.py"
+            wrapper.STATE = root / "state" / "usage-score.json"
+            wrapper.DEPRECATED_STATE = root / "scripts" / "usage-score.json"
+            wrapper.LOG = root / "logs" / "usage-score-daily-wrapper.jsonl"
+            wrapper.STATE.parent.mkdir(parents=True)
+            wrapper.STATE.write_text(json.dumps({"score": 72.26, "grade": "B", "ts": "2026-07-18T17:01:33Z"}))
+
+            class TimeoutRun:
+                stdout = "partial stdout"
+                stderr = "partial stderr"
+
+            def timeout_run(*args, **kwargs):
+                raise wrapper.subprocess.TimeoutExpired(cmd=["usage-score.py"], timeout=wrapper.TIMEOUT, output="partial stdout", stderr="partial stderr")
+
+            old_run = wrapper.subprocess.run
+            wrapper.subprocess.run = timeout_run
+            try:
+                self.assertEqual(wrapper.main(), 0)
+            finally:
+                wrapper.subprocess.run = old_run
+
+            timeout_rec = json.loads(wrapper.LOG.read_text().splitlines()[-1])
+            self.assertEqual(timeout_rec["status"], "timeout_recorded")
+            self.assertTrue(timeout_rec["run"]["timeout"])
+            self.assertEqual(timeout_rec["run"]["returncode"], 124)
+            self.assertTrue(timeout_rec["usage"]["parse_ok"])
+
+            class FailedProcess:
+                returncode = 7
+                stdout = "bad stdout"
+                stderr = "bad stderr"
+
+            wrapper.subprocess.run = lambda *args, **kwargs: FailedProcess()
+            try:
+                self.assertEqual(wrapper.main(), 0)
+            finally:
+                wrapper.subprocess.run = old_run
+
+            degraded_rec = json.loads(wrapper.LOG.read_text().splitlines()[-1])
+            self.assertEqual(degraded_rec["status"], "degraded_recorded")
+            self.assertFalse(degraded_rec["run"]["timeout"])
+            self.assertEqual(degraded_rec["run"]["returncode"], 7)
+            self.assertTrue(degraded_rec["usage"]["parse_ok"])
+
+    def test_usage_score_daily_wrapper_proposes_advisory_when_self_evolution_closure_zero(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            wrapper_path = Path.home() / ".hermes" / "scripts" / "usage-score-daily-wrapper.py"
+            spec = importlib.util.spec_from_file_location("usage_score_daily_wrapper_under_test", wrapper_path)
+            assert spec and spec.loader
+            wrapper = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(wrapper)
+
+            wrapper.H = root
+            wrapper.SCRIPT = root / "scripts" / "usage-score.py"
+            wrapper.STATE = root / "state" / "usage-score.json"
+            wrapper.DEPRECATED_STATE = root / "scripts" / "usage-score.json"
+            wrapper.LOG = root / "logs" / "usage-score-daily-wrapper.jsonl"
+            wrapper.STATE.parent.mkdir(parents=True)
+            wrapper.STATE.write_text(json.dumps({
+                "score": 78.22,
+                "grade": "B",
+                "ts": "2026-07-21T17:01:23Z",
+                "components": {
+                    "self_evolution_closure": {
+                        "score": 0.0,
+                        "max": 10,
+                        "closure_events_14d": 0,
+                    }
+                },
+            }))
+
+            class SuccessfulProcess:
+                returncode = 0
+                stdout = "usage score ok"
+                stderr = ""
+
+            old_run = wrapper.subprocess.run
+            wrapper.subprocess.run = lambda *args, **kwargs: SuccessfulProcess()
+            try:
+                self.assertEqual(wrapper.main(), 0)
+            finally:
+                wrapper.subprocess.run = old_run
+
+            rec = json.loads(wrapper.LOG.read_text().splitlines()[-1])
+            self.assertEqual(rec["status"], "ok")
+            self.assertTrue(rec["usage"]["parse_ok"])
+            self.assertEqual(rec["discussion_result"]["status"], "advisory_action_proposed")
+            self.assertEqual(rec["discussion_result"]["trigger"], "self_evolution_closure_zero")
+            self.assertEqual(rec["discussion_result"]["root_cause_class"], "verifier_gap")
+            self.assertLessEqual(
+                {"swap_model", "raise_tier", "lower_tier", "duplicate_cron"},
+                set(rec["discussion_result"]["forbidden_actions"]),
+            )
+
+    def test_usage_score_daily_cron_contract_is_local_no_agent_wrapper(self):
+        job = {
+            "name": "usage-score-daily",
+            "script": "usage-score-daily-wrapper.py",
+            "no_agent": True,
+            "enabled": True,
+            "deliver": "local",
+            "enabled_toolsets": ["terminal", "file"],
+            "schedule": {"kind": "cron", "expr": "0 1 * * *"},
+        }
+        self.assertEqual(job["name"], "usage-score-daily")
+        self.assertEqual(job["script"], "usage-score-daily-wrapper.py")
+        self.assertTrue(job["no_agent"])
+        self.assertTrue(job["enabled"])
+        self.assertEqual(job["deliver"], "local")
+        self.assertLessEqual(set(job["enabled_toolsets"]), {"terminal", "file"})
+        self.assertEqual(job["schedule"]["kind"], "cron")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
