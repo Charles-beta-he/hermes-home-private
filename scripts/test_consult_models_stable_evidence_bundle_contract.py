@@ -157,6 +157,48 @@ class TestStableEvidenceBundleContract(unittest.TestCase):
             self.assertFalse((stable / "providers-quorum-contract").exists())
             self.assertEqual(list(stable.glob(".providers-quorum-contract.tmp-*")), [])
 
+    def test_postpublication_readback_failure_is_quarantined_with_receipt(self):
+        """A published-but-unverified bundle must not remain at its success path."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+            final = stable / "providers-quorum-contract"
+            real_sha256_path = consult._sha256_path
+            hash_calls = 0
+
+            def fail_only_first_final_artifact_readback(path):
+                nonlocal hash_calls
+                hash_calls += 1
+                # Four hashes validate the source artifacts. The fifth is the
+                # first copied-artifact readback after atomic publication.
+                if hash_calls == 5:
+                    return "0" * 64
+                return real_sha256_path(Path(path))
+
+            with mock.patch.object(
+                consult,
+                "_sha256_path",
+                side_effect=fail_only_first_final_artifact_readback,
+            ):
+                with self.assertRaisesRegex(RuntimeError, "stable evidence artifact readback mismatch"):
+                    self.persist(tick, stable)
+
+            self.assertFalse(final.exists(), "unverified bundle must not remain at the success path")
+            quarantine = sorted((stable / ".quarantine").glob("providers-quorum-contract-*"))
+            self.assertEqual(len(quarantine), 1)
+            self.assertTrue((quarantine[0] / "manifest.json").is_file())
+
+            receipts = sorted((stable / ".failure-receipts").glob("providers-quorum-contract-*.json"))
+            self.assertEqual(len(receipts), 1)
+            receipt = json.loads(receipts[0].read_text(encoding="utf-8"))
+            self.assertEqual(receipt["schema_version"], "consult_models_stable_evidence_failure_v1")
+            self.assertEqual(receipt["bundle_id"], "providers-quorum-contract")
+            self.assertEqual(receipt["status"], "quarantined")
+            self.assertEqual(receipt["failure_kind"], "postpublication_readback_failed")
+            self.assertEqual(Path(receipt["quarantine_dir"]).resolve(), quarantine[0].resolve())
+            self.assertNotIn("readback_verified", receipt)
+
 
 if __name__ == "__main__":
     unittest.main()
