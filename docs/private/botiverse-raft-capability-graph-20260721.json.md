@@ -203,7 +203,7 @@
       "evidence_level": "L2"
     },
     {
-      "id": "runtime.per_agent_credential_sandbox",
+      "id": "runtime.per_agent_credential_state_isolation",
       "kind": "adapter",
       "responsibility": "isolate local CLI HOME/XDG and credential files per agent",
       "consumes": ["agent_id", "command_argv", "sandbox_root"],
@@ -239,6 +239,25 @@
       "can_be_delegated_to_agent": false,
       "cannot_prove": ["private runtime state projection implementation"],
       "evidence_level": "L1"
+    },
+    {
+      "id": "app.resource_bound_principal_verification",
+      "kind": "security_boundary",
+      "responsibility": "bind an issuer-valid token to the expected client, resource, stable subject, strict principal type, and granted scopes before app authorization",
+      "consumes": ["access_token", "expected_issuer", "expected_client_id", "expected_server_resource", "required_scopes"],
+      "produces": ["canonical_principal_tuple", "mutable_presentation_profile", "verification_result"],
+      "preconditions": ["token verification endpoint is authoritative", "expected client and resource are configured"],
+      "depends_on": ["app.capability_manifest_projection"],
+      "subnodes": ["verify_issuer", "match_client_audience", "match_server_resource", "require_stable_sub", "validate_principal_type", "validate_scopes", "separate_presentation_fields"],
+      "gates": ["token_audience_binding_gate", "stable_principal_gate", "strict_principal_type_gate", "scope_gate"],
+      "agent_wrappers": ["principal_verifier"],
+      "side_effects": "read_only",
+      "closure_states": ["verified", "rejected", "indeterminate"],
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": true,
+      "can_be_delegated_to_agent": false,
+      "cannot_prove": ["production userinfo enforces cross-client audience", "current scaffold rejects missing server_id", "current scaffold preserves client_id and scopes"],
+      "evidence_level": "L2"
     }
   ],
   "edges": [
@@ -247,9 +266,11 @@
     ["collaboration.reviewed_decomposition", "collaboration.message_task_projection"],
     ["runtime.content_free_wake_pull", "collaboration.channel_eligibility"],
     ["app.capability_manifest_projection", "app.product_semantic_action"],
-    ["app.capability_manifest_projection", "runtime.per_agent_credential_sandbox"],
+    ["app.capability_manifest_projection", "runtime.per_agent_credential_state_isolation"],
     ["app.inbound_fact_event", "runtime.content_free_wake_pull"],
-    ["runtime.lifecycle_projection", "runtime.content_free_wake_pull"]
+    ["runtime.lifecycle_projection", "runtime.content_free_wake_pull"],
+    ["app.capability_manifest_projection", "app.resource_bound_principal_verification"],
+    ["app.resource_bound_principal_verification", "app.product_semantic_action"]
   ],
   "agent_wrappers": [
     {
@@ -335,7 +356,7 @@
     },
     {
       "id": "local_cli_executor",
-      "wraps": ["runtime.per_agent_credential_sandbox"],
+      "wraps": ["runtime.per_agent_credential_state_isolation"],
       "role": "executor",
       "policy": ["use per-agent HOME and XDG", "preserve argv and exit status"],
       "authority": "local_write",
@@ -350,6 +371,15 @@
       "authority": "local_write",
       "produces": ["runtime_state_projection"],
       "cannot_do": ["let agent self-delete", "conflate reset scopes"]
+    },
+    {
+      "id": "principal_verifier",
+      "wraps": ["app.resource_bound_principal_verification"],
+      "role": "security_boundary",
+      "policy": ["require exact client, resource, subject, type, and scopes", "separate canonical identity from presentation"],
+      "authority": "read_only",
+      "produces": ["verified_principal_or_rejection"],
+      "cannot_do": ["infer audience from issuer validity", "default unknown type to human", "use mutable handles as audit identity"]
     }
   ],
   "gates": {
@@ -370,7 +400,36 @@
     "service_authority_gate": {"pass": "service_authorization_rechecked", "warn": "scope_narrowed", "fail": "service_denied", "blocked": "authority_unavailable"},
     "host_user_credential_block_gate": {"pass": "per_agent_credential_state", "warn": "child_has_broader_environment", "fail": "host_user_credentials_selected", "blocked": "boundary_unknown"},
     "visible_context_success_gate": {"pass": "notice_injected_or_durably_queued", "warn": "retryable", "fail": "rejected", "blocked": "runtime_unavailable"},
-    "human_lifecycle_authority_gate": {"pass": "authorized_transition", "warn": "none", "fail": "agent_self_mutation_denied", "blocked": "authority_unknown"}
+    "human_lifecycle_authority_gate": {"pass": "authorized_transition", "warn": "none", "fail": "agent_self_mutation_denied", "blocked": "authority_unknown"},
+    "token_audience_binding_gate": {"pass": "expected_client_and_resource_match", "warn": "legacy_alias", "fail": "cross_client_or_resource", "blocked": "audience_missing"},
+    "stable_principal_gate": {"pass": "stable_subject_and_resource_present", "warn": "presentation_changed", "fail": "canonical_identity_missing", "blocked": "identity_projection_unavailable"},
+    "strict_principal_type_gate": {"pass": "known_human_or_agent", "warn": "none", "fail": "unknown_or_missing_type", "blocked": "identity_projection_unavailable"},
+    "scope_gate": {"pass": "required_scopes_present", "warn": "scope_narrowed", "fail": "scope_missing", "blocked": "grant_projection_unavailable"}
+  },
+  "public_runtime_artifacts": {
+    "captured_at": "2026-07-21",
+    "authentication": "none",
+    "snapshot_manifest": "runs/raft-public-reference-review-20260721/live-public-20260721/manifest.json",
+    "app_bundle": {"url": "https://app.raft.build/assets/index-BPDGTSBL.js", "sha256": "252be6b7379906df812e630f71ca30fe1ab6535acaa3026ea0a8861bea39aa41", "boundary": "deployed minified artifact; candidate strings only"},
+    "oauth_discovery": {"url": "https://api.raft.build/api/oauth/.well-known/openid-configuration", "sha256": "8934add84e70c859bbef4092713d656d76eeb15abf5d8556e7fa9827787e55f3", "boundary": "public metadata; no token or authenticated behavior"},
+    "legacy_brand_residue": {"source": "robots.txt and deployed bundle", "boundary": "migration evidence only"}
+  },
+  "protocol_evolution": [
+    {"date": "2026-06-09", "commit": "d2dcee105840b9b4e1f5b9562cb76945ea13fc71", "change": "external-agent marketplace documented under Slock"},
+    {"date": "2026-06-12", "commit": "6f0a3a3a048d81d23c897095c5dc213a8b132264", "change": "plugin renamed to raft-channel while historical wire aliases remained"},
+    {"date": "2026-06-23", "commit": "3d656d88558175de18e842fa56c139b736838079", "change": "removed incorrect mention-implies-wake claim"},
+    {"date": "2026-06-25", "commit": "e8b3f04f0d40614b6915162e0eed28c2c91831d6", "change": "non-member mention corrected to notify-or-add semantics"},
+    {"date": "2026-07-07", "commit": "823b7b3d49151f9ad0534d4838c8d27c7ea3be14", "change": "Hono auth stub changed to fail closed with 501"},
+    {"date": "2026-07-11", "commit": "acfe5ace88d5279fd21d0fb102ccbc6ea681e3e3", "change": "token-bound serverinfo documented"},
+    {"date": "2026-07-13", "commit": "5d8d0d78d5241f705371da0109929eb3a8a35cb5", "change": "Hono scaffold implemented userinfo verification"},
+    {"date": "2026-07-19", "commit": "19bce24c6aed7b5dbe1ccc4a71d6cd4e42801c15", "change": "bounded Agent inbound event documented"}
+  ],
+  "scaffold_negative_case_evidence": {
+    "source_commit": "21a01daeeffed2a7136e0b30275543c039f007d1",
+    "tests": {"passed": 14, "failed": 0},
+    "upstream_pr": {"number": 18, "merged_at": "2026-07-13T11:57:43Z", "design_statement": "resolvePrincipal verifies any Raft access token via /api/oauth/userinfo", "issue_comments": 0, "reviews": 0},
+    "static_readback": {"userinfo_fetch": true, "parses_sub": true, "parses_server_id": true, "parses_client_id": false, "compares_client_id_to_config": false, "requires_server_id": false, "stable_actor_uses_sub_server_id": false, "unknown_type_defaults_human": true, "fallback_server_literal": true},
+    "boundary": "coverage gap only; production exploit not established without authenticated cross-client and cross-resource tests"
   },
   "unsupported_claims": [
     "Raft 1.4 is the latest public release",
@@ -378,6 +437,7 @@
     "230k GitHub followers",
     "private server claim is lease-backed and crash-safe",
     "third-party event delivery authorizes agent action",
-    "manifest validity proves endpoint safety or runtime readiness"
+    "manifest validity proves endpoint safety or runtime readiness",
+    "an issuer-valid token is sufficient without client, resource, type, and scope binding"
   ]
 }

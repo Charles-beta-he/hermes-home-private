@@ -575,10 +575,10 @@ docs/private/botiverse-raft-capability-graph-20260721.json.md
 
 图包含：
 
-- 10 capability nodes；
-- 8 edges；
-- 11 Agent wrappers；
-- 18 gates；
+- 11 capability nodes；
+- 10 edges；
+- 12 Agent wrappers；
+- 22 gates；
 - L0–L5 claim evidence ladder；
 - unsupported claims；
 - private-core `cannot_prove` 边界。
@@ -587,10 +587,10 @@ docs/private/botiverse-raft-capability-graph-20260721.json.md
 
 ```text
 valid: true
-node_count: 10
-edge_count: 8
-wrapper_count: 11
-gate_count: 18
+node_count: 11
+edge_count: 10
+wrapper_count: 12
+gate_count: 22
 errors: []
 ```
 
@@ -614,3 +614,202 @@ errors: []
 Raft 值得学习，但真正成熟的价值不在“多 Agent 自动分工”口号，而在把团队协作分解为几个可验证原语：共享上下文面、消息派生任务、单 owner claim、显式 review 状态、角色与权限分离、内容无关 wake、Agent 主动 pull、信号语义对应的可靠性等级。
 
 公开证据不足以证明中心化智能分配算法，也不足以审查其核心 server、router、claim 原子性、lease、reconciliation 和权限实现。后续若获得公开核心仓库、版本 1.4 release notes 或原始社交传播链接，应重新固定快照并增量审查，而不是用当前文档反向补齐宣传结论。
+
+## 15. 第三轮：未登录部署面与协议入口
+
+### 15.1 当前公开部署读回
+
+2026-07-21 对未登录公开面执行了只读读回，没有创建账号、提交表单、触发 OAuth code 或使用凭据。
+
+`app.raft.build` 当前加载：
+
+```text
+/assets/index-BPDGTSBL.js
+sha256 252be6b7379906df812e630f71ca30fe1ab6535acaa3026ea0a8861bea39aa41
+size   2,378,297 bytes
+```
+
+该 bundle 没有暴露 source-map trailer。它公开引用了 `api.raft.build/api/auth/providers`，当前返回 Google、GitHub 两个 enabled provider；这只证明未登录 provider discovery，不证明任一登录流程成功。
+
+本轮公开部署证据已永久保存至：
+
+```text
+runs/raft-public-reference-review-20260721/live-public-20260721/
+```
+
+目录中的 `manifest.json` 记录原始 URL、SHA-256、认证状态和每项证据边界。
+
+OAuth discovery 的实际公开路径不是站点根部标准猜测路径，而是：
+
+```text
+GET https://api.raft.build/api/oauth/.well-known/openid-configuration
+sha256 8934add84e70c859bbef4092713d656d76eeb15abf5d8556e7fa9827787e55f3
+```
+
+当前广告：
+
+```text
+issuer: https://api.raft.build
+token_endpoint: /api/oauth/token
+userinfo_endpoint: /api/oauth/userinfo
+serverinfo_endpoint: /api/oauth/serverinfo
+grant_types: authorization_code, urn:slock:grant-type:agent_request
+scopes: openid, profile, identity, agent:event:write, agent:notification:write
+token auth: client_secret_basic, client_secret_post
+```
+
+负向读回：
+
+- `/api/oauth/userinfo` 无 Bearer 返回结构化 401；
+- `/api/oauth/serverinfo` 无 Bearer 返回结构化 401；
+- `api.raft.build/.well-known/openid-configuration` 返回 404；
+- `app.raft.build/.well-known/openid-configuration` 返回 SPA HTML 200，而不是 OAuth metadata。
+
+因此 discovery consumer 必须使用被文档/配置明确声明的 endpoint，不能把“HTTP 200 + HTML fallback”误判为协议发现成功。
+
+### 15.2 部署 bundle 的证据边界
+
+公开 bundle 可用于发现部署构成、兼容别名和候选协议字符串，但不是 canonical source。当前可见字符串包括：
+
+```text
+raft-agent-activity-ingest.v1
+slock-external-runtime-integration.v1
+slock-external-agent-wake-event.v1
+slock.state.transition
+slock.state.violation
+/login-with-raft/setup
+/login-with-slock/setup
+```
+
+这证明生产 bundle 仍携带 Slock→Raft 兼容层，但不能仅凭 minified 字符串推断服务端路由已启用、schema 行为完整或权限正确。
+
+`robots.txt` 仍写着 `app.slock.ai`、`slock.ai`，sha256 为 `f3dc0cf362b9885623ccd7067624a15e7ca80289370c0d4cb68b750e55af412f`。这是品牌迁移残留证据，不是域名所有权、产品版本或安全漏洞证据。
+
+## 16. 第三轮：公开历史与能力演化
+
+将四个永久快照的 origin 修正到 GitHub 并抓取全部公开 refs 后，固定 HEAD 未改变；可见 commit 数为：
+
+```text
+raft-docs             80
+raft-external-agents  30
+create-raft-app       27
+raft-survey-sample     1
+```
+
+关键演化链：
+
+1. 2026-06-09：external-agent marketplace 以 Slock 品牌出现；
+2. 2026-06-12：plugin 正式改名 `raft-channel`，保留历史 wire aliases；
+3. 2026-06-23：文档删除“@mention 会唤醒 idle agent”的错误描述；
+4. 2026-06-25：非成员 mention 行为修正为 notify-or-add，而非自动送达；
+5. 2026-07-07：Hono 模板从宽松 auth stub 改为未实现时 501 fail-closed；
+6. 2026-07-11：增加 token-bound `serverinfo` 投影；
+7. 2026-07-13：Hono 模板实现 userinfo token verification；
+8. 2026-07-19：公开文档加入 bounded Agent inbound event。
+
+结论：
+
+- Raft 与 Slock 的重命名/兼容链有源码和部署 artifact 双重支持；
+- 这与 `multica` fork 没有身份链关系；
+- 历史中多次纠正“delivery、mention、wake、session”的混淆，说明这些边界不是措辞细节，而是必须进入可执行测试的协议语义；
+- 公开 release 列表和 tags 仍为空，不能从 commit 时间线推导“版本 1.4”。
+
+## 17. 第三轮：跨平面 principal 合同
+
+仅验证 token 可被 issuer 的 userinfo 接受仍不够。Agent App 的 canonical principal 至少应绑定：
+
+```text
+issuer/provider
++ client_id or audience
++ server_id/resource
++ stable sub
++ strict principal type
++ granted scopes
+```
+
+显示名、handle、server slug、avatar 等属于 mutable presentation，不应进入数据库唯一键或审计 actor 主键。
+
+正确链路：
+
+```text
+token accepted by issuer
+→ expected client/audience matches
+→ expected server/resource matches
+→ stable subject present
+→ type is exactly human|agent
+→ required scopes present
+→ app-local policy
+→ operation
+→ receipt/readback
+```
+
+App ownership、App availability、installation、publication 和 per-operation authority 也必须分离：
+
+```text
+owner can maintain app metadata/secret
+!= app published
+!= app installed on another server
+!= caller authorized for an operation
+```
+
+## 18. 第三轮负向审查：scaffold conformance 的覆盖缺口
+
+当前 `create-raft-app` Hono 模板已比早期 permissive stub 更安全：无 token 返回 401，userinfo 失败返回 401，callback 交换失败返回 501/502，cookie 使用 HttpOnly + Secure + SameSite=Lax。
+
+但对当前 `resolvePrincipal` 的静态读回显示：
+
+```text
+userinfo_fetch:                    true
+parses_sub:                        true
+parses_server_id:                  true
+parses_client_id:                  false
+compares_client_id_to_config:      false
+requires_server_id:                false
+stable_actor_uses_sub_server_id:   false
+unknown_type_defaults_human:       true
+fallback_server_literal:           true
+```
+
+具体风险面：
+
+1. userinfo 返回的 `client_id` 没有被解析或与 `RAFT_CLIENT_ID` 比较；
+2. `server_id` 不是必需字段，缺失时允许退化；
+3. audit actor 使用 mutable handle + server slug，而不是文档要求的 `(provider, sub, server_id)`；
+4. 未知或缺失 `type` 被默认归为 human，而不是 fail closed；
+5. scopes 没有进入 principal 或 route-level authorization；
+6. pending-login cookie 只区分 browser/agent callback，没有与 callback code 建立可验证关联；在协议不回传标准 `state` 的前提下，需要单独审查 login-CSRF/session-swap 防线。
+
+合并 PR `botiverse/create-raft-app#18` 的公开说明明确写为 `resolvePrincipal verifies any Raft access token via /api/oauth/userinfo`。该 PR 没有 issue comments 或 reviews；当前公开 issue 标题中也没有命中 auth/OAuth/token/scope/client/identity/CSRF/state 的独立跟踪项。这强化了“scaffold 目前只验证 issuer acceptance”的源码判断，但仍不证明生产 userinfo 是否在服务端实施额外 audience/resource 约束。
+
+重新执行 `npm test`：
+
+```text
+14 tests
+14 pass
+0 fail
+conformance passed
+```
+
+因此现有测试证明 scaffold、build 和字符串级合同，没有证明：
+
+- cross-client token 被拒绝；
+- stable canonical identity 被保留；
+- principal type 严格校验；
+- scope/resource audience 被强制；
+- callback 与发起会话绑定。
+
+这是一项公开 scaffold review gap，不是已证实的生产漏洞。生产 userinfo 可能在服务端强制 token audience；没有两个真实 client/token 的认证运行时证据，不能升级为 exploit claim。
+
+## 19. 第三轮新增吸收结论
+
+第三轮相对 Hermes 的真实增量：
+
+1. 把 identity tuple 扩展为 issuer/client/resource/sub/type/scopes，而不只 resource-bound subject；
+2. 把 mutable presentation 与 canonical/audit identity 分离；
+3. conformance 必须覆盖跨 client token、缺失 server、未知 type、scope mismatch 等负向语义，而不只检查代码中出现了 userinfo；
+4. OAuth discovery endpoint 必须验证 status、content-type 和 schema，不能接受 SPA fallback HTML；
+5. 品牌/协议迁移需要 canonical name、legacy alias、deprecation、telemetry、removal gate 五件套；
+6. 文档纠错应转化为测试：mention≠delivery、delivery≠wake、restart≠reset；
+7. public deployed artifact 是独立证据通道，但不能覆盖 private core 或认证行为。
+
+下一证据边界仍是认证后的多 client、多 server 运行时：只有它能验证 token audience、安装边界、Agent Login、event delivery 和跨 server 负向行为。

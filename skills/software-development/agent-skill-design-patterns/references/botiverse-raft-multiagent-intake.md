@@ -331,6 +331,97 @@ L5 core implementation + concurrency/failure tests
 
 A claim may not inherit the highest level available elsewhere in the system. For example, an L3 runtime-adapter test does not upgrade private task claiming or intelligent allocation beyond L1.
 
+### 19. Bind the complete principal tuple before app authorization
+
+A token that is valid at the issuer is not yet an app-authorized principal. Preserve and validate:
+
+```text
+issuer/provider
++ client_id or audience
++ server_id/resource
++ stable sub
++ strict principal type
++ granted scopes
+```
+
+Keep mutable display fields separate:
+
+```text
+preferred_username
+name
+server slug
+avatar
+```
+
+Do not use mutable handles or slugs as database identity or audit actor keys. Reject missing resource IDs and unknown principal types rather than defaulting them to a broader category.
+
+Required gate sequence:
+
+```text
+token verification
+  -> client/audience match
+  -> resource/server match
+  -> stable subject present
+  -> principal type enum match
+  -> required scopes present
+  -> app-local authorization
+```
+
+### 20. Scaffold conformance needs semantic negative cases
+
+Tests that confirm `userinfo` appears in generated code, that a template builds, or that arbitrary non-empty Bearer strings are no longer accepted do not prove token binding. Add negative cases for:
+
+- a valid token minted for another client/audience;
+- a token bound to another server/resource;
+- missing `sub` or `server_id`;
+- unknown or missing principal type;
+- missing or excessive scopes;
+- mutable handle/server-slug changes after account creation;
+- callback codes not bound to the locally initiated login flow;
+- stale/revoked token behavior and session-cookie cleanup.
+
+Passing scaffold tests while these cases are absent is a coverage gap, not proof of an exploitable production vulnerability. Keep exploit claims blocked until authenticated cross-client and cross-resource runtime tests exist.
+
+### 21. Validate protocol discovery as a typed document
+
+A discovery probe must check all of:
+
+```text
+expected endpoint
++ 2xx status
++ JSON content type
++ schema/issuer fields
++ endpoint origin policy
+```
+
+An SPA fallback can return `200 text/html` for an unknown `/.well-known` path. Never treat status alone as successful OAuth, OpenID, manifest, or agent-protocol discovery.
+
+Public deployed bundles are a separate evidence channel. They can reveal deployed asset hashes, compatibility aliases, and candidate protocol strings, but minified strings are not canonical semantics and do not prove authenticated server behavior.
+
+### 22. Govern brand and wire-protocol migrations separately
+
+A product rename must not silently rename protocol identifiers. Track:
+
+```text
+canonical product name
+canonical current wire IDs
+legacy aliases
+compatibility owner
+usage telemetry
+removal gate and date
+```
+
+Keep aliases at parsing/adaptation boundaries and emit canonical names in new outputs. Residual legacy strings in bundles or robots metadata prove migration residue, not necessarily incorrect runtime behavior.
+
+Historical documentation corrections should become regression tests when they change semantics, especially:
+
+```text
+mention != delivery
+delivery != wake
+restart != session reset
+identity != runtime session
+```
+
 ## State and failure model
 
 | Surface | Success means | Does not mean | Required recovery/readback |
@@ -367,6 +458,11 @@ Incremental patterns from this source set:
 8. Product-semantic action names plus service-local authorization recheck.
 9. Per-agent HOME/XDG credential isolation explicitly labeled weaker than a sandbox.
 10. Reset contracts that state which of process, session, workspace, identity, and membership change.
+11. Canonical principal binding across issuer, client/audience, resource, stable subject, strict type, and scopes.
+12. Separation of mutable presentation fields from database and audit identity.
+13. Semantic negative-case conformance for cross-client/resource tokens and callback binding.
+14. Typed discovery validation that rejects SPA fallback HTML and wrong endpoint placement.
+15. Explicit legacy wire-alias governance during product renames.
 
 ## Hermes adaptation
 
@@ -388,6 +484,11 @@ Incremental patterns from this source set:
 16. Model process, runtime session, workspace/memory, identity, and membership as separate state layers.
 17. Give restart, session reset, full reset, stop, and delete distinct contracts and readbacks.
 18. Attach claim-level evidence locally; do not let L3 evidence on one adapter upgrade an L1 private-core claim.
+19. Bind authenticated principals to issuer, expected client/audience, server resource, stable subject, strict type, and scopes before app-local authorization.
+20. Keep mutable handles, names, slugs, and avatars out of canonical account and audit keys.
+21. Make conformance fail on cross-client/resource tokens, missing identity fields, unknown types, scope mismatch, and unbound login callbacks.
+22. Require typed discovery documents; reject 200 HTML fallbacks and minified-bundle hints as canonical protocol evidence.
+23. Keep legacy aliases at compatibility boundaries with telemetry and an explicit removal gate.
 
 ## Verification checklist for derived systems
 
@@ -409,4 +510,9 @@ Incremental patterns from this source set:
 - [ ] Wake success proves visible-context injection or durable queueing.
 - [ ] Control signals and telemetry use explicit, different delivery semantics.
 - [ ] Runtime child state, restart count, queue loss, and profile provenance are observable.
+- [ ] Authenticated principals bind issuer, expected client/audience, server resource, stable subject, strict type, and required scopes.
+- [ ] Mutable handles, names, slugs, and avatars are not canonical account or audit identity.
+- [ ] Conformance includes cross-client/resource tokens, missing identity fields, unknown principal types, scope mismatch, and callback-binding negatives.
+- [ ] Protocol discovery validates endpoint, status, JSON content type, schema/issuer, and origin policy; SPA fallbacks fail.
+- [ ] Legacy wire aliases are isolated, observable, and have an explicit removal gate.
 - [ ] Every architecture claim names its own L0–L5 evidence level and `cannot_prove` boundary.
