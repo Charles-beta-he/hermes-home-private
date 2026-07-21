@@ -462,7 +462,23 @@
       "remaining_protocol_boundary": "callback transaction binding requires server-supported state, nonce, PKCE, or equivalent plus authenticated browser-session tests",
       "cannot_prove": ["production compatibility of stricter client binding", "production callback exploitability", "upstream acceptance"]
     },
-    "boundary": "executable scaffold gap and isolated remediation only; production exploit or closure not established without authenticated cross-client, cross-resource, and callback-transaction tests"
+    "local_template_candidate": {
+      "evidence_level": "L3",
+      "mode": "embedded_semantic_contract_mock_auth_no_real_credentials",
+      "base_commit": "21a01daeeffed2a7136e0b30275543c039f007d1",
+      "staged_tree": "1fe11dba7e7d14708e430ab8ea2e875f4051700f",
+      "staged_diff_sha256": "de820544706d832c658c9ff74d9fd58473639d4dff6153e1142bb11002b0acbb",
+      "candidate_commit": "e510afc2b37b565a8767179a596382c686b2d0d2",
+      "candidate_commit_parent": "21a01daeeffed2a7136e0b30275543c039f007d1",
+      "candidate_commit_tree": "1fe11dba7e7d14708e430ab8ea2e875f4051700f",
+      "closed_app_local_contracts": ["exact client binding", "explicit server allowlist", "required stable subject and server", "strict principal type", "identity scopes", "collision-resistant canonical actor", "route-specific action scope", "malformed token exchange fail closed", "browser session ttl cap", "browser login disabled by default"],
+      "semantic_contract": {"tests": 25, "passed": 25, "failed": 0, "exit": 0},
+      "controls": {"staged_archive_tree_match": true, "generator_tests": "14/14", "template_conformance": "pass", "generated_subject_build": "pass", "worker_typecheck": "pass", "generated_lockfile_has_tsx_and_types_node": true, "public_api_reference_matches_implementation": true, "npm_pack_files": 67, "production_audit_vulnerabilities": 0},
+      "independent_evidence_certification": {"chain_id": "eb6aefc8-79b2-4cde-88b6-9e445b747d98", "participants": ["gpt-5.5", "mimo-v2.5-pro", "deepseek-v4-pro"], "approvals": 3, "rejects": 0, "p0": 0, "p1": 0, "truth_grounded": true, "evidence_coverage": 1.0, "verified_claims": "14/14", "intent": "no_action_certification", "manifest_status": "certified", "manifest_sha256": "bcd87d51e2a2b1bc3acb799607dc4b438ca165f66bc64e5b3ca016eeca26e48a", "boundary": "advisory model ratification backed by objective L3 artifacts; not live-runtime or production certification"},
+      "remaining_protocol_boundary": "human browser Login with Raft remains disabled for secure production use until server-supported callback transaction correlation exists",
+      "cannot_prove": ["authenticated production compatibility", "human or agent live OAuth flow", "revocation and session cleanup", "cross-client and cross-resource runtime rejection", "Cloudflare deployment or rollback", "upstream acceptance"]
+    },
+    "boundary": "L3 executable scaffold gap, isolated remediation, and embedded template candidate only; production exploit or closure is not established without authenticated cross-client, cross-resource, callback-transaction, deployment, revocation, and rollback evidence"
   },
   "unsupported_claims": [
     "Raft 1.4 is the latest public release",

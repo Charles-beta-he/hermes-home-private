@@ -993,3 +993,118 @@ patch 内测试是生成模板的静态 regression guard；8/8 semantic proof �
 - 认证后的跨 client、跨 resource 行为已经关闭。
 
 没有修改上游、push、创建 issue/PR、使用凭据或产生产品侧副作用。
+
+## 22. 第六轮：模板内生产候选与默认关闭的浏览器边界
+
+本轮以固定基线 `21a01daeeffed2a7136e0b30275543c039f007d1` 建立隔离候选，并把外部 P5 harness 的身份合同移入生成模板自身。最终 staged tree：
+
+```text
+1fe11dba7e7d14708e430ab8ea2e875f4051700f
+binary staged diff sha256: de820544706d832c658c9ff74d9fd58473639d4dff6153e1142bb11002b0acbb
+```
+
+### 22.1 模板内可执行合同
+
+生成的 Hono Worker 现在要求：
+
+```text
+userinfo.client_id == RAFT_CLIENT_ID
+userinfo.server_id in RAFT_ALLOWED_SERVER_IDS
+userinfo.type in {human, agent}
+userinfo.scope contains openid and profile
+sub and server_id are non-empty
+canonical actor = raft:<percent-encoded sub>@<percent-encoded server_id>
+```
+
+percent encoding 防止 delimiter collision；显示名、handle、server slug 和 avatar 不进入稳定 actor。
+
+认证与动作授权分层：`/api/auth/me` 只验证身份合同；`POST /api/events` 还要求已配置的 `RAFT_EVENT_WRITE_SCOPE`，无策略或无 capability 均返回 `403`。显式浏览器兼容登录发起时，authorize request 同时请求 identity scopes 与已配置 route capability scope。
+
+### 22.2 OAuth/callback 安全边界
+
+默认配置 `RAFT_ALLOW_UNBOUND_BROWSER_LOGIN=false`：
+
+```text
+/api/auth/login -> 503
+不创建 pending cookie
+不发起 authorize request
+human callback without initiated compatibility flow -> 400
+```
+
+仅显式兼容模式可建立浏览器 session。兼容 cookie 为 `HttpOnly; Secure; SameSite=Lax`，且本地将 provider TTL 上限收敛为 3600 秒。token exchange 的网络错误、非 JSON、空/非字符串 access token 和非法 TTL 均 fail closed 为 `502`；direct agent callback 只返回 JSON，不创建浏览器 session。
+
+该兼容模式不是 transaction-binding 修复。公开协议没有可验证的 `state`、nonce、PKCE 或等价 correlation，因此 human browser Login with Raft 仍不得作为安全生产能力启用。
+
+### 22.3 可执行证据
+
+模板语义合同：
+
+```text
+25 tests
+25 pass
+0 fail
+```
+
+新增 RED→GREEN 证据包括：authorize scope propagation、delimiter-collision actor、malformed/network token exchange、browser TTL cap、OpenAPI stale-501 removal，以及 public API reference 仍把已实现 `/api/auth/me` 描述为 501 stub 的文档漂移。最后一项先取得 24/25 RED，再修正文档和生成器回归到 25/25 GREEN。
+
+固定 staged tree 的 clean archive 重建得到相同 tree hash，并执行：
+
+```text
+generator tests: 14/14 pass
+conformance: pass
+all six templates generated/installed/built
+Hono generated subject semantic contract: pass
+generated admin production build: pass
+generated worker tsc --noEmit: pass
+npm pack --dry-run: create-raft-app@0.2.0, 67 files
+generated package-lock: worker tsx and @types/node present
+production/full npm audit: 0 vulnerabilities
+git diff --check: pass
+```
+
+核心日志：
+
+```text
+staged-tree-v2-test.log sha256: 10457141f1780ac503e5e3d83140846450f14d9c16903a6147f4391d9c040c1a
+staged-tree-v2-pack.json sha256: 3337cdc0cb43ce26ed589ed89bb6bf85833270c5fb231c6c93cbca936b224c0c
+frozen-subject-v2-test.log sha256: 9b7af2ced696f939c2de5dc5d1a8fb55ffde8c9a7025e92f5c2854a3c8040746
+frozen-subject-v2-build.log sha256: 3280f781660d67b30c7184f4bf75cc9e7a52b22894253a43ccc14f077660e3cd
+public-doc-red.tap sha256: 10ff69fd463d80e35c0053db80a5481337b6c8c3e7fef5cfe7016e0a72130ca6
+production audit sha256: c09913e09500ef57a857d63c8c7c4b92fcdfdd3dca19b77daa84042bd4da86be
+```
+
+### 22.4 Immutable candidate 与独立证据认证
+
+最终候选已创建本地提交：
+
+```text
+commit: e510afc2b37b565a8767179a596382c686b2d0d2
+parent: 21a01daeeffed2a7136e0b30275543c039f007d1
+tree:   1fe11dba7e7d14708e430ab8ea2e875f4051700f
+```
+
+提交后 worktree clean，且 `commit^{tree}` 精确匹配冻结 tree。未 push。
+
+独立认证使用显式拆分的 14 项 exact-tree/L3 证据合同。GPT-5.5、MiMo V2.5 Pro、DeepSeek V4 Pro 三个独立参与者均返回 no-action approval；truth gate 为 grounded、evidence coverage 为 1.0、14/14 claims verified、P0/P1 为 0。最终 manifest：
+
+```text
+chain: eb6aefc8-79b2-4cde-88b6-9e445b747d98
+status: certified
+approvals: 3/3
+agreement floor: 0.95
+manifest sha256: bcd87d51e2a2b1bc3acb799607dc4b438ca165f66bc64e5b3ca016eeca26e48a
+```
+
+该认证是客观 artifacts 支撑的 L3 本地证据认证；模型判断仍为 advisory，不证明真实协议、部署或生产运行时安全。
+
+### 22.5 结论边界
+
+上述是固定 staged tree 的 L3 本地生成、mock-auth、构建、打包和审计证据。它不证明：
+
+- 真实 Raft token 与更严格 client/resource 合同兼容；
+- 真实 human/agent OAuth 流程、撤销和 session cleanup；
+- 两 client × 两 server 的 cross-client/cross-resource 负向矩阵；
+- Cloudflare 部署、回滚、生产流量或上游接受；
+- human browser callback transaction binding。
+
+未使用凭据，未部署，未 push，未创建 issue/PR，未修改生产资源。只有认证 L4、协议 binding、部署和回滚读回齐备后，才可评估 `production-ready`。

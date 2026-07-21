@@ -467,6 +467,42 @@ restart != session reset
 identity != runtime session
 ```
 
+### 25. Separate identity scopes from action capabilities
+
+Do not turn every route capability into a global login prerequisite. Resolve a principal with the smallest identity contract first, then enforce action-specific scopes at each side-effect route:
+
+```text
+verified issuer/client/resource/sub/type + identity scopes
+  -> authenticated principal
+  -> route policy configured
+  -> route capability present
+  -> side effect
+```
+
+Use `401` when the token cannot form a verified principal and `403` when the principal is valid but the route policy is missing or the capability was not granted. Authorization initiation must request every capability required by the generated app's enabled mutation routes; otherwise a locally correct route guard can make every newly issued session unusable.
+
+### 26. Disable browser OAuth when transaction binding is unavailable
+
+If the provider does not carry a server-verifiable `state`, nonce, PKCE challenge, or equivalent transaction correlation, a pending-login cookie is not a substitute. The safe generated default is to disable browser initiation and browser-session creation, while clearly labeling any opt-in path as a compatibility exception.
+
+Keep direct machine callback exchange separate from browser session creation. Validate token endpoint responses at runtime, catch network/JSON failures, require a non-empty string access token, reject invalid TTLs, cap browser-cookie lifetime locally, and return a no-store upstream failure. These controls reduce malformed-response and persistence risk but do not close the missing transaction-binding boundary.
+
+### 27. Put semantic security conformance inside the template
+
+An external review harness can reveal a gap, but the durable regression belongs in the generated template and in the generator's own build loop. For auth-bearing scaffolds, exercise generated code with positive and negative cases for:
+
+- exact client and resource binding;
+- missing/unknown identity claims;
+- identity versus action scopes;
+- mutable-presentation drift and delimiter-collision identities;
+- disabled browser initiation, stale pending state, and direct-machine callback separation;
+- malformed token responses, network failures, and bounded cookie TTL;
+- generated OpenAPI responses matching implemented behavior.
+
+Before freezing, export the exact staged Git tree, rebuild it in a clean directory, verify the reconstructed tree hash, run every template generation/build, and hash the evidence. A passing worktree before the final test or documentation patch does not certify the final staged bytes.
+
+Scoped source-evidence note: this paragraph records the inspected Raft candidate only. Applicability: use it as evidence for the exact-tree certification pattern above. Anti-condition: do not promote these artifact IDs, model votes, or local results into production authority or a universal requirement. The inspected immutable local commit is `e510afc2b37b565a8767179a596382c686b2d0d2`; its parent is the pinned upstream commit and its commit tree exactly matches the frozen tree. A truth-grounded three-participant no-action round ratified 14/14 explicit L3 evidence claims with no P0/P1. The transferable structure is exact commit/tree binding plus claim-level objective evidence and independent advisory votes; live protocol and production evidence remain separate gates.
+
 ## State and failure model
 
 | Surface | Success means | Does not mean | Required recovery/readback |
@@ -508,6 +544,9 @@ Incremental patterns from this source set:
 13. Semantic negative-case conformance for cross-client/resource tokens and callback binding.
 14. Typed discovery validation that rejects SPA fallback HTML and wrong endpoint placement.
 15. Explicit legacy wire-alias governance during product renames.
+16. Identity-scope resolution separated from route-specific action capability enforcement.
+17. Browser OAuth disabled by default when callback transaction binding is unavailable.
+18. Generated-template semantic security tests plus exact staged-tree reconstruction before freeze.
 
 ## Hermes adaptation
 
@@ -534,6 +573,9 @@ Incremental patterns from this source set:
 21. Make conformance fail on cross-client/resource tokens, missing identity fields, unknown types, scope mismatch, and unbound login callbacks.
 22. Require typed discovery documents; reject 200 HTML fallbacks and minified-bundle hints as canonical protocol evidence.
 23. Keep legacy aliases at compatibility boundaries with telemetry and an explicit removal gate.
+24. Resolve identity independently, then enforce each mutation route's configured action capability with 401/403 separation.
+25. Keep browser login disabled when the protocol cannot bind callback to initiation; label opt-in compatibility paths literally.
+26. Promote external security probes into generated-template tests and certify the exact staged tree, not an earlier worktree.
 
 ## Verification checklist for derived systems
 
@@ -558,6 +600,9 @@ Incremental patterns from this source set:
 - [ ] Authenticated principals bind issuer, expected client/audience, server resource, stable subject, strict type, and required scopes.
 - [ ] Mutable handles, names, slugs, and avatars are not canonical account or audit identity.
 - [ ] Conformance includes cross-client/resource tokens, missing identity fields, unknown principal types, scope mismatch, and callback-binding negatives.
+- [ ] Identity scopes form the principal; every side-effect route separately enforces its configured action capability and distinguishes 401 from 403.
+- [ ] Browser OAuth/session creation is disabled by default when callback initiation cannot be transaction-bound; compatibility exceptions are explicit and bounded.
+- [ ] Generated-template security tests run from a reconstructed exact staged tree before immutable freeze.
 - [ ] External scaffold probes pair normative RED with descriptive GREEN, share one fixture/source hash, include a positive control, and label mock-only limits.
 - [ ] Protocol discovery validates endpoint, status, JSON content type, schema/issuer, and origin policy; SPA fallbacks fail.
 - [ ] Legacy wire aliases are isolated, observable, and have an explicit removal gate.
