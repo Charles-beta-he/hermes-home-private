@@ -1,7 +1,7 @@
 ---
 name: spec-stateful-sdd-workflow
 description: "Use when a complex task needs spec-stateful SDD: canonical specs, subagent execution, interaction gates, evidence gates, acceptance closure, and governed learning writeback."
-version: 1.0.0
+version: 1.0.1
 author: Hermes Agent
 license: MIT
 metadata:
@@ -186,6 +186,7 @@ Rules:
 3. Independent tasks may run in parallel; tasks touching the same files or dependent state run serially.
 4. Each significant task gets two-stage review: spec compliance first, code/quality/security review second.
 5. A subagent's self-report is not proof. Verify changed files, commands, or external handles in the main session.
+6. Completion is a serial evidence transition: `execute → verify → review → fix → reverify → re-review → accept/QA → mark done`. Never run `mark done` in parallel with review or before required acceptance/QA. Any fix invalidates the prior verification/review evidence for the changed digest. Keep implementation, verification, review, acceptance, and external projection as separate states; a checkbox or agent `fixed=true` is not canonical completion.
 
 ## Stage 5 — Evidence Gate
 
