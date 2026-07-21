@@ -15,15 +15,20 @@ Falsifier: narrow these patterns if atomic claims do not prevent duplicate work,
 - Docs commit: `19bce24c6aed7b5dbe1ccc4a71d6cd4e42801c15`.
 - External runtime repo: `https://github.com/botiverse/raft-external-agents`.
 - External runtime commit: `72c31894f933b9aa9243195d038d66ee79589593`.
+- Agent app scaffold repo: `https://github.com/botiverse/create-raft-app`.
+- Agent app scaffold commit: `21a01daeeffed2a7136e0b30275543c039f007d1`.
+- OAuth consumer sample: `https://github.com/botiverse/raft-survey-sample` at `3f4b6f6c87efdc623dc989bd268a94a42d2c6bb7`.
 - No public `botiverse/raft` repository was accessible at inspection time.
-- Neither inspected public repo declares a repository license. Treat the material as reference-only; do not copy implementation text or code into Hermes.
+- The docs, external runtime, and survey sample declare no repository license. `create-raft-app` package metadata declares MIT but the repository has no standalone license file. Treat source-specific material as reference-only unless rights are independently resolved; do not copy implementation text or code into Hermes.
 - Reproducible snapshots: `runs/raft-public-reference-review-20260721/`.
 
 Local verification:
 
 - External runtime: typecheck passed; 32/32 tests passed; production bundle built.
 - Documentation: VitePress build passed; generated agent-artifact freshness check passed.
-- These checks validate only the two public repositories, not the private collaboration server or its assignment logic.
+- Agent app scaffold: 14/14 tests passed, all six templates scaffolded and built, conformance passed, package dry-run succeeded.
+- OAuth consumer sample: typecheck passed; 282/282 tests passed.
+- These checks validate only the public repositories, not the private collaboration server, allocator, event ingress implementation, or assignment logic.
 
 ## What the public evidence supports
 
@@ -166,6 +171,203 @@ These controls do not prove central routing quality.
 - Latest version 1.4: unsupported. Public package versions were docs `0.1.0`, repository root `0.1.0`, and channel plugin `0.3.1`; no public release/tag established `1.4`.
 - 230k+ attention and viral in 17 hours: unverified social metrics, not architecture evidence.
 
+## Deepened public evidence: agent-facing app boundary
+
+Scope: source-specific evidence stays in this bounded intake; derived contracts below are class-level only. Applicability: agent-facing app manifests, third-party fact ingress, service actions, and local CLI credential boundaries. Anti-condition: do not infer private server internals, runtime authority, or license rights from these public scaffolds.
+
+A second public repository, `botiverse/create-raft-app`, exposes a maintained scaffold and conformance model for Raft-native applications:
+
+- commit: `21a01daeeffed2a7136e0b30275543c039f007d1`;
+- package version: `0.2.0`;
+- package metadata declares MIT, but the repository has no standalone `LICENSE` file;
+- 14/14 Node tests passed, including scaffold-and-build checks for all six templates;
+- its conformance suite passed;
+- a public OAuth consumer sample at `botiverse/raft-survey-sample` commit `3f4b6f6c87efdc623dc989bd268a94a42d2c6bb7` passed typecheck and 282/282 tests, but declares no license.
+
+These sources do not reveal the private multi-agent allocator. They do add evidence for capability projection, external facts, identity boundaries, and agent-specific credential isolation.
+
+### 11. Manifest is capability metadata, never authority
+
+An agent-facing manifest may declare:
+
+```yaml
+execution_mode: http_api | local_cli
+actions: product-semantic operations
+context_check: current service/account context
+credential_boundary: per-agent state rules
+positive_capabilities: what the adapter supports
+negative_capabilities: what it explicitly cannot do
+```
+
+Keep these relations explicit:
+
+```text
+manifest validity != installation
+installation != grant
+role/app type != authority
+conversation role != authority
+capability discovery != runtime readiness
+```
+
+The inspected conformance code rejects `appType` and `conversationRole` when they are used as authority sources. Reusable authority sources remain registration, grant, scope, review, and runtime permission.
+
+### 12. Negative capabilities are executable review inputs
+
+A capability contract should not only say what it can do. It should explicitly block adjacent surfaces such as:
+
+- reading or sending collaboration messages;
+- using host-user credentials;
+- exposing tokens or raw identity profiles;
+- creating custom privileged action cards;
+- accepting third-party action requests;
+- executing shell fragments from a remote manifest.
+
+Validate positive and negative capabilities together. A template that gains a new capability without revisiting its negative set should fail review.
+
+### 13. External events are facts, not commands
+
+Model third-party agent ingress as a typed fact envelope:
+
+```yaml
+source_type: third_party_app
+app_identity: required
+target_agent: exactly one
+resource: exact server + agent-inbound audience
+kind: event | notification
+summary: bounded
+payload: structured, bounded, inert data
+payload_hash: required
+external_event_id: stable retry key
+ttl: bounded
+```
+
+Required flow:
+
+```text
+declared non-default scope
+  -> one-agent access request
+  -> resource-bound short-lived token
+  -> bounded event validation
+  -> idempotency check
+  -> neutralize mention/ref/control-shaped text
+  -> async queue
+  -> provenance-preserving delivery
+```
+
+The payload remains untrusted data even after authentication. It may inform an agent that a meeting started; it does not authorize joining the meeting. Reserve command or action-request kinds rather than letting callers encode them inside free text.
+
+### 14. Scope, target, resource, idempotency, and TTL form one ingress contract
+
+Any one control is insufficient:
+
+- Scope limits event kind.
+- Target binds one agent.
+- Resource binds the selected server and ingress audience.
+- Idempotency prevents duplicate delivery under retry.
+- TTL prevents stale facts from becoming current triggers.
+- Payload hash supports evidence and readback.
+- Provenance keeps the app distinct from human, agent, and system actors.
+
+Treat `202 queued` as accepted asynchronous work, not delivered or consumed work. A deduplicated retry should return the original event identity rather than enqueue again.
+
+### 15. Use product-semantic actions, not route mirrors
+
+Expose `summarize-note`, not every internal notes endpoint. Product-semantic actions make install review, authority review, audit logs, and future compatibility understandable.
+
+At invocation time:
+
+```text
+discovered action
+  -> installed/granted action
+  -> validate parameters
+  -> re-check service-local authorization
+  -> execute product operation
+  -> structured result/error + receipt
+```
+
+The service remains responsible for its own authorization. Agent login proves identity and selected server context; it does not replace app policy.
+
+### 16. Per-agent credential state is useful but not a full sandbox
+
+For local CLI adapters, isolate:
+
+```text
+HOME
+XDG_CONFIG_HOME
+XDG_DATA_HOME
+credential file path
+```
+
+per agent, and invoke a bare command with argv rather than a shell fragment. Preserve stdout/stderr and child exit status.
+
+This prevents accidental reuse of the host user's global login, but it does not prove filesystem, network, process, or secret-exfiltration isolation. State that boundary explicitly.
+
+### 17. Separate identity, session, workspace, and process lifecycle
+
+A persistent Agent identity should survive ordinary process and session resets:
+
+| Operation | Process | Runtime session/context | Workspace/memory | Identity/membership |
+|---|---|---|---|---|
+| restart | replaced/resumed | preserved | preserved | preserved |
+| session reset | restarted/fresh | cleared | preserved | preserved |
+| full reset | restarted/fresh | cleared | cleared | preserved |
+| stop | stopped | retained by policy | preserved | preserved |
+| delete | removed | removed | cleaned | removed; historical messages remain |
+
+Do not use one overloaded `reset` operation. Bind destructive reset/delete transitions to human authority and present their exact preservation scope before execution.
+
+### 18. Evidence ladder for external-agent claims
+
+Use these levels:
+
+```text
+L0 third-party promotion
+L1 product documentation
+L2 public adapter/scaffold code
+L3 pinned local tests/build
+L4 authenticated product runtime readback
+L5 core implementation + concurrency/failure tests
+```
+
+A claim may not inherit the highest level available elsewhere in the system. For example, an L3 runtime-adapter test does not upgrade private task claiming or intelligent allocation beyond L1.
+
+## State and failure model
+
+| Surface | Success means | Does not mean | Required recovery/readback |
+|---|---|---|---|
+| Wake endpoint | notice injected or durably queued into visible context | message consumed | retry/dedup + runtime state |
+| Message pull | authoritative content fetched | task accepted | cursor/read state |
+| Task claim | authoritative owner is caller | lease is crash-safe | claim version + stale reconciliation |
+| Agent result | result posted and task moved to review | accepted/done | exact review evidence |
+| Inbound event | queued or deduped under one event ID | delivered, consumed, or authorized action | event ID/hash/expiry/status |
+| Manifest | syntax and contract valid | installed, granted, reachable, or safe | install/grant/runtime probes |
+| App action | service operation returned structured result | product acceptance | service receipt + domain readback |
+| Activity telemetry | observation accepted into bounded queue | complete behavioral history | dropped count and queue health |
+| Reset | declared state layers changed | every state/cache was removed | post-state of process/session/workspace/identity |
+
+## Hermes delta map
+
+Already strong in Hermes:
+
+- taskpool lifecycle, claim/lease/reconciliation;
+- AuthorityGrant and exact-target side-effect gates;
+- evidence/readback and `review != done`;
+- gateway supervision and bounded telemetry;
+- capability graphs with `cannot_do`.
+
+Incremental patterns from this source set:
+
+1. First-class message-to-task provenance projection.
+2. Channel/context eligibility as a pre-router before scored assignment.
+3. Human-reviewed decomposition frontier before fan-out.
+4. Formal evidence levels that prevent adapter tests from upgrading private-core claims.
+5. Agent app manifests with positive and negative capability conformance.
+6. Third-party fact ingress that is structurally unable to become command authority.
+7. Resource-bound one-agent tokens combined with idempotency, TTL, payload hash, and inert rendering.
+8. Product-semantic action names plus service-local authorization recheck.
+9. Per-agent HOME/XDG credential isolation explicitly labeled weaker than a sandbox.
+10. Reset contracts that state which of process, session, workspace, identity, and membership change.
+
 ## Hermes adaptation
 
 1. Project messages into tasks without losing source provenance.
@@ -176,6 +378,16 @@ These controls do not prove central routing quality.
 6. Use metadata-only wakes and authoritative pull for external runtime integrations.
 7. Match reliability guarantees to signal semantics.
 8. Surface supervision state, restarts, drops, and provenance as first-class evidence.
+9. Treat app/skill manifests as discovery metadata; require separate install, grant, scope, review, and runtime-permission gates.
+10. Validate `negativeCapabilities` together with positive capabilities.
+11. Define third-party ingress as typed facts whose authenticated payload remains inert, untrusted data.
+12. Bind ingress jointly to scope, exact agent/server resource, idempotency, TTL, hash, provenance, and neutralized rendering.
+13. Separate event accepted, queued, deduped, delivered, consumed, and acted states.
+14. Prefer product-semantic actions and re-check authorization in the owning service.
+15. Use per-agent HOME/XDG credential state while describing it honestly as weaker than an OS sandbox.
+16. Model process, runtime session, workspace/memory, identity, and membership as separate state layers.
+17. Give restart, session reset, full reset, stop, and delete distinct contracts and readbacks.
+18. Attach claim-level evidence locally; do not let L3 evidence on one adapter upgrade an L1 private-core claim.
 
 ## Verification checklist for derived systems
 
@@ -186,7 +398,15 @@ These controls do not prove central routing quality.
 - [ ] Proposed decomposition is checked for overlap and dependencies before fan-out.
 - [ ] `in_review -> done` requires fresh approval/readback.
 - [ ] Capability and authority are modeled separately.
+- [ ] Manifest conformance checks positive and negative capabilities and grants no authority by itself.
+- [ ] Third-party event scope is non-default, exact-targeted, resource-bound, bounded, idempotent, expiring, hashed, and provenance-preserving.
+- [ ] Event payload is rendered as inert data and cannot encode action authority.
+- [ ] Accepted, queued, deduped, delivered, consumed, and acted are distinct states.
+- [ ] Product-semantic actions re-check service-local authorization and produce a readback receipt.
+- [ ] Local CLI uses per-agent credential state and does not claim filesystem/network sandboxing without proof.
+- [ ] Reset/readback explicitly covers process, session, workspace/memory, identity, and membership.
 - [ ] Wake transport carries no untrusted content bodies.
 - [ ] Wake success proves visible-context injection or durable queueing.
 - [ ] Control signals and telemetry use explicit, different delivery semantics.
 - [ ] Runtime child state, restart count, queue loss, and profile provenance are observable.
+- [ ] Every architecture claim names its own L0–L5 evidence level and `cannot_prove` boundary.

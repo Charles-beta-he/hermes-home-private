@@ -364,7 +364,252 @@ Hermes 已有 taskpool、AuthorityGrant、proof/readback 和 runtime supervision
 - 在没有 lease/stale reconciliation 证据时声称 claim 能处理崩溃恢复；
 - 把 HTTP accept、wake injected、model processed、task completed 合并成一个 success。
 
-## 10. 最终判断
+## 10. 第二轮公开面扩展
+
+### 10.1 Botiverse 组织仓库拓扑
+
+第二轮使用 GitHub Organization API 重新枚举公开仓库。调用时必须显式使用 GET；`gh api ... -f per_page=100` 未指定 `-X GET` 会被解释为创建仓库的 POST，返回 403。这是 API 调用方式错误，不是组织拒绝公开读取。
+
+与 Raft 产品直接相关的新增公开面：
+
+- `botiverse/create-raft-app`：Raft-native 应用脚手架；
+- `botiverse/raft-survey-sample`：Login with Raft 的 Cloudflare Worker 示例；
+- `botiverse/agent-screen-recorder`：Raft Agent 的 CLI-first 录屏工具；
+- `botiverse/kimi-code-sdk`：供 Botiverse/Raft 消费的上游镜像；
+- `botiverse/multica`：`multica-ai/multica` 的 fork，不是 Raft 核心仓库。
+
+`botiverse/multica` 的出现不能证明 Raft 是 Multica 重命名或基于 Multica 实现。它在组织中是公开 fork，品牌、域名、代码历史和版本仍然不同，因此继续作为相似架构参考而非身份链证据。
+
+### 10.2 可访问产品运行面
+
+对 `https://app.raft.build/` 进行了未登录只读访问：
+
+- 页面可达；
+- 只公开 Sign In、Forgot password、Create account、Terms、Privacy 等入口；
+- 未进入认证流程；
+- 没有账号内 task claim、agent routing、status、event delivery 的运行时读回证据。
+
+因此这里只有“公开登录页当前可达”的网络读回证据，不属于 L4。L4 专指认证后的产品行为读回；核心协作声明仍没有 L4 行为验证。
+
+## 11. Agent App 与外部事件模型
+
+### 11.1 新固定快照
+
+`botiverse/create-raft-app`：
+
+- commit：`21a01daeeffed2a7136e0b30275543c039f007d1`
+- package version：`0.2.0`
+- package metadata：MIT
+- GitHub repository license metadata：NONE
+- 本地快照：`runs/raft-public-reference-review-20260721/create-raft-app`
+
+`botiverse/raft-survey-sample`：
+
+- commit：`3f4b6f6c87efdc623dc989bd268a94a42d2c6bb7`
+- package version：`0.1.0`
+- private package：true
+- repository license：未声明
+- 本地快照：`runs/raft-public-reference-review-20260721/raft-survey-sample`
+
+`create-raft-app` package 声明 MIT，但仓库没有独立 `LICENSE` 文件。该声明可作为 npm 包元数据事实，不能自动扩张为所有组织资料均为 MIT。
+
+### 11.2 Manifest 的正确定位
+
+`create-raft-app` 为每种模板提供 `raft-template.json`，其中明确区分：
+
+- `capabilities`；
+- `negativeCapabilities`；
+- `authoritySources`；
+- `appType`；
+- `conversationRole`。
+
+Conformance validator 直接拒绝把 `appType` 或 `conversationRole` 放入 authority source。当前允许的 authority source 是：
+
+```text
+registration
+grant
+scope
+review
+runtime-permission
+```
+
+这证明其设计层明确遵守：
+
+```text
+Manifest = capability/discovery projection
+Manifest != authorization
+Role != authority
+App type != authority
+```
+
+这比普通 tool manifest 多了一项重要能力：把“明确不能做什么”纳入机器校验。
+
+### 11.3 第三方 Agent Inbound Event
+
+Raft 文档描述的 Agent inbound event 是信息通道，不是 command channel。合同要素：
+
+- App 预先声明非默认 scope；
+- access request 选择一个具体 agent；
+- token 绑定具体 server 的 `agent-inbound` resource；
+- kind 只允许 `event` 或 `notification`；
+- `action_request` 保留并拒绝；
+- payload 最大 32 KiB；
+- summary 最大 500 字符；
+- `externalEventId` 在 app + target agent 内唯一；
+- TTL 默认 24 小时，最大 7 天；
+- 接受时返回 event id、queued/deduped、expiresAt 和 payload hash；
+- `@mention`、Raft ref、Agent markup 等控制形文本被中和为数据；
+- App 不能读取消息、冒充人/Agent 发言、改目标、从 payload 文本获得操作权限。
+
+可迁移的完整安全关系是：
+
+```text
+scope
++ exact target
++ resource audience
++ idempotency
++ TTL
++ payload hash
++ provenance
++ inert rendering
+!= action authority
+```
+
+其中任一控制都不能替代其他控制。
+
+### 11.4 Product-semantic Action
+
+Agent manifest 的 action 应表示可审查的产品动作，例如 `summarize-note`，而不是暴露全部内部 HTTP route。调用链应为：
+
+```text
+manifest discovery
+→ app installed/available
+→ grant/scope/runtime permission
+→ parameter validation
+→ service-local authorization recheck
+→ operation
+→ structured result/error
+→ domain readback
+```
+
+这使安装审查、权限审查、审计日志和版本兼容都围绕稳定业务语义，而不是底层接口形状。
+
+### 11.5 Agent 本地凭据隔离
+
+Local CLI wrapper 会为每个 Agent 重写：
+
+- `HOME`；
+- `XDG_CONFIG_HOME`；
+- `XDG_DATA_HOME`；
+- Agent token file；
+- Agent/App identity env。
+
+并用 argv 启动 child，透传 stdio 和 exit code。
+
+这是“防止误用宿主用户全局登录”的凭据边界，但不是 OS sandbox：
+
+- child 仍继承大量环境变量；
+- 没有网络隔离；
+- 没有文件系统 namespace；
+- 没有证明 child 无法读取其他路径；
+- Windows 分支使用 `shell: true`，需要额外参数边界审计。
+
+因此吸收时应命名为 `per_agent_credential_state_isolation`，不能命名为通用 sandbox。
+
+## 12. 第二轮验证
+
+### 12.1 `create-raft-app`
+
+执行：
+
+```text
+npm ci
+npm test
+npm pack --dry-run
+```
+
+结果：
+
+- 14 tests / 14 pass / 0 fail；
+- 六种模板均完成 scaffold-and-build；
+- conformance passed；
+- npm pack dry-run 成功；
+- 打包 66 files，unpacked size 114.4 kB。
+
+模板覆盖：
+
+- Hono + React + Cloudflare Worker；
+- pure human sign-in；
+- local CLI wrapper；
+- hosted HTTP action；
+- OAuth HTTP action；
+- dual human/agent app。
+
+这些测试证明脚手架和 conformance，不证明实际 Raft OAuth server 或 Agent action runtime。
+
+### 12.2 `raft-survey-sample`
+
+执行：
+
+```text
+npm ci
+npm run typecheck
+npm test
+```
+
+结果：
+
+- TypeScript typecheck：通过；
+- 6 test files：全部通过；
+- 282 tests / 282 pass / 0 fail。
+
+它证明公开 OAuth consumer sample 的本地逻辑，不证明生产 OAuth endpoint、token revocation 或 server membership 行为。
+
+### 12.3 机器可读能力图
+
+创建：
+
+```text
+docs/private/botiverse-raft-capability-graph-20260721.json.md
+```
+
+图包含：
+
+- 10 capability nodes；
+- 8 edges；
+- 11 Agent wrappers；
+- 18 gates；
+- L0–L5 claim evidence ladder；
+- unsupported claims；
+- private-core `cannot_prove` 边界。
+
+实际 JSON 解析和引用完整性校验结果：
+
+```text
+valid: true
+node_count: 10
+edge_count: 8
+wrapper_count: 11
+gate_count: 18
+errors: []
+```
+
+## 13. 第二轮新增吸收结论
+
+在第一轮共享协作面、message→task、claim、review、wake/pull 之外，第二轮确认了以下新增类级模式：
+
+1. Manifest 只做 capability discovery，不能携带 authority。
+2. `negativeCapabilities` 与正向能力一起进入 conformance。
+3. 第三方 event 必须结构性保持“事实而非命令”。
+4. Scope、target、resource、idempotency、TTL、hash、provenance 和 inert rendering 构成联合入口合同。
+5. `202 queued`、delivered、consumed、acted 必须是不同证据层级。
+6. Action 使用产品语义，并在服务端重新授权。
+7. 每 Agent HOME/XDG 隔离只是一种 credential-state boundary，不是 sandbox。
+8. Agent identity、runtime session、workspace 和 process state 必须分别建模。
+9. Restart、session reset、full reset、stop、delete 必须明确各自清理范围。
+10. 外部仓库中某一 adapter 达到 L3，不能升级私有核心 allocator/claim 到 L3。
+
+## 14. 最终判断
 
 Raft 值得学习，但真正成熟的价值不在“多 Agent 自动分工”口号，而在把团队协作分解为几个可验证原语：共享上下文面、消息派生任务、单 owner claim、显式 review 状态、角色与权限分离、内容无关 wake、Agent 主动 pull、信号语义对应的可靠性等级。
 
