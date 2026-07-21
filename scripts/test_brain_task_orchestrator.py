@@ -4579,6 +4579,39 @@ def test_auto_close_review_fails_closed_on_negative_closeout_proof_marker():
         td.cleanup()
 
 
+def test_review_gap_scan_write_skips_parent_that_leaves_review_before_refresh(monkeypatch):
+    mod = load_orchestrator_module()
+    stale = SimpleNamespace(id="review-parent", status="review", fm={})
+    refreshed = SimpleNamespace(id="review-parent", status="pending", fm={})
+    reads = iter([stale, refreshed])
+    monkeypatch.setattr(mod, "find_task", lambda _task_id: next(reads))
+    monkeypatch.setattr(
+        mod,
+        "build_review_gap_packet",
+        lambda task, authority="": {"task_id": task.id, "repairable": True} if task.status == "review" else None,
+    )
+
+    def fail_if_created(*_args, **_kwargs):
+        raise AssertionError("stale review gap must not create a repair child")
+
+    monkeypatch.setattr(mod, "create_review_gap_repair_child", fail_if_created)
+
+    result = mod.command_review_gap_scan(
+        SimpleNamespace(
+            task="review-parent",
+            max_tasks=1,
+            actor="test-review-refresh",
+            authority="autonomous-execution",
+            write=True,
+        )
+    )
+
+    assert result["status"] == "OK", result
+    assert result["gap_count"] == 0, result
+    assert result["created_count"] == 0, result
+    assert result["errors"] == [], result
+
+
 def test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task():
     td, vault, env = make_env_and_vault()
     try:

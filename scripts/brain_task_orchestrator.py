@@ -6957,9 +6957,17 @@ def command_review_gap_scan(args: argparse.Namespace) -> dict[str, Any]:
             if not gap:
                 continue
             if getattr(args, "write", False):
-                # Refresh the task immediately before write to avoid using stale frontmatter.
-                refreshed = find_task(task.id) or task
-                refreshed_gap = build_review_gap_packet(refreshed, authority=str(getattr(args, "authority", "") or "")) or gap
+                # Refresh immediately before write and fail closed if the parent
+                # disappeared, left review, or no longer has a repairable gap.
+                refreshed = find_task(task.id)
+                if refreshed is None:
+                    continue
+                refreshed_gap = build_review_gap_packet(
+                    refreshed,
+                    authority=str(getattr(args, "authority", "") or ""),
+                )
+                if not refreshed_gap:
+                    continue
                 if refreshed_gap.get("repairable"):
                     action = create_review_gap_repair_child(refreshed, refreshed_gap, actor=actor)
                     if action.get("action") == "created":
