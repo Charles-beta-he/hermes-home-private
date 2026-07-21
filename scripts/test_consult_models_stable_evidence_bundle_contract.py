@@ -287,6 +287,125 @@ class TestStableEvidenceBundleContract(unittest.TestCase):
             self.assertEqual(list(receipt_root.glob("providers-quorum-contract-*.json")), [])
             self.assertEqual(list(receipt_root.glob(".*.tmp-*")), [])
 
+    def test_symlinked_quarantine_root_preserves_primary_and_rejects_escape(self):
+        """A diagnostic-root symlink must not redirect quarantined evidence outside stable_root."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+            stable.mkdir()
+            external = root / "external-quarantine"
+            external.mkdir()
+            (stable / ".quarantine").symlink_to(external, target_is_directory=True)
+            final = stable / "providers-quorum-contract"
+            real_sha256_path = consult._sha256_path
+            hash_calls = 0
+
+            def fail_only_first_final_artifact_readback(path):
+                nonlocal hash_calls
+                hash_calls += 1
+                if hash_calls == 5:
+                    return "0" * 64
+                return real_sha256_path(Path(path))
+
+            with mock.patch.object(
+                consult,
+                "_sha256_path",
+                side_effect=fail_only_first_final_artifact_readback,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "postpublication verification failed.*stable evidence artifact readback mismatch.*"
+                    "quarantine failed.*invalid stable evidence diagnostic root",
+                ):
+                    self.persist(tick, stable)
+
+            self.assertTrue(final.is_dir())
+            self.assertEqual(list(external.iterdir()), [], "symlink target must remain untouched")
+            self.assertFalse((stable / ".failure-receipts").exists())
+
+    def test_quarantine_directory_fsync_failure_preserves_diagnostics_and_location(self):
+        """A durability barrier failure after rename must expose both errors and actual location."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+            final = stable / "providers-quorum-contract"
+            real_sha256_path = consult._sha256_path
+            real_fsync_directory = consult._fsync_directory
+            hash_calls = 0
+
+            def fail_only_first_final_artifact_readback(path):
+                nonlocal hash_calls
+                hash_calls += 1
+                if hash_calls == 5:
+                    return "0" * 64
+                return real_sha256_path(Path(path))
+
+            def fail_only_quarantine_directory_fsync(path):
+                if Path(path).name == ".quarantine":
+                    raise OSError("injected quarantine directory fsync failure")
+                return real_fsync_directory(Path(path))
+
+            with mock.patch.object(
+                consult,
+                "_sha256_path",
+                side_effect=fail_only_first_final_artifact_readback,
+            ), mock.patch.object(
+                consult,
+                "_fsync_directory",
+                side_effect=fail_only_quarantine_directory_fsync,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "postpublication verification failed.*stable evidence artifact readback mismatch.*"
+                    "quarantine failed.*injected quarantine directory fsync failure",
+                ):
+                    self.persist(tick, stable)
+
+            self.assertFalse(final.exists())
+            quarantine = list((stable / ".quarantine").glob("providers-quorum-contract-*"))
+            self.assertEqual(len(quarantine), 1, "rename completed before its durability barrier failed")
+            self.assertFalse((stable / ".failure-receipts").exists())
+
+    def test_symlinked_failure_receipt_root_is_rejected_without_escape(self):
+        """A receipt-root symlink must not redirect diagnostics after authoritative quarantine."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = self.make_tick(root)
+            stable = root / "stable"
+            stable.mkdir()
+            external = root / "external-receipts"
+            external.mkdir()
+            (stable / ".failure-receipts").symlink_to(external, target_is_directory=True)
+            final = stable / "providers-quorum-contract"
+            real_sha256_path = consult._sha256_path
+            hash_calls = 0
+
+            def fail_only_first_final_artifact_readback(path):
+                nonlocal hash_calls
+                hash_calls += 1
+                if hash_calls == 5:
+                    return "0" * 64
+                return real_sha256_path(Path(path))
+
+            with mock.patch.object(
+                consult,
+                "_sha256_path",
+                side_effect=fail_only_first_final_artifact_readback,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "postpublication verification failed.*stable evidence artifact readback mismatch.*"
+                    "failure receipt publication failed.*invalid stable evidence diagnostic root",
+                ):
+                    self.persist(tick, stable)
+
+            self.assertFalse(final.exists())
+            quarantine = list((stable / ".quarantine").glob("providers-quorum-contract-*"))
+            self.assertEqual(len(quarantine), 1)
+            self.assertEqual(list(external.iterdir()), [], "symlink target must remain untouched")
+
 
 if __name__ == "__main__":
     unittest.main()
