@@ -33,6 +33,7 @@ import threading
 import time
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, List, Dict, Optional, Tuple
 
 try:
@@ -535,6 +536,133 @@ def _write_json_atomic(path: str, data: Any) -> None:
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
     os.replace(tmp, path)
+
+
+STABLE_EVIDENCE_BUNDLE_SCHEMA_VERSION = "consult_models_stable_evidence_bundle_v1"
+
+
+def _sha256_path(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _fsync_directory(path: Path) -> None:
+    descriptor = os.open(str(path), os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def persist_stable_evidence_bundle(tick_dir: str, stable_root: str, bundle_id: str) -> dict:
+    """Atomically preserve certification evidence outside an ephemeral tick dir.
+
+    This helper is intentionally not wired into the live quorum path. It proves
+    byte preservation and provenance binding only; it does not certify quorum
+    correctness or select a production retention root.
+    """
+    if not isinstance(bundle_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", bundle_id):
+        raise ValueError("bundle_id must be a filesystem-safe name")
+
+    source_input = Path(os.path.expanduser(tick_dir))
+    if source_input.is_symlink() or not source_input.is_dir():
+        raise ValueError(f"invalid tick_dir: {source_input}")
+    source = source_input.resolve(strict=True)
+
+    required_names = (
+        "merged_plan.json",
+        "discussion_result.json",
+        "final/certification_manifest.json",
+    )
+    plans_dir = source / "plans"
+    if plans_dir.is_symlink() or not plans_dir.is_dir():
+        raise ValueError("missing required artifact: plans/*.json")
+    plan_paths = sorted(plans_dir.glob("*.json"))
+    if not plan_paths:
+        raise ValueError("missing required artifact: plans/*.json")
+    relative_paths = [path.relative_to(source).as_posix() for path in plan_paths] + list(required_names)
+
+    validated: dict[str, tuple[Path, str, int]] = {}
+    for relative in relative_paths:
+        candidate = source / relative
+        if not candidate.exists():
+            raise ValueError(f"missing required artifact: {relative}")
+        if candidate.is_symlink() or not candidate.is_file():
+            raise ValueError(f"invalid required artifact: {relative}")
+        resolved = candidate.resolve(strict=True)
+        try:
+            resolved.relative_to(source)
+        except ValueError as exc:
+            raise ValueError(f"required artifact escapes tick_dir: {relative}") from exc
+        try:
+            with resolved.open("r", encoding="utf-8") as handle:
+                json.load(handle)
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"malformed or unreadable required artifact: {relative}") from exc
+        validated[relative] = (resolved, _sha256_path(resolved), resolved.stat().st_size)
+
+    root_input = Path(os.path.expanduser(stable_root))
+    if root_input.exists() and (root_input.is_symlink() or not root_input.is_dir()):
+        raise ValueError(f"invalid stable_root: {root_input}")
+    root_input.mkdir(parents=True, exist_ok=True)
+    root = root_input.resolve(strict=True)
+    final_dir = root / bundle_id
+    if final_dir.exists() or final_dir.is_symlink():
+        raise FileExistsError(f"stable evidence bundle already exists: {final_dir}")
+
+    temp_dir = Path(tempfile.mkdtemp(prefix=f".{bundle_id}.tmp-", dir=str(root)))
+    published = False
+    try:
+        files_manifest: dict[str, dict[str, Any]] = {}
+        for relative, (source_path, expected_hash, expected_size) in validated.items():
+            destination = temp_dir / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with source_path.open("rb") as source_handle, destination.open("xb") as destination_handle:
+                shutil.copyfileobj(source_handle, destination_handle)
+                destination_handle.flush()
+                os.fsync(destination_handle.fileno())
+            files_manifest[relative] = {"sha256": expected_hash, "size_bytes": expected_size}
+
+        manifest = {
+            "schema_version": STABLE_EVIDENCE_BUNDLE_SCHEMA_VERSION,
+            "bundle_id": bundle_id,
+            "source_tick_dir": str(source),
+            "generated_at": _utc_now_iso(),
+            "files": files_manifest,
+        }
+        manifest_path = temp_dir / "manifest.json"
+        with manifest_path.open("x", encoding="utf-8") as handle:
+            json.dump(manifest, handle, indent=2, ensure_ascii=False, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        directories = {path.parent for path in temp_dir.rglob("*") if path.is_file()}
+        for directory in sorted(directories, key=lambda item: len(item.parts), reverse=True):
+            _fsync_directory(directory)
+        os.rename(temp_dir, final_dir)
+        published = True
+        _fsync_directory(root)
+
+        final_manifest_path = final_dir / "manifest.json"
+        with final_manifest_path.open("r", encoding="utf-8") as handle:
+            readback = json.load(handle)
+        if readback != manifest:
+            raise RuntimeError("stable evidence manifest readback mismatch")
+        for relative, metadata in readback["files"].items():
+            copied = final_dir / relative
+            if copied.stat().st_size != metadata["size_bytes"] or _sha256_path(copied) != metadata["sha256"]:
+                raise RuntimeError(f"stable evidence artifact readback mismatch: {relative}")
+        return {
+            "bundle_dir": str(final_dir),
+            "manifest_sha256": _sha256_path(final_manifest_path),
+            "readback_verified": True,
+        }
+    finally:
+        if not published and temp_dir.exists():
+            shutil.rmtree(temp_dir)
 
 
 def _safe_artifact_name(value: str) -> str:
