@@ -201,11 +201,15 @@ When actual image artifacts, prompt-only requests, explanation, analysis, and ed
 
 1. Classify only obvious cases; negative intents win and ambiguity preserves the model's existing automatic tool choice.
 2. Read image-backend capabilities from the resolver that mirrors actual dispatch. Never infer the image backend from the main chat model/provider.
-3. Gate before capability resolution: `enabled: false` by default, `kill_switch` first, and reject every mode except `shadow` until independently certified.
-4. Keep the output evidence-only: a recommendation, blocker, capability projection, message digest/length, and `runtime_mutation_authorized: false`. Do not pass request kwargs, tools, messages, or transport objects into the observer.
-5. At turn finalization, compare the shadow contract with actual current-turn tool names. Contradictions block only future production promotion; they must not rewrite the completed response.
-6. If local JSONL is enabled, omit the raw prompt and enforce private directory/file permissions, including pre-existing files.
-7. Reuse a read-only hot-config path so an emergency kill switch does not become stale in a long-lived agent.
+3. Gate before capability resolution: `enabled: false` by default, require exact Boolean `True` for enablement/persistence, give an exact Boolean kill switch precedence, and reject every mode except `shadow` until independently certified.
+4. Keep the output evidence-only: a recommendation, blocker, capability projection, message length, and `runtime_mutation_authorized: false`. A per-turn digest may support in-memory alignment, but omit deterministic prompt digests from durable ledgers. Do not pass request kwargs, tools, messages, or transport objects into the observer.
+5. Bind every observed receipt to an independently supplied current invocation/turn identity. Receipt-owned metadata cannot authenticate itself; missing or mismatched current identity must block promotion, suppress persistence, and avoid attributing current messages to stale observations. Clear prior receipt state at the public invocation boundary, including direct-return paths.
+6. Validate root and every supplied nested contract by presence/type/version, not truthiness: an empty mapping is supplied-but-invalid schema, not an absent optional contract.
+7. At turn finalization, compare a valid current-turn shadow contract with actual current-turn tool names. Contradictions block only future production promotion; they must not rewrite the completed response.
+8. If readonly config reload fails, preserve in-memory finalized readback with empty fail-closed config while suppressing persistence. Observation failures may be fail-soft for the user response, but authorization and durable writes stay fail-closed.
+9. If local JSONL is enabled, omit raw prompts and deterministic prompt digests, force the ledger file to `0600`, do not chmod an existing parent directory, and reject symlink leaf/parent components.
+10. Preserve existing source/reflection contracts when wrapping a public runtime function; test `inspect.getsource` consumers or expose the implementation via `__wrapped__` when appropriate.
+11. Reuse a read-only hot-config path so an emergency kill switch does not become stale in a long-lived agent.
 
 Minimum negative and drift matrix:
 

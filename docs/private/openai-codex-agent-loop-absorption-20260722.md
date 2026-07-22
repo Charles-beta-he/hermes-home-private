@@ -35,7 +35,7 @@ Add a versioned, capability-driven image-output intent contract that can observe
 - `mode: enforce` is rejected, not silently accepted.
 - No provider switch, paid generation, deployment, push, external dispatch, or credential entry.
 - The deterministic classifier is a conservative shadow evidence adapter, not the global semantic authority.
-- Raw user prompts are not persisted; receipts contain a SHA-256 digest, length, decision, capability projection, and alignment.
+- Raw user prompts are not persisted. The in-memory receipt may contain a per-turn digest for alignment, but the optional JSONL ledger removes the raw prompt and deterministic prompt digest before persistence.
 
 ### Business rules
 
@@ -136,9 +136,9 @@ Therefore:
 
 Implemented locally in the private Hermes tree:
 
-- `agent/image_intent_routing.py` — versioned intent, provider capability, route and alignment contracts.
-- `agent/conversation_loop.py::_run_image_intent_shadow_router` — once-per-turn default-off observer; it calls the same active image-backend capability resolver used by the dynamic `image_generate` schema only after the feature and shadow mode gates pass.
-- `agent/turn_finalizer.py::finalize_turn` — returns finalized shadow alignment in `result.image_intent_shadow` without changing the response.
+- `agent/image_intent_routing.py` — v2 intent, configured/effective provider capability, route and turn-bound alignment contracts.
+- `agent/conversation_loop.py::_run_image_intent_shadow_router` — once-per-turn default-off observer; it calls the same active image-backend capability resolver used by the dynamic `image_generate` schema only after the feature and shadow mode gates pass. The public wrapper clears prior-invocation receipts and closes every dictionary return path with fail-closed readback.
+- `agent/turn_finalizer.py::finalize_turn` — returns finalized shadow alignment in `result.image_intent_shadow` without changing the response; a readonly-config failure still returns in-memory alignment while disabling persistence.
 - `hermes_cli/config.py::DEFAULT_CONFIG.image_intent_routing` — disabled by default; supports `shadow`, `kill_switch`, optional local JSONL, and rejects `enforce`.
 - `tests/agent/test_image_intent_routing.py` plus the turn-finalizer regression — contract, negative, drift, conflict and readback evidence.
 
@@ -164,12 +164,14 @@ The current implementation has no path that authorizes runtime mutation. Enablin
 - [x] Class-level reusable reference created and linked from the autonomous-agent umbrella skill.
 - [x] Independent adversarial review completed in two slices: the pre-repair review returned `BLOCK` for four documentary issues while passing the routing conclusion; after commits `e6769c40a`, `2002f22f5`, and `12205bd35`, a fresh isolated-context verifier returned `PASS` and reran all 83 targeted tests successfully. This certifies only class-pattern absorption plus the audited current runtime contract; it is not multi-model, deployment, or paid-image-generation certification.
 - [x] Targeted tests for Codex cache-key behavior and OpenAI-Codex image-provider request shape passed in producer, repair, and independent-verifier runs; latest baseline verifier result: `83 passed in 1.53s`.
-- [x] Default-off shadow contract tests cover conservative negative precedence, capability projection, tool/provider blockers, kill switch, rejected enforce mode, stale-state cleanup, private JSONL without raw prompts, existing-file permission tightening, schema drift, conflict promotion block, and turn-result readback.
+- [x] Default-off shadow contract tests cover conservative negative precedence, attachment edit/analyze semantics, configured/effective provider availability, tool/provider blockers, strict-boolean gates, kill switch, rejected enforce mode, stale-state cleanup, turn identity, root/nested schema drift, all dictionary return paths, config-read failure readback, and conflict promotion block.
+- [x] Optional JSONL persistence omits raw prompts and deterministic prompt digests, forces ledger files to `0600`, does not chmod existing parent directories, and rejects symlink leaf/parent components.
 - [x] The shadow helper uses `load_config_readonly()` so enablement and kill switch follow the profile-scoped hot config without copying or caching a stale emergency switch.
 - [x] The shadow capability projection reuses `tools.image_generation_tool.get_active_image_capabilities()`, the resolver that mirrors actual plugin/FAL dispatch, rather than inferring the image backend from the main chat model/provider.
-- [x] Exact-slice independent Claude Sonnet review returned `PASS` with no security, logic, or specification blockers. It certified only the default-off shadow/observation boundary. Two non-blocking notes remain fail-safe: outer mode parsing does not trim surrounding whitespace before capability resolution, and directory chmod is best-effort while the ledger file itself is force-read back by code/tests as `0600`.
-- [x] The runtime slice was committed locally as `632f613ca` (`feat: add default-off image intent shadow contract`); no push, deployment, production enablement, or paid generation was performed.
-- [x] Fresh scoped regression after final hardening: `318 passed in 3.86s`; conductor/image-routing/verification-stop integration slice: `184 passed in 1.71s`; Ruff, `py_compile`, and `git diff --check` passed.
+- [x] A first exact-slice review passed the initial implementation, but later adversarial reviews reopened certification and found strict-boolean, ledger path/permission, config-failure readback, stale-turn identity, nested-schema, provider-fallback, and source-inspection compatibility blockers. Those BLOCKs remain in the audit trail and were repaired with RED/GREEN tests rather than erased.
+- [x] Final independent review bound its verdict to binary diff SHA-256 `90c34f313cae05d7f69e793cc1ab62e5f1b8576f5fa953315f3bc3e949a776df` and returned `PASS`: `63 passed` for image-intent/finalizer tests, `35 passed` for source-adjacent/provider tests, and `git diff --check` passed. Certification is exact-slice only.
+- [x] The initial runtime slice was committed locally as `632f613ca`; adversarial hardening was committed as `57cb785a9bc41fd4117bd369f60b456e07d687ce`. No push, deployment, production enablement, or paid generation was performed.
+- [x] Latest pre-commit related regression: `511 passed in 19.66s`; post-commit exact focused readback: `98 passed in 1.90s`; Ruff, `py_compile`, `git diff --check`, and `git show --check` passed.
 - [x] A broad `tests/agent` run reached `5453 passed, 37 skipped, 127 failed`. The broad run is not recorded as a PASS. Failures were distributed across pre-existing credential/keychain, cache/global-state, and app-session test surfaces outside this slice; representative changed-path neighbors passed in fresh isolated processes (`49 passed` for verification-stop and `63 passed` for Codex app-server session). This limits certification to the explicit scoped commands, not the whole agent suite.
 
 ## Fresh verification evidence
@@ -213,7 +215,14 @@ The first attempted test command used the system Python environment and failed b
     tests/agent/test_image_routing.py \
     tests/agent/test_verification_stop.py
 
+  .venv/bin/python -m pytest -q -p no:cacheprovider \
+    tests/tools/test_image_generation_image_to_image.py \
+    tests/agent/test_gemini_fast_fallback.py \
+    tests/agent/test_nous_oauth_401_guidance.py \
+    tests/run_agent/test_auto_relay_continuation.py
+
   git show --check --stat --oneline 632f613ca
+  git show --check --stat --oneline 57cb785a9
 )
 
 (
