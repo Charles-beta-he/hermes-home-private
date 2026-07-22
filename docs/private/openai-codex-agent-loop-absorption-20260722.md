@@ -109,8 +109,8 @@ Therefore:
 - [x] Current Hermes transport and compressor paths inspected.
 - [x] Main-loop automatic image-tool selection separated from provider-native forced image generation.
 - [x] Class-level reusable reference created and linked from the autonomous-agent umbrella skill.
-- [x] Independent adversarial review completed against the pre-repair artifact. It returned `BLOCK` for stale paths/status while explicitly passing the two-stage image-routing conclusion; all four documentary blockers were repaired in commits `e6769c40a` and `2002f22f5`. A fresh post-repair verifier vote is required before multi-model certification.
-- [x] Targeted tests for Codex cache-key behavior and OpenAI-Codex image-provider request shape pass on the current tree: initial producer run `83 passed in 1.16s`; independent reviewer run `83 passed in 1.78s`; fresh post-repair run `83 passed in 5.54s`.
+- [x] Independent adversarial review completed in two slices: the pre-repair review returned `BLOCK` for four documentary issues while passing the routing conclusion; after commits `e6769c40a`, `2002f22f5`, and `12205bd35`, a fresh isolated-context verifier returned `PASS` and reran all 83 targeted tests successfully. This certifies only class-pattern absorption plus the audited current runtime contract; it is not multi-model, deployment, or paid-image-generation certification.
+- [x] Targeted tests for Codex cache-key behavior and OpenAI-Codex image-provider request shape passed in producer, repair, and independent-verifier runs; latest verifier result: `83 passed in 1.53s`.
 
 ## Fresh verification evidence
 

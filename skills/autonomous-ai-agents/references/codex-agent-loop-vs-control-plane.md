@@ -157,6 +157,30 @@ openai-codex image provider -> native image_generation: required/forced
 
 Do not conflate the Hermes tool name `image_generate`, a UI label such as “Image Generator,” and OpenAI Responses' native tool type `image_generation`.
 
+### Image-routing verification recipe
+
+Do not answer this routing question from the main model/provider name alone. Verify all three boundaries:
+
+1. **Main-loop request construction**
+   - Inspect `agent/transports/codex.py::ResponsesApiTransport.build_kwargs`.
+   - Confirm enabled Hermes functions are exposed and record whether `tool_choice` is `auto`, `required`, or an explicit named tool.
+2. **Provider dispatch**
+   - Inspect the runtime `image_generate` tool description/config to identify the active image provider and model.
+   - Treat this as independent from the main chat provider; a GPT main model may dispatch to FAL, xAI, OpenAI, or another configured backend.
+3. **Nested native-image request**
+   - For the Hermes OpenAI-Codex image provider, inspect `plugins/image_gen/openai-codex/__init__.py::_build_responses_payload`.
+   - Confirm the native tool type, model, and forced/automatic selection mode from the actual payload.
+
+Targeted Hermes verification:
+
+```bash
+.venv/bin/python -m pytest -q \
+  tests/agent/transports/test_codex_transport.py \
+  tests/plugins/image_gen/test_openai_codex_provider.py
+```
+
+For stronger evidence, construct both payloads locally and read back only non-secret routing fields such as `tool_choice`, exposed tool names, prompt-cache-key prefix, native image tool type, and native image model. Do not trigger a paid image generation merely to prove request routing when deterministic payload tests suffice.
+
 ## Review checklist
 
 - [ ] Correct article/title/date and canonical source were resolved.
