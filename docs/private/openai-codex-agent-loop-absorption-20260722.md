@@ -109,8 +109,8 @@ Therefore:
 - [x] Current Hermes transport and compressor paths inspected.
 - [x] Main-loop automatic image-tool selection separated from provider-native forced image generation.
 - [x] Class-level reusable reference created and linked from the autonomous-agent umbrella skill.
-- [x] Independent adversarial review requested. Claude review was unavailable because its session quota was exhausted; a degraded isolated-context review is pending and no runtime mutation depends on it.
-- [x] Targeted tests for Codex cache-key behavior and OpenAI-Codex image-provider request shape pass on the current tree: `83 passed in 1.16s`.
+- [x] Independent adversarial review completed against the pre-repair artifact. It returned `BLOCK` for stale paths/status while explicitly passing the two-stage image-routing conclusion; all four documentary blockers were repaired in commits `e6769c40a` and `2002f22f5`. A fresh post-repair verifier vote is required before multi-model certification.
+- [x] Targeted tests for Codex cache-key behavior and OpenAI-Codex image-provider request shape pass on the current tree: initial producer run `83 passed in 1.16s`; independent reviewer run `83 passed in 1.78s`; fresh post-repair run `83 passed in 5.54s`.
 
 ## Fresh verification evidence
 
@@ -129,13 +129,22 @@ The first attempted test command used the system Python environment and failed b
 ## Evidence commands
 
 ```bash
-.venv/bin/python -m pytest -q \
-  tests/agent/transports/test_codex_transport.py \
-  tests/plugins/image_gen/test_openai_codex_provider.py
+(
+  cd /Users/charles/.hermes/hermes-agent
+  .venv/bin/python -m pytest -q \
+    tests/agent/transports/test_codex_transport.py \
+    tests/plugins/image_gen/test_openai_codex_provider.py
+)
 
-git diff -- \
-  skills/autonomous-ai-agents/SKILL.md \
-  skills/autonomous-ai-agents/references/codex-agent-loop-vs-control-plane.md
+(
+  cd /Users/charles/.hermes
+  git show --check --stat --oneline 2002f22f5
+  git status --short -- \
+    docs/private/openai-codex-agent-loop-absorption-20260722.md \
+    skills/autonomous-ai-agents/SKILL.md \
+    skills/autonomous-ai-agents/references/codex-agent-loop-vs-control-plane.md \
+    workflows/projects/hermes-agent-os-control-plane/15-codex-agent-loop-architecture-absorption/README.md
+)
 ```
 
 ## Converge boundary
