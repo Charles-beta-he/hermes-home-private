@@ -46,6 +46,7 @@ This umbrella skill is the routing surface for autonomous ai agents. Use it to c
 ## Class-Level Architecture Patterns
 
 - For "agent architecture coverage" requests, especially Hermes + Claude Code/Codex/OpenCode comparisons, load `references/agent-architecture-control-plane-coverage.md` before proposing implementation. Preserve the split: Hermes is the canonical control plane / ledger / evidence / policy layer; external agents are worker adapters or executor runtimes. Do not collapse execution parallelism into governance authority.
+- For OpenAI's “Unrolling the Codex agent loop” or any focused coding-harness versus general control-plane comparison, load `references/codex-agent-loop-vs-control-plane.md`. It separates turn/iteration, model/harness, exact-prefix caching, tool-schema and sandbox ownership, provider-native compaction, and inner-loop versus outer-control-plane scope before recommending an additive worker architecture.
 
 ## Selection Rules
 
