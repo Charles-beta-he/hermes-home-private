@@ -129,7 +129,9 @@ The first attempted test command used the system Python environment and failed b
 ## Evidence commands
 
 ```bash
-pytest -q tests/agent/test_codex_transport.py tests/plugins/image_gen/test_openai_codex_provider.py
+.venv/bin/python -m pytest -q \
+  tests/agent/transports/test_codex_transport.py \
+  tests/plugins/image_gen/test_openai_codex_provider.py
 
 git diff -- \
   skills/autonomous-ai-agents/SKILL.md \

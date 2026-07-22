@@ -17,7 +17,7 @@ Exact scope:
 
 design_doc: The canonical SSOT and reusable reference above are the scoped design and rollback boundary for this architecture-only absorption.
 
-gate_readback: Current-tree targeted verification returned `83 passed in 1.16s`; direct payload readback returned main Hermes `tool_choice='auto'` with `image_generate`, and nested OpenAI-Codex image-provider `mode='required'` with native `image_generation`. The local Agent OS route and pre-commit BrainConstraintGate remain authority-neutral and block unsupported side effects.
+gate_readback: Current-tree targeted verification via `.venv/bin/python -m pytest -q tests/agent/transports/test_codex_transport.py tests/plugins/image_gen/test_openai_codex_provider.py` returned `83 passed in 1.16s`; direct payload readback returned main Hermes `tool_choice='auto'` with `image_generate`, and nested OpenAI-Codex image-provider `mode='required'` with native `image_generation`. The local Agent OS route and pre-commit BrainConstraintGate remain authority-neutral and block unsupported side effects.
 
 Rollback:
 - revert the parent repository commit;
