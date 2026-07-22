@@ -181,6 +181,43 @@ Targeted Hermes verification:
 
 For stronger evidence, construct both payloads locally and read back only non-secret routing fields such as `tool_choice`, exposed tool names, prompt-cache-key prefix, native image tool type, and native image model. Do not trigger a paid image generation merely to prove request routing when deterministic payload tests suffice.
 
+## Review convergence when artifacts move
+
+Architecture-absorption reviews often span a parent profile repository and a nested runtime repository. Treat the review packet as an immutable slice rather than a floating path:
+
+1. Record the canonical artifact path, repository/workdir for every command, commit or blob hash, and exact verification commands before dispatching a verifier.
+2. Put commands for different repositories in explicit `cd` subshells. A valid test path in the runtime repository and a valid Skill path in the parent repository do not share one implicit workdir.
+3. If the artifact is moved, repaired, or committed after verifier dispatch, the returned verdict applies only to the old slice. Never retroactively promote it to the new artifact.
+4. Split verdict dimensions. A verifier may PASS the runtime/semantic claim while BLOCKing documentary reproducibility, stale paths, or review-state bookkeeping. Preserve the valid semantic finding, repair the documentary blockers, then request a fresh verdict against the new exact slice.
+5. Replace `pending` review text with the actual verdict as soon as it arrives. After repairs, record both the earlier BLOCK and the later PASS rather than erasing the audit trail.
+6. Before scoped closure, require the fresh verifier to read back the canonical path/hash, rerun the exact targeted commands, and confirm the reviewed files are clean or explicitly identify unrelated concurrent changes.
+7. Scope certification narrowly: class-pattern absorption and audited current runtime contract do not imply deployment, paid-provider execution, production behavior, or multi-model quorum certification.
+
+Pitfall: a background verifier can finish after the producer has already moved the SSOT or amended evidence. Its output is useful evidence about the reviewed slice, but it is not fresh proof of the current tree.
+
+## Default-off image-output intent shadow pattern
+
+When actual image artifacts, prompt-only requests, explanation, analysis, and edits share one generic tool surface, do not add a global keyword force-router. Use a versioned shadow contract first:
+
+1. Classify only obvious cases; negative intents win and ambiguity preserves the model's existing automatic tool choice.
+2. Read image-backend capabilities from the resolver that mirrors actual dispatch. Never infer the image backend from the main chat model/provider.
+3. Gate before capability resolution: `enabled: false` by default, `kill_switch` first, and reject every mode except `shadow` until independently certified.
+4. Keep the output evidence-only: a recommendation, blocker, capability projection, message digest/length, and `runtime_mutation_authorized: false`. Do not pass request kwargs, tools, messages, or transport objects into the observer.
+5. At turn finalization, compare the shadow contract with actual current-turn tool names. Contradictions block only future production promotion; they must not rewrite the completed response.
+6. If local JSONL is enabled, omit the raw prompt and enforce private directory/file permissions, including pre-existing files.
+7. Reuse a read-only hot-config path so an emergency kill switch does not become stale in a long-lived agent.
+
+Minimum negative and drift matrix:
+
+- prompt-only/explain/analyze + observed generation → conflict;
+- eligible artifact-required intent + no observed generation → conflict;
+- capability blocker + observed generation → conflict;
+- contract-version mismatch → conflict;
+- ambiguous + no observed generation → observe, not block;
+- any observer/config/capability failure → clear stale receipt and continue the unchanged model path.
+
+Promotion order remains `default-off → tests → shadow readback → discrepancy review → separately authorized limited enforcement → controlled paid smoke → rollback readback`. A shadow PASS is never production enforcement certification.
+
 ## Review checklist
 
 - [ ] Correct article/title/date and canonical source were resolved.
