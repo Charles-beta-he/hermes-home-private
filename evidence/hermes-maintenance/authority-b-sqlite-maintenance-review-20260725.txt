@@ -1,0 +1,42 @@
+HASH_MATCH=YES
+cleanup_sha256=4ab87bac1327b876f2e2eef280298ca7b907415d298ccfc1df12bb9b5555111d
+tests_sha256=d6fff8488b01c45866c2fcebea280898492223c39860b2bbb94b5e46be745c2e
+FINAL_REHASH=IDENTICAL
+
+TEST_RESULT=PY_COMPILE_PASS;32/32_PASS;DISPOSABLE_FAULT_PROBES_PASS
+P0=0
+P1=0
+P2=0
+B_VERDICT=APPROVE
+
+FINDINGS:
+- NONE。
+- 前序 P1 **CLOSED**：`BackupFinalizationError` 在已发布 verified backup/receipt 后保留发布事实；backup-only 与普通 mutating main 均输出：
+  - `status=failed`
+  - `side_effects_occurred=true`
+  - `partial_commit=true`
+  - `finalization_status=failed_after_publish`
+  - `no_cleanup_side_effects=false`
+  - 已发布 backup/receipt 路径及非空 `cleanup_errors`
+- `/private/tmp` 真实 post-publish unlink fault probe 两条均 `rc=1/probe_pass=true`；已发布 backup 与 receipt 均存在，持久 receipt 仍为 `status=verified`。
+- 普通 mutating main 在该异常后：analysis/prune/VACUUM/file/tool cleanup 调用全部为零，fixture DB family 与四个文件 family 前后完全一致。
+- 复核通过：online backup、restore rehearsal、publication/readback、failure cleanup、operation/writer locks、每次 mutating invocation 的 fresh backup、analysis fail-closed、`ended_at IS NOT NULL` guard、positive TTL、file partial commit、prune+FTS 单事务、VACUUM/WAL predicates、scheduler 非零退出语义及 disk sequencing。
+- Scheduler 静态链确认：脚本非零退出保留 stdout 并返回失败；no-agent job 投影为失败；输出先保存，随后 sidecar 和 `mark_job_run(..., success=False, ...)`。
+
+LIVE_PRECONDITIONS:
+- 当前可用磁盘：`3,181,281,280 bytes`。
+- 当前 SQLite family：
+  - `state.db=2,371,928,064 bytes`
+  - WAL=`15,573,632 bytes`
+  - SHM=`4,063,232 bytes`
+- 仅 `source_db + 2 GiB reserve` 的严格下界已达 `4,519,411,712 bytes`，至少短缺 `1,338,130,432 bytes`；实际完整 backup/restore 需求更高。真实执行前必须释放/扩容并重新检查。
+- Cron `c89bcfbd4f9a` 当前仍 enabled，下一次 `2026-07-26T04:00:00+08:00`；`last_status=ok` 来自 `2026-07-25T04:00:50+08:00`，不是本 successor 的执行证据。
+
+EXECUTION_BOUNDARIES:
+- 仅审查指定两文件 exact bytes 和只读 scheduler 链。
+- 未执行真实 backup、成功的非 dry-run cleanup、VACUUM 或 Cron fire。
+- 原文件未修改；创建了 `/private/tmp/hermes_cleanup_post_publish_probe.py` 及 `/private/tmp` 临时 fixture/cache。
+- 首次系统 Python 3.9 `unittest` 文件路径调用因命令选择错误退出 1；使用 Hermes venv Python 3.11.15 正确重跑后 32/32 PASS。
+- `APPROVE` 仅表示代码级 Authority B successor 复审通过，不授予 backup、cleanup、VACUUM、Cron 或删除权限。
+
+[Hermes verification gate] 门禁未认证：不能声明已完成/已验收；需要补充客观证据和独立 verifier vote 后再提升为 certified。

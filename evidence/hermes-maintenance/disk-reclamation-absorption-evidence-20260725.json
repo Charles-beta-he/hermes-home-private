@@ -1,0 +1,157 @@
+{
+  "claims": [
+    {
+      "claim": "The historical receipt bytes and allowlist-linked success predicates validate.",
+      "evidence": [
+        "E-001",
+        "E-002"
+      ],
+      "id": "C-001",
+      "status": "verified"
+    },
+    {
+      "claim": "All 26 receipt-listed deletion targets are freshly absent.",
+      "evidence": [
+        "E-002"
+      ],
+      "id": "C-002",
+      "status": "verified"
+    },
+    {
+      "claim": "The three preserved artifacts freshly match their receipt identities and file hash where recorded.",
+      "evidence": [
+        "E-002"
+      ],
+      "id": "C-003",
+      "status": "verified"
+    },
+    {
+      "claim": "Current filesystem capacity is a timestamped fresh observation, not a claim derived from historical receipt values.",
+      "evidence": [
+        "E-002"
+      ],
+      "id": "C-004",
+      "status": "verified"
+    },
+    {
+      "claim": "The reusable validator is read-only, fail-closed, and covered by positive and negative tests.",
+      "evidence": [
+        "E-003",
+        "E-004"
+      ],
+      "id": "C-005",
+      "status": "verified"
+    },
+    {
+      "claim": "This absorption run performed no cleanup, SQLite maintenance, VACUUM, Cron, WebUI activation, or future-authority expansion.",
+      "evidence": [
+        "E-002",
+        "E-003"
+      ],
+      "id": "C-006",
+      "status": "verified_for_this_run"
+    },
+    {
+      "claim": "The prior Authority B artifact with 32/32_PASS reviewed SQLite-maintenance code and explicitly did not execute the disk reclamation; it is non-applicable as certification of the 26-target event.",
+      "evidence": [
+        "E-005"
+      ],
+      "id": "C-007",
+      "status": "verified"
+    }
+  ],
+  "closure": {
+    "independent_commit_review": "pending",
+    "runtime_authority": "read_only_validator_only",
+    "truth_grounding": "claim_linked_local_evidence_complete"
+  },
+  "evidence": [
+    {
+      "id": "E-001",
+      "sha256": {
+        "evidence/hermes-maintenance/authority-b-sqlite-maintenance-review-20260725.txt": "8bfd42888092e31d2a2f82110b16d85abd96b96d281f2b3e61d1930a302bb247",
+        "evidence/hermes-maintenance/disk-reclamation-allowlist-20260725.json": "91ccfa0e8454a00166b350c2639b7c13ba2e888a9cfe0b133e488fe18cbc54aa",
+        "evidence/hermes-maintenance/disk-reclamation-receipt-20260725.json": "b9bae951f49cc2bf84aca439c36b177d1b85520caaf4e7b1af69109cbf4410ce",
+        "skills/devops/hermes-storage-governance/references/exact-allowlist-disk-reclamation-receipts.md": "513b06954d488c9db288b0147115812ef7f32b3d7247000e8fd4337ea1a4e039",
+        "skills/devops/hermes-storage-governance/scripts/validate-disk-reclamation-receipt.py": "e2eb9fe54e0e609d5f6dc457a7605affd974156294c0dee7db03400d83a1a33e",
+        "skills/devops/hermes-storage-governance/tests/test_validate_disk_reclamation_receipt.py": "c196b0a15fe9a24e3402be5ddd574a2055fa49ce7e5768d39db5f680e65b5003"
+      },
+      "supports": [
+        "C-001",
+        "C-005",
+        "C-007"
+      ],
+      "type": "artifact_hashes"
+    },
+    {
+      "id": "E-002",
+      "result": {
+        "current_capacity": {
+          "free_bytes": 6222131200,
+          "total_bytes": 994610155520,
+          "used_bytes": 988388024320
+        },
+        "errors": [],
+        "fresh_existing_targets": [],
+        "fresh_preserve_drift": [],
+        "fresh_preserve_parity": true,
+        "fresh_target_absence": true,
+        "historical_receipt_valid": true,
+        "receipt_path": "evidence/hermes-maintenance/disk-reclamation-receipt-20260725.json",
+        "receipt_sha256": "b9bae951f49cc2bf84aca439c36b177d1b85520caaf4e7b1af69109cbf4410ce",
+        "schema": "hermes_disk_reclamation_validation_v1",
+        "side_effects_performed": false,
+        "status": "pass"
+      },
+      "supports": [
+        "C-001",
+        "C-002",
+        "C-003",
+        "C-004",
+        "C-006"
+      ],
+      "type": "validator_readback"
+    },
+    {
+      "command": "python3 -m unittest skills/devops/hermes-storage-governance/tests/test_validate_disk_reclamation_receipt.py -v",
+      "exit_code": 0,
+      "id": "E-003",
+      "summary": "7 tests passed; includes hash mismatch, predicate mismatch, existing-target non-deletion, digest mismatch, permission-mode compatibility, and malformed-mode fail-closed probes.",
+      "supports": [
+        "C-005",
+        "C-006"
+      ],
+      "type": "test_run"
+    },
+    {
+      "id": "E-004",
+      "path": "skills/devops/hermes-storage-governance/references/exact-allowlist-disk-reclamation-receipts.md",
+      "supports": [
+        "C-005"
+      ],
+      "type": "source_contract"
+    },
+    {
+      "id": "E-005",
+      "path": "evidence/hermes-maintenance/authority-b-sqlite-maintenance-review-20260725.txt",
+      "scope_lines": "35-40: exact two-file SQLite code review; no real cleanup/VACUUM/Cron; APPROVE grants no execution authority.",
+      "sha256": "8bfd42888092e31d2a2f82110b16d85abd96b96d281f2b3e61d1930a302bb247",
+      "source_raw_sha256": "86a6f792aacaa7c13f2d209c85e7e0687bcee54f906deaaed66954e4f712422b",
+      "supports": [
+        "C-007"
+      ],
+      "type": "scope_disposition"
+    }
+  ],
+  "generated_at": "2026-07-25T11:44:18Z",
+  "non_goals": [
+    "no deletion",
+    "no SQLite mutation",
+    "no VACUUM",
+    "no Cron or scheduler activation",
+    "no WebUI activation",
+    "no future deletion authority"
+  ],
+  "schema": "hermes_disk_reclamation_absorption_evidence_v1",
+  "scope": "read-only certification and durable absorption of the 2026-07-25 exact-allowlist reclamation event"
+}

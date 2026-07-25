@@ -14,6 +14,8 @@ triggers:
 
 # Hermes 存储治理
 
+Reference addendum: `references/exact-allowlist-disk-reclamation-receipts.md` defines the class-level contract for human-authorized artifact deletion: exact DecisionPacket authority, pre-delete identity and allocated-byte checks, parent-directory fsync, residual/preserve readback, machine-readable receipts, claim-linked independent certification, fresh-capacity separation, draft-versus-published absorption status, and a fail-closed read-only validator.
+
 ## Overview
 
 Hermes 存储治理: state.db FTS 膨胀治理、会话 TTL、快照清理、自动 cron。防止多模型运行导致磁盘膨胀。. It is organized as an evidence-grounded review gate: separate findings from preferences, cite the inspected artifact or state, and keep adjacent workflows out of scope.

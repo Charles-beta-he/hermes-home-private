@@ -1,0 +1,119 @@
+{
+  "schema": "hermes_disk_reclamation_allowlist_v1",
+  "created_at": "2026-07-25T08:22:42.739163Z",
+  "purpose": "human authorization packet only; no deletion performed",
+  "root": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing",
+  "preserve": [
+    "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v15",
+    "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/v15-evidence",
+    "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/closure-package-manifest-v15.json"
+  ],
+  "delete_exact": [
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/actor-collision-red-subject",
+      "allocated_bytes": 382107648
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/adversarial-green-subject",
+      "allocated_bytes": 382590976
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/adversarial-green-subject-v2",
+      "allocated_bytes": 382590976
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/exchange-hardening-red-subject",
+      "allocated_bytes": 382111744
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/final-subject",
+      "allocated_bytes": 382582784
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/final-subject-v2",
+      "allocated_bytes": 382586880
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject",
+      "allocated_bytes": 382586880
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v12",
+      "allocated_bytes": 382697472
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v14",
+      "allocated_bytes": 382709760
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v2",
+      "allocated_bytes": 382586880
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v3",
+      "allocated_bytes": 382681088
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v4",
+      "allocated_bytes": 382681088
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v5",
+      "allocated_bytes": 369762304
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v6",
+      "allocated_bytes": 369770496
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v7",
+      "allocated_bytes": 369770496
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v8",
+      "allocated_bytes": 369807360
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/green-subject",
+      "allocated_bytes": 382103552
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/openapi-red-subject",
+      "allocated_bytes": 382111744
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/production-subject",
+      "allocated_bytes": 382582784
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/public-doc-green-subject",
+      "allocated_bytes": 382586880
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/public-doc-red-subject",
+      "allocated_bytes": 382107648
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/red-subject",
+      "allocated_bytes": 382103552
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/route-auth-red-subject",
+      "allocated_bytes": 382103552
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/scope-request-green-subject",
+      "allocated_bytes": 382586880
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/scope-request-red-subject",
+      "allocated_bytes": 382107648
+    },
+    {
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p4-auth-conformance-harness",
+      "allocated_bytes": 758644736
+    }
+  ],
+  "estimated_allocated_bytes": 10268663808,
+  "content_sha256_without_this_field": "fc959c9c6e638c63dfb9416cf3cb35eb4c6cfe8524cd30c43973d7acddc01fe5"
+}

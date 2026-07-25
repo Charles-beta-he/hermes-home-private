@@ -1,0 +1,420 @@
+{
+  "allowlist_path": "/Users/charles/.hermes/evidence/hermes-maintenance/disk-reclamation-allowlist-20260725.json",
+  "allowlist_sha256": "91ccfa0e8454a00166b350c2639b7c13ba2e888a9cfe0b133e488fe18cbc54aa",
+  "authority": "user explicitly replied \u6388\u6743 to exact allowlist request",
+  "declared_root": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing",
+  "deleted": [
+    {
+      "allocated_bytes": 382107648,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561184579,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784658310442771677,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/actor-collision-red-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/actor-collision-red-subject"
+    },
+    {
+      "allocated_bytes": 382590976,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561277531,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784658475528409718,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/adversarial-green-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/adversarial-green-subject"
+    },
+    {
+      "allocated_bytes": 382590976,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561336696,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784658519150064135,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/adversarial-green-subject-v2",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/adversarial-green-subject-v2"
+    },
+    {
+      "allocated_bytes": 382111744,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561242488,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784658419534638385,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/exchange-hardening-red-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/exchange-hardening-red-subject"
+    },
+    {
+      "allocated_bytes": 382582784,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1560875744,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784657762799687802,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/final-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/final-subject"
+    },
+    {
+      "allocated_bytes": 382586880,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1560932235,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784657813670009343,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/final-subject-v2",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/final-subject-v2"
+    },
+    {
+      "allocated_bytes": 382586880,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561437049,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784658634226641968,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject"
+    },
+    {
+      "allocated_bytes": 382697472,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1567749619,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784671280783957135,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v12",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v12"
+    },
+    {
+      "allocated_bytes": 382709760,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1568428936,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784672863569003343,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v14",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v14"
+    },
+    {
+      "allocated_bytes": 382586880,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1562165662,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784660115669055218,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v2",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v2"
+    },
+    {
+      "allocated_bytes": 382681088,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1563473068,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784662819011513593,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v3",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v3"
+    },
+    {
+      "allocated_bytes": 382681088,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1564095955,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784663890253121718,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v4",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v4"
+    },
+    {
+      "allocated_bytes": 369762304,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1564581327,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784664677295515552,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v5",
+        "size": 384
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v5"
+    },
+    {
+      "allocated_bytes": 369770496,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1564844806,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784665158539488885,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v6",
+        "size": 384
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v6"
+    },
+    {
+      "allocated_bytes": 369770496,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1565356136,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784666095110964343,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v7",
+        "size": 384
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v7"
+    },
+    {
+      "allocated_bytes": 369807360,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1565418781,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784666210366595343,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v8",
+        "size": 384
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v8"
+    },
+    {
+      "allocated_bytes": 382103552,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1560496342,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784657282418101427,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/green-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/green-subject"
+    },
+    {
+      "allocated_bytes": 382111744,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561378083,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784658551323378927,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/openapi-red-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/openapi-red-subject"
+    },
+    {
+      "allocated_bytes": 382582784,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1560611895,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784657431393055177,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/production-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/production-subject"
+    },
+    {
+      "allocated_bytes": 382586880,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1562091600,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784659991370013385,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/public-doc-green-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/public-doc-green-subject"
+    },
+    {
+      "allocated_bytes": 382107648,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1562009254,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784659848051500635,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/public-doc-red-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/public-doc-red-subject"
+    },
+    {
+      "allocated_bytes": 382103552,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1560338152,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784656928942885302,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/red-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/red-subject"
+    },
+    {
+      "allocated_bytes": 382103552,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1560750096,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784657646092429635,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/route-auth-red-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/route-auth-red-subject"
+    },
+    {
+      "allocated_bytes": 382586880,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561086010,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784658005327651677,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/scope-request-green-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/scope-request-green-subject"
+    },
+    {
+      "allocated_bytes": 382107648,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1561057276,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784657979814128093,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/scope-request-red-subject",
+        "size": 416
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/scope-request-red-subject"
+    },
+    {
+      "allocated_bytes": 758644736,
+      "identity": {
+        "dev": 16777230,
+        "ino": 1558107039,
+        "is_symlink": false,
+        "mode": 493,
+        "mtime_ns": 1784653105211549885,
+        "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p4-auth-conformance-harness",
+        "size": 800
+      },
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p4-auth-conformance-harness"
+    }
+  ],
+  "deleted_count": 26,
+  "estimated_allocated_bytes": 10268663808,
+  "executed_at": "2026-07-25T08:58:45.994933Z",
+  "free_bytes_after": 12752171008,
+  "free_bytes_before": 2106978304,
+  "free_bytes_delta": 10645192704,
+  "parent_directories_fsynced": [
+    "/Users/charles/.hermes/runs/raft-public-reference-review-20260721",
+    "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing"
+  ],
+  "preserve_after": [
+    {
+      "dev": 16777230,
+      "ino": 1569528910,
+      "is_symlink": false,
+      "mode": 493,
+      "mtime_ns": 1784675235285408218,
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v15",
+      "size": 416
+    },
+    {
+      "dev": 16777230,
+      "ino": 1569484190,
+      "is_symlink": false,
+      "mode": 493,
+      "mtime_ns": 1784676523929576218,
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/v15-evidence",
+      "size": 480
+    },
+    {
+      "dev": 16777230,
+      "ino": 1570240415,
+      "is_symlink": false,
+      "mode": 384,
+      "mtime_ns": 1784676547933132093,
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/closure-package-manifest-v15.json",
+      "sha256": "58b9d828a912554b4b040c909de714bf7a974fa57dfe2ef15cacee348c801de8",
+      "size": 4588
+    }
+  ],
+  "preserve_before": [
+    {
+      "dev": 16777230,
+      "ino": 1569528910,
+      "is_symlink": false,
+      "mode": 493,
+      "mtime_ns": 1784675235285408218,
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/frozen-subject-v15",
+      "size": 416
+    },
+    {
+      "dev": 16777230,
+      "ino": 1569484190,
+      "is_symlink": false,
+      "mode": 493,
+      "mtime_ns": 1784676523929576218,
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/v15-evidence",
+      "size": 480
+    },
+    {
+      "dev": 16777230,
+      "ino": 1570240415,
+      "is_symlink": false,
+      "mode": 384,
+      "mtime_ns": 1784676547933132093,
+      "path": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721/p6-production-landing/closure-package-manifest-v15.json",
+      "sha256": "58b9d828a912554b4b040c909de714bf7a974fa57dfe2ef15cacee348c801de8",
+      "size": 4588
+    }
+  ],
+  "residual_targets": [],
+  "schema": "hermes_disk_reclamation_receipt_v1",
+  "status": "completed_verified",
+  "validated_common_run_root": "/Users/charles/.hermes/runs/raft-public-reference-review-20260721"
+}
