@@ -40,3 +40,22 @@ The distribution repository exposed installer scripts and prebuilt binaries but 
 - Gatekeeper assessment: rejected.
 
 A matching checksum proves exact release bytes, not malware absence or Apple notarization.
+
+## Independent verifier and remediation
+
+- Review handle: `deleg_c6d4a8cf`
+- Verdict: `CONDITIONAL_PASS`
+  - adapted Skill installation: conditional pass;
+  - fixed-tag, independently hashed, unauthenticated local binary installation: conditional pass;
+  - search/fetch without authentication: fail;
+  - source audit and redistribution rights: not proven.
+- Post-review hardening:
+  - removed moving `latest | sh` as a valid pinned-install path;
+  - added endpoint/key/install-override fail-closed guards;
+  - narrowed JSON stdout/stderr claims to business commands and verified auth failure only;
+  - added symlink/collision checks, same-directory temporary files, atomic rename, and rollback evidence;
+  - published install receipt schema `hermes_pplx_install_receipt_v2` atomically with mode `0600`.
+- Current installed binary SHA-256: `e976478fcfec51f36f5b0f28d6477ea042323294284e06b02a2e9b1b339c1773`.
+- Current receipt SHA-256 after hardening: `0bd6c4282fa59e38687fe8f38825f0908397b486f3f6c1def8e779f50f1635bc`.
+
+This clears the independent-review gate only for the scoped, unauthenticated local installation. Runtime API usability and source-level trust remain unverified.

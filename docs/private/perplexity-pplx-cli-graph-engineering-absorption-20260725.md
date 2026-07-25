@@ -88,10 +88,18 @@ objective
 - Adapted Hermes skill: installed and enabled at `research/pplx-cli`; local skill readback succeeded.
 - Graph integration: class-level reference landed under `workflow-capability-graph/references/external-search-adapters-in-execution-graphs.md` and linked from the umbrella skill.
 - CLI binary: installed at `~/.local/bin/pplx`; exact installed SHA-256 `e976478fcfec51f36f5b0f28d6477ea042323294284e06b02a2e9b1b339c1773`.
-- Install receipt: `~/.config/pplx/pplx-receipt.json`; SHA-256 at installation readback `34eca407887c8828548d57918ec5cc4ab76b62741d0bfdb7ae2e6a34dc7d565a`.
+- Install receipt: `~/.config/pplx/pplx-receipt.json`; schema `hermes_pplx_install_receipt_v2`, mode `0600`, current SHA-256 `0bd6c4282fa59e38687fe8f38825f0908397b486f3f6c1def8e779f50f1635bc`.
 - Version smoke: `pplx 2026.07.23.1784814721+8fdc4c2`.
 - Negative auth smoke with isolated empty HOME/config: exit `1`, stdout `0` bytes, typed `AUTHENTICATION` JSON on stderr.
 - Runtime trust boundary: exact release hash verified and isolated help/version smoke passed, but Gatekeeper trust/notarization is absent.
-- Independent adversarial review: dispatched as `deleg_c6d4a8cf`; until it returns, the installed runtime remains degraded-review / not independently certified.
+- Independent adversarial review `deleg_c6d4a8cf`: `CONDITIONAL_PASS` for adapted Skill plus fixed-tag, independently hashed, unauthenticated local install; `FAIL` for unauthenticated search/fetch; source audit and redistribution rights not proven.
+- Post-review remediation: moving `latest | sh` excluded from fixed installs; override guards added; output contracts narrowed; target/receipt symlinks rejected; binary and receipt republished via same-directory temporary files and atomic rename; pre-hardening rollback copies preserved under the evidence run.
 - Authentication/API smoke: blocked on human-owned Perplexity API credential; no key was requested, read, or entered.
-- Rollback: remove only `~/.local/bin/pplx` and `~/.config/pplx/pplx-receipt.json`; any human-owned credential store remains out of scope.
+- Rollback: restore the pre-hardening binary/receipt from `evidence/rollback/`, or remove only `~/.local/bin/pplx` and `~/.config/pplx/pplx-receipt.json`; any human-owned credential store remains out of scope.
+
+## Final scoped verdict
+
+- Skill absorption: **CONDITIONAL_PASS, conditions implemented and read back**.
+- Local binary installation without auth: **CONDITIONAL_PASS, conditions implemented and read back**.
+- Runtime search/fetch usability: **not certified** until human authentication and a bounded real API smoke succeed.
+- Source-level safety, reproducible build, Apple trust, and redistribution: **not proven**.

@@ -1,7 +1,7 @@
 ---
 name: pplx-cli
 description: Use when live broad-web search or page-content fetch via Perplexity can complement native web/docs/X research, especially for recent frameworks, obscure errors, GitHub discovery, or bounded multi-source technical research; also use to inspect or set up the official pplx CLI without exposing credentials.
-version: 1.0.0
+version: 1.0.1
 source_repo: https://github.com/perplexityai/api-platform-developers
 source_commit: 906630d8b9787b29afd693699fe34c1b86adf2de
 source_skill_sha256: d5e1f66eb1defa4dec1ceab91debf4ece6c14da5de44b7ebf4b12db60e059703
@@ -65,7 +65,18 @@ If auth is absent, stop at a human gate. The user may authenticate outside the a
 pplx auth login
 ```
 
-Or the human may securely set `PERPLEXITY_API_KEY`. The agent must not type or inspect its value.
+Or the human may securely set `PERPLEXITY_API_KEY`. The agent must not type or inspect its value. It may check only whether a variable is present, never print it.
+
+Before any normal Perplexity API call, fail closed if any endpoint/key/install override is unexpectedly present unless the user has explicitly approved that exact override:
+
+```text
+PPLX_SDK_BASE_URL
+PPLX_SDK_API_KEY
+PPLX_INSTALL_BASE_URL
+PPLX_INSTALL_PATH
+```
+
+Do not claim that the binary always connects only to `https://api.perplexity.ai` or that all key-bearing paths are redacted. Those are upstream behavioral claims until public source or independent dynamic evidence proves them.
 
 ## Installation gate
 
@@ -73,12 +84,13 @@ Do not execute an uninspected moving `latest` script through `curl | sh`.
 
 1. Resolve the official GitHub release.
 2. Download manifest, checksums, installer, and exact platform asset to a temporary/evidence directory.
-3. Pin the release tag before downloading the binary.
+3. Pin the release tag before downloading the binary; do not use the current installer to claim installation of a fixed historical tag because it resolves `latest` at execution time.
 4. Compare installer and asset digests with GitHub release metadata where available.
-5. Verify the asset against `SHA256SUMS`.
+5. Verify the asset against `SHA256SUMS` and an independently pinned expected digest.
 6. Inspect platform/signing state (`file`, `codesign`, `spctl` on macOS).
-7. Install only the verified binary to an explicitly scoped path such as `~/.local/bin/pplx`.
-8. Run `pplx --version` and rehash the installed bytes.
+7. Reject target/receipt symlinks and non-regular-file collisions; explicitly fix the install target instead of inheriting an unknown `PPLX_INSTALL_PATH`.
+8. Write a unique temporary file in the target directory, set permissions, verify digest and `--version`, then atomically rename it into place. If replacing an existing binary, record its digest and preserve a rollback path.
+9. Publish the receipt through a same-directory temporary file plus atomic rename, then re-read the installed hash and receipt.
 
 A matching checksum proves release-byte identity, not that a closed binary is safe. If macOS reports ad-hoc signing, no TeamIdentifier, or Gatekeeper rejection, disclose it and do not call the binary notarized or Apple-trusted.
 
@@ -104,11 +116,14 @@ pplx search web "kubernetes pod OOMKilled causes" \
   -n 5 --output-dir out --stdout-preview=200
 ```
 
-Success contract:
+Expected business-command success contract for the pinned/verified CLI version:
 
+- applies only to `pplx search web` and `pplx content fetch`;
 - exit `0`;
-- exactly one JSON object on stdout;
-- output resembles `{hits: [{url, title, domain, snippet?, ...}], total, saved_to?}`.
+- stdout should parse as exactly one JSON object;
+- search output resembles `{hits: [{url, title, domain, snippet?, ...}], total, saved_to?}`.
+
+`--version`, `--help`, installer, auth, and update output are outside this JSON contract.
 
 Rules:
 
@@ -132,17 +147,21 @@ pplx content fetch https://example.com/article
 
 ## Failure contract
 
-A CLI failure is expected to:
-
-- exit `1`;
-- leave stdout empty;
-- emit one JSON error object on stderr:
+For `search web` and `content fetch`, upstream declares failure as exit `1`, empty stdout, and a JSON error object on stderr. The pinned no-auth probe independently verified that shape only for the `AUTHENTICATION` path; other failure classes remain unverified.
 
 ```json
 {"error":{"code":"AUTHENTICATION","message":"...","command":"...","hint":"..."}}
 ```
 
-Branch on `error.code`. Never fabricate results or silently downgrade a failed search into a confident answer.
+Parsers must:
+
+1. use process exit status as the first signal;
+2. capture stdout and stderr separately;
+3. parse JSON fail-closed;
+4. preserve raw bounded diagnostics when schema parsing fails;
+5. not assume every command or every failure emits exactly one JSON object.
+
+Branch on `error.code` when it is valid. Never fabricate results or silently downgrade a failed search into a confident answer.
 
 ## Capability-graph contract
 
@@ -177,6 +196,8 @@ cannot_prove: [truth of every source, exhaustive recall, provider superiority]
 - [ ] Search, reducer, and verifier responsibilities remain separate.
 - [ ] External writes and unrelated side-effect gates remain closed.
 
-## Provenance
+## Provenance and license boundary
 
-Adapted from the official Apache-2.0 `pplx-cli` Agent Skill in `perplexityai/api-platform-developers`, pinned source commit and source-file digest recorded in frontmatter. Hermes additions cover credential isolation, pinned-install verification, platform-trust disclosure, cost/fan-out governance, source-reality verification, and capability-graph contracts.
+Adapted from the official Apache-2.0 `pplx-cli` Agent Skill in `perplexityai/api-platform-developers`, pinned source commit and source-file digest recorded in frontmatter. Hermes modifications are explicitly disclosed here and cover credential isolation, pinned-install verification, platform-trust disclosure, cost/fan-out governance, source-reality verification, and capability-graph contracts.
+
+The separate CLI distribution repository did not contain source code, a LICENSE, SBOM/provenance attestation, or reproducible-build evidence at the reviewed tag. Local end-user evaluation of the vendor binary does not establish rights to modify, mirror, bundle, or redistribute it. Do not package the binary into Hermes or a public artifact without explicit vendor licensing and provenance.
