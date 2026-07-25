@@ -38,6 +38,17 @@ def finite_number(value):
     return float(value) if math.isfinite(float(value)) else None
 
 
+def summarize_skills(conf_db):
+    """Summarize Darwin coverage without dropping the top-level S grade."""
+    skills = conf_db.get("skills", {})
+    grades = {"S": 0, "A": 0, "B": 0, "C": 0, "D": 0, "pending": 0}
+    for skill in skills.values():
+        grade = skill.get("darwin_grade", "pending")
+        grades[grade] = grades.get(grade, 0) + 1
+    evaluated = sum(1 for skill in skills.values() if finite_number(skill.get("darwin_score")) is not None)
+    return len(skills), evaluated, grades
+
+
 def load_latest_dream_run():
     if not STORE.runs_path.exists():
         return None
@@ -61,11 +72,7 @@ def refresh():
         conf_db = {"skills": {}}
         data_warnings.append(f"confidence-db 缺失: {DB_PATH}")
     
-    total = len(conf_db.get("skills", {}))
-    with_d = sum(1 for s in conf_db.get("skills", {}).values() if s.get("darwin_score"))
-    grades = {"A": 0, "B": 0, "C": 0, "D": 0, "pending": 0}
-    for s in conf_db.get("skills", {}).values():
-        grades[s.get("darwin_grade", "pending")] = grades.get(s.get("darwin_grade", "pending"), 0) + 1
+    total, with_d, grades = summarize_skills(conf_db)
     
     health_records = []
     if os.path.exists(HEALTH_PATH):
@@ -148,7 +155,7 @@ def refresh():
     lines.append("【Skill 生态】")
     lines.append(f"  总数: {total}")
     lines.append(f"  已评估: {with_d}")
-    lines.append(f"  等级: A={grades.get('A',0)} B={grades.get('B',0)} C={grades.get('C',0)} D={grades.get('D',0)}")
+    lines.append(f"  等级: S={grades.get('S',0)} A={grades.get('A',0)} B={grades.get('B',0)} C={grades.get('C',0)} D={grades.get('D',0)}")
     lines.append("")
     
     lines.append("【Phase 状态】")

@@ -35,6 +35,17 @@ class NullableHealthMetricTests(unittest.TestCase):
         self.assertIsNone(self.dashboard.get_vdot(record))
         self.assertIsNone(self.dashboard.finite_number(record["V"]))
 
+    def test_dashboard_includes_s_grade_in_darwin_coverage(self):
+        db = {"skills": {
+            "elite": {"darwin_score": 95, "darwin_grade": "S"},
+            "healthy": {"darwin_score": 80, "darwin_grade": "A"},
+            "pending": {"darwin_score": None},
+        }}
+        total, evaluated, grades = self.dashboard.summarize_skills(db)
+        self.assertEqual((total, evaluated), (3, 2))
+        self.assertEqual(grades["S"], 1)
+        self.assertEqual(grades["pending"], 1)
+
     def test_scan_reports_nullable_latest_vdot_without_crashing(self):
         records = [
             {"V": 0.86, "V_dot": 0.0, "measurement_status": "observed"},
