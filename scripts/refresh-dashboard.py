@@ -4,7 +4,7 @@ Refresh Dashboard — 自动刷新进化仪表盘
 由 session-health-logger.py 或 cronjob 触发
 """
 
-import os, json, datetime
+import os, json, datetime, math
 
 from hermes_evolution_store import default_store
 
@@ -28,7 +28,14 @@ configure_sources()
 
 def get_vdot(record):
     """Return V̇ across historical schema aliases (Vdot and V_dot)."""
-    return record.get('Vdot', record.get('V_dot', 0))
+    return finite_number(record.get('Vdot', record.get('V_dot')))
+
+
+def finite_number(value):
+    """Return a finite float, preserving explicit unknown measurements as None."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return float(value) if math.isfinite(float(value)) else None
 
 
 def load_latest_dream_run():
@@ -69,6 +76,11 @@ def refresh():
                 except:
                     pass
     latest_dream_run = load_latest_dream_run()
+    if health_records:
+        latest_health = health_records[-1]
+        if finite_number(latest_health.get('V')) is None or get_vdot(latest_health) is None:
+            status = latest_health.get('measurement_status', 'unknown')
+            data_warnings.append(f"最新健康度证据不足: {status} (V/V̇ unavailable)")
     
     if os.path.exists(RESULTS_PATH):
         with open(RESULTS_PATH, "r") as f:
@@ -85,9 +97,9 @@ def refresh():
     lines.append("═══════════════════════════════════════════════════════════════════════════════")
     lines.append(f"Timestamp: {datetime.datetime.now().isoformat()}")
     if data_warnings:
-        lines.append("Status: ⚠️ DEGRADED — 数据源降级但 dashboard 可刷新")
+        lines.append("Status: ⚠️ DEGRADED — 健康证据或数据源降级")
         lines.append("")
-        lines.append("【数据源告警】")
+        lines.append("【健康/数据告警】")
         for warning in data_warnings:
             lines.append(f"  ⚠️ {warning}")
     else:
@@ -97,17 +109,21 @@ def refresh():
     lines.append("【健康度】")
     if health_records:
         latest = health_records[-1]
-        v = latest.get('V', 0.86)
+        v = finite_number(latest.get('V'))
         vdot = get_vdot(latest)
-        lines.append(f"  V = {v:.4f}")
-        lines.append(f"  V̇ = {float(vdot):+.4f}")
+        lines.append(f"  V = {v:.4f}" if v is not None else "  V = UNKNOWN (insufficient evidence)")
+        lines.append(f"  V̇ = {vdot:+.4f}" if vdot is not None else "  V̇ = UNKNOWN (insufficient evidence)")
         lines.append(f"  记录数: {len(health_records)}")
         
         # 趋势
         if len(health_records) >= 3:
-            recent_v = [r.get('V', 0) for r in health_records[-5:]]
-            trend = "↑" if recent_v[-1] > recent_v[0] else "↓" if recent_v[-1] < recent_v[0] else "→"
-            lines.append(f"  趋势: {trend} (近5次)")
+            recent_v = [finite_number(r.get('V')) for r in health_records[-5:]]
+            observed_v = [value for value in recent_v if value is not None]
+            if len(observed_v) >= 2:
+                trend = "↑" if observed_v[-1] > observed_v[0] else "↓" if observed_v[-1] < observed_v[0] else "→"
+                lines.append(f"  趋势: {trend} (近5次有效观测)")
+            else:
+                lines.append("  趋势: UNKNOWN (近5次有效观测不足)")
     else:
         lines.append("  V = 0.8600 (基线)")
         lines.append("  V̇ = 0.0000")

@@ -4,7 +4,7 @@
 每 4 小时运行一次，检查系统健康状态
 """
 
-import os, json, datetime
+import os, json, datetime, math
 
 from hermes_evolution_store import default_store
 
@@ -20,7 +20,10 @@ RESULTS_SOURCE = RESULTS_RESOLUTION.source
 
 def get_vdot(record):
     """Return V̇ across historical schema aliases (Vdot and V_dot)."""
-    return record.get("Vdot", record.get("V_dot", 0))
+    value = record.get("Vdot", record.get("V_dot"))
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return float(value) if math.isfinite(float(value)) else None
 
 def check_health():
     issues = []
@@ -32,8 +35,11 @@ def check_health():
         if len(records) >= 2:
             recent = records[-3:]
             vdots = [get_vdot(r) for r in recent]
-            if all(v < -0.05 for v in vdots):
+            if len(vdots) == 3 and all(v is not None and v < -0.05 for v in vdots):
                 issues.append(f"CRITICAL: V̇ 连续 3 次负值 ({vdots})")
+            elif vdots[-1] is None:
+                status = recent[-1].get("measurement_status", "unknown")
+                issues.append(f"WARNING: V̇ 最新不可用 ({status})")
             elif vdots[-1] < -0.05:
                 issues.append(f"WARNING: V̇ 最新为负 ({vdots[-1]})")
     else:
