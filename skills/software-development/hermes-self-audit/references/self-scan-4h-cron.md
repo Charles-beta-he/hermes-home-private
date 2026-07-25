@@ -31,6 +31,7 @@ Use when a scheduled Hermes health job asks to run `~/.hermes/scripts/self-scan-
 
 - Actionable WARNING/ERROR = appears in the latest scan record or recent repeated records.
 - Resolved historical WARNING/ERROR = useful evidence for trend context, but not a root-cause repair target.
+- Evidence-gated health records may intentionally store `V: null` and `V_dot: null` with `measurement_status: insufficient_evidence`. Treat null metrics as unavailable—not zero—and require the scanner/dashboard to report a degraded warning instead of comparing or formatting `None` as a number.
 - Dashboard files and scan logs are derived/runtime state; mention them as updated artifacts, but avoid turning their update into a code-change claim.
 
 ## Anti-conditions
