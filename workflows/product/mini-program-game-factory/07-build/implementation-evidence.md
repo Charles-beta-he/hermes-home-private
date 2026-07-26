@@ -56,6 +56,16 @@ python3 market_loop_gate.py \
 - Receipt/gate adversarial tests: snapshot 物料变化、被拒候选变化、来源主体错配、旧来源伪装新信号、弱发现来源凑 quorum、direct/non-direct 等级伪装、canonical registry/routing 替换、本地媒体摘要错配与符号链接、榜单/试玩复用摘要、过期试玩时间、缺失/错误人工分类、预填人工复核、缺失 proposed changes、抽象机制夹带保护面及非 low-cost 产物越过 candidate-only 均 fail closed。
 - `may_freeze_kernel=false`, `may_compile_work_package=false`, all external authorities false
 
+## H4 Independent Certification
+
+- Reviewed commit: `0747403e84e6bf98b4683f2b8901c166ee804357`
+- Reviewed tree: `7dd6e9a6ea82b538f084d7d6a56fb51ac23b6f02`
+- Producer immutable-archive verification: 68/68 tests, 10 Python compile checks, 16 JSON parse checks, receipt replay and digest-chain PASS
+- Independent evidence-state/authority review: APPROVE, no material findings
+- Independent routing/contract/determinism review: APPROVE, no material findings
+- Certificate: `evidence/h4-local-verification-certificate.json`
+- Boundary: local contract certification only; market truth, runtime, platform and release remain uncertified/closed
+
 ## Claim boundary
 
 证明：canonical 本地路由、来源注册绑定、字段隔离、参数边界、确定性候选编译、批次失败隔离和副作用关闭；热门玩法观测会按时间失效、独立来源和直接试玩门禁 fail closed；未经 `verified_current_hot` 的市场线索不能进入 `kernel_hypothesis`，而通过该门禁也不会自动冻结内核或编译工作包。

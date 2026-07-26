@@ -5,7 +5,7 @@
 | 助手通过持续外部观测而非模型记忆识别热门玩法 | `source-registry.json`, `hot-game-observatory.md`, observation schema | snapshot source refs parse PASS | PASS（机制层） | 仍需周期性真实输入 |
 | 实时热门不能由旧文章或单一来源自证 | freshness/independence/direct-play rules | observatory negative tests PASS | PASS | 无 7 天内客户端榜单证据 |
 | 首批市场样本保持证据边界 | 2026-07-26 snapshot | receipt: verified 0 / recent 2 / stale 1 | PASS（诚实状态） | 缺直接榜单与试玩录屏 |
-| 未验证市场线索不能进入玩法内核研发 | `hot_game_observatory.py`, `direct_capture_intake.py`, `market_loop_gate.py`, hypothesis candidates, capability graph | 全量 68 项测试 PASS；延迟审查的同媒体跨角色、隐藏保护面、类型等级错配、registry/routing 替换和符号链接路径攻击均已加入负例；receipt digest 绑定 snapshot/hypotheses/canonical routing；直接媒体需稳定摘要/大小、榜单与试玩摘要隔离、7 天内试玩时间及摘要绑定人工分类；所有来源绑定 canonical registry；候选必须显式 proposed changes 并扫描三类字段；真实 receipt: accepted 0 / rejected 2；所有高权限 false | PENDING（本地确定性验证 PASS） | 新精确提交独立复审；人工复核者身份尚无密码学认证；获得 `verified_current_hot` 后仍需规格、模拟、golden、人工试玩 |
+| 未验证市场线索不能进入玩法内核研发 | `hot_game_observatory.py`, `direct_capture_intake.py`, `market_loop_gate.py`, hypothesis candidates, capability graph, `h4-local-verification-certificate.json` | commit `0747403e84e6bf98b4683f2b8901c166ee804357` / tree `7dd6e9a6ea82b538f084d7d6a56fb51ac23b6f02` immutable-archive 68/68 PASS；两路独立 APPROVE 且无 material findings；receipt digest 绑定 snapshot/hypotheses/canonical routing；直接媒体需稳定摘要/大小、榜单与试玩摘要隔离、7 天内试玩时间及摘要绑定人工分类；所有来源绑定 canonical registry；候选必须显式 proposed changes 并扫描三类字段；真实 receipt: accepted 0 / rejected 2；所有高权限 false | PASS（本地契约已认证） | 不证明市场真实热门；人工复核者身份尚无密码学认证；获得 `verified_current_hot` 后仍需规格、模拟、golden、人工试玩 |
 | 玩法、内容、平台、商业化边界独立 | `game-product-contract.md`, `capability-graph.json` | JSON parse PASS | PASS（规格层） | 运行时实现未做 |
 | 低风险内容任务路由 low_cost | `model-routing.json`, `route_task` | `test_routes_allowlisted_content_generation_to_low_cost` PASS | PASS | 真实 provider 调用未做 |
 | protected surface 自动升级 | `protected_surfaces`, `route_task` | protected change test PASS | PASS | 无 |
@@ -26,3 +26,4 @@
 - Highest market state: `recent_market_lead`
 - Workflow state: `blocked_at_fresh_market_runtime_and_platform_evidence`
 - External side effects: closed
+- H4 local verification certificate: `evidence/h4-local-verification-certificate.json` (reviewed commit `0747403e...`; market certification remains blocked)

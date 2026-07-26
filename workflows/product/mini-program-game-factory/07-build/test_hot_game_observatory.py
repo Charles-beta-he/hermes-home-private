@@ -384,6 +384,9 @@ class HotGameObservatoryTests(unittest.TestCase):
             "recent_market_lead",
             "stale_lead",
             "unranked_lead",
+            "market_to_kernel_gate_evaluated",
+            "kernel_hypothesis",
+            "work_package_compiled",
         }
         self.assertTrue(emitted_states <= set(graph["closure_states"]))
 

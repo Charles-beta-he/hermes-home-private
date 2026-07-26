@@ -1,6 +1,6 @@
 {
   "schema": "product_workflow_evidence_bundle_v1",
-  "generated_at": "2026-07-26T16:52:36Z",
+  "generated_at": "2026-07-26T17:47:50Z",
   "workflow_slug": "mini-program-game-factory",
   "sources": [
     {
@@ -61,19 +61,19 @@
       "id": "src-market-tests-001",
       "source_type": "log",
       "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/hot-game-receipt-2026-07-26.json",
-      "retrieved_at": "2026-07-26T16:52:36Z",
+      "retrieved_at": "2026-07-26T17:47:50Z",
       "freshness": "current run",
       "access_status": "ok",
-      "notes": "68 full-suite tests passed, including 35 observatory adversarial/contract tests and 7 local-media intake tests; direct media hash/size readback rejects unstable or symlink paths, empty mechanic evidence, rank/gameplay role reuse, stale gameplay timestamps, missing or mismatched digest-bound human classification, and prefilled review at intake; all source types bind exact evidence levels and canonical registry entries; lineages and declared media digests are deduplicated; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest. New exact-commit independent review remains pending."
+      "notes": "68 full-suite tests passed, including 35 observatory adversarial/contract tests and 7 local-media intake tests; direct media hash/size readback rejects unstable or symlink paths, empty mechanic evidence, rank/gameplay role reuse, stale gameplay timestamps, missing or mismatched digest-bound human classification, and prefilled review at intake; all source types bind exact evidence levels and canonical registry entries; lineages and declared media digests are deduplicated; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest. Reviewed commit 0747403e / tree 7dd6e9a6 received two independent APPROVE verdicts with no material findings."
     },
     {
       "id": "src-market-loop-gate-001",
       "source_type": "log_and_receipt",
       "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/market-loop-receipt-2026-07-26.json",
-      "retrieved_at": "2026-07-26T16:52:36Z",
+      "retrieved_at": "2026-07-26T17:47:50Z",
       "freshness": "current run",
       "access_status": "ok",
-      "notes": "12 market-loop tests passed inside the 68-test suite; noncanonical routing is rejected; proposed_changes is mandatory and protected-surface matching scans proposed changes, abstract mechanics and differentiation after case, whitespace, repeated separator, ASCII/Unicode hyphen and NFKC normalization; receipt binds market, hypothesis and canonical routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false. New exact-commit independent review remains pending."
+      "notes": "12 market-loop tests passed inside the 68-test suite; noncanonical routing is rejected; proposed_changes is mandatory and protected-surface matching scans proposed changes, abstract mechanics and differentiation after case, whitespace, repeated separator, ASCII/Unicode hyphen and NFKC normalization; receipt binds market, hypothesis and canonical routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false. Reviewed commit 0747403e / tree 7dd6e9a6 received two independent APPROVE verdicts with no material findings."
     },
     {
       "id": "src-market-source-packet-001",
@@ -83,6 +83,15 @@
       "freshness": "packet created from the 2026-07-26 snapshot and receipts",
       "access_status": "ok",
       "notes": "Binds the three actual source URLs and their published/accessed timestamps to the snapshot and receipt digests. Explicitly preserves verified_current_hot=0 and does not upgrade indirect evidence into direct client evidence."
+    },
+    {
+      "id": "src-h4-independent-review-001",
+      "source_type": "independent_verification_certificate",
+      "source_ref": "evidence/h4-local-verification-certificate.json + evidence/review-0747403e-evidence-state.md + evidence/review-0747403e-routing-contract.md",
+      "retrieved_at": "2026-07-26T17:47:50Z",
+      "freshness": "exact commit/tree review",
+      "access_status": "ok",
+      "notes": "Two read-only immutable-tree reviews bind commit 0747403e84e6bf98b4683f2b8901c166ee804357 and tree 7dd6e9a6ea82b538f084d7d6a56fb51ac23b6f02; both APPROVE with no material findings. Scope is local contracts only and explicitly excludes market truth and release readiness."
     }
   ],
   "claims": [
@@ -137,9 +146,9 @@
     {
       "id": "claim-market-loop-fail-closed",
       "claim": "当前未验证市场线索不能进入 kernel_hypothesis；即使未来满足 verified_current_hot，市场门禁也不授予内核冻结、工作包编译、送审或发布权限。",
-      "source_ids": ["src-market-tests-001", "src-market-loop-gate-001"],
+      "source_ids": ["src-market-tests-001", "src-market-loop-gate-001", "src-h4-independent-review-001"],
       "confidence": "high",
-      "verification_status": "verified_local_gate",
+      "verification_status": "certified_local_contract",
       "interpretation_boundary": "local deterministic gate only; does not prove external market truth"
     }
   ],

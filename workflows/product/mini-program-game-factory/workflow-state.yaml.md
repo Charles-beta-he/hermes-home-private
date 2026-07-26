@@ -6,7 +6,7 @@ chain: full-lifecycle
 current_stage: discovery
 status: blocked
 created_at: 2026-07-26T12:44:35Z
-updated_at: 2026-07-26T16:52:36Z
+updated_at: 2026-07-26T17:47:50Z
 authority_boundary: local-artifacts-only
 highest_evidenced_state: local_contract_verified
 ---
@@ -21,12 +21,12 @@ highest_evidenced_state: local_contract_verified
   evidence: spec-packet.md
 
 - stage: discovery
-  status: local_gate_verified_waiting_direct_evidence
+  status: local_contract_certified_waiting_direct_evidence
   artifact: 01-discovery/hot-game-observatory.md
   evidence: evidence/hot-game-receipt-2026-07-26.json, evidence/market-loop-receipt-2026-07-26.json
   closure: recent_market_lead
   loop_gate: accepted 0 / rejected 2; may_freeze_kernel false; may_compile_work_package false
-  verification: 68/68 tests; delayed old-tree material findings reproduced and locally remediated; new exact-commit independent review pending
+  verification: reviewed commit 0747403e84e6bf98b4683f2b8901c166ee804357 / tree 7dd6e9a6ea82b538f084d7d6a56fb51ac23b6f02; immutable-archive 68/68 tests; two independent APPROVE reviews with no material findings; certificate evidence/h4-local-verification-certificate.json
   blocker: no 7-day locally digest-verified and human-classified direct rank/gameplay captures; no two current subject-bound independent lineages
 
 - stage: strategy

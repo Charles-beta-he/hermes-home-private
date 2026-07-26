@@ -10,6 +10,7 @@
     "verified_current_hot",
     "mechanic_observed",
     "trend_clustered",
+    "market_to_kernel_gate_evaluated",
     "kernel_hypothesis",
     "seed",
     "kernel_draft",

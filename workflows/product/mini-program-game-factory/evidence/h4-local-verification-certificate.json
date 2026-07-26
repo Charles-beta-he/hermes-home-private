@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "certificate_id": "h4-local-verification-2026-07-26",
+  "issued_at": "2026-07-26T17:47:50Z",
+  "claim": "h4 observation-stage integration and local deterministic evidence convergence",
+  "reviewed_candidate": {
+    "commit": "0747403e84e6bf98b4683f2b8901c166ee804357",
+    "tree": "7dd6e9a6ea82b538f084d7d6a56fb51ac23b6f02",
+    "parent": "1246033a4371553864c379245df53e98ad00d239",
+    "scope": "workflows/product/mini-program-game-factory/**"
+  },
+  "producer_verification": {
+    "immutable_git_archive": true,
+    "unit_tests": {
+      "passed": 68,
+      "failed": 0
+    },
+    "python_files_compiled": 10,
+    "json_files_parsed": 16,
+    "hot_receipt_replay_equal": true,
+    "market_loop_receipt_replay_equal": true,
+    "digest_chain_verified": true,
+    "capability_graph_references_closed": true,
+    "scoped_worktree_clean_at_review_dispatch": true
+  },
+  "independent_reviews": [
+    {
+      "lane": "evidence-state-machine-and-authority",
+      "verdict": "APPROVE",
+      "material_findings": 0,
+      "report": "evidence/review-0747403e-evidence-state.md",
+      "report_sha256": "aaab609f4d9d9f907082096e39c6e8c52645d79ea97db7ed82c2008a57ea4f5b"
+    },
+    {
+      "lane": "routing-contract-and-determinism",
+      "verdict": "APPROVE",
+      "material_findings": 0,
+      "report": "evidence/review-0747403e-routing-contract.md",
+      "report_sha256": "0afb3c55e4021d8393ff6680fd0ea73fd31f6ffc4f86ca270a69e0c3c3b9f813"
+    }
+  ],
+  "review_note": {
+    "non_blocking_observation": "The routing review reported closure-state inventory drift, but kernel_hypothesis and work_package_compiled were already present in the reviewed graph. market_to_kernel_gate_evaluated is added in the post-review live projection with a regression assertion.",
+    "reviewed_runtime_candidate_unchanged": true
+  },
+  "market_readback": {
+    "verified_current_hot": 0,
+    "recent_market_lead": 2,
+    "stale_lead": 1,
+    "market_loop_accepted": 0,
+    "market_loop_rejected": 2
+  },
+  "authority": {
+    "may_freeze_kernel": false,
+    "may_compile_work_package": false,
+    "may_submit_platform": false,
+    "may_publish": false,
+    "may_enter_credentials": false,
+    "may_pay": false
+  },
+  "verdict": "local_contract_certified",
+  "claim_boundary": {
+    "proves": [
+      "local deterministic evidence-state-machine behavior",
+      "canonical registry and routing enforcement",
+      "protected-surface and candidate-only gates",
+      "receipt replay and digest binding",
+      "closed high-side-effect authority"
+    ],
+    "does_not_prove": [
+      "any game is currently hot",
+      "human reviewer cryptographic identity",
+      "market truth or commercial outcome",
+      "playable runtime correctness",
+      "platform compliance, submission, publication or deployment readiness"
+    ]
+  }
+}
