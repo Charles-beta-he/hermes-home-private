@@ -1,7 +1,7 @@
 {
   "as_of": "2026-07-26T12:00:00+08:00",
   "authority_boundary": "market evidence may nominate hypotheses; it cannot freeze kernels or publish",
-  "digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
+  "digest": "607435cc60584e6cf84396a83926e2a1a8634e5594ca34d94fab6d55788d1668",
   "may_freeze_kernel": false,
   "observations": [
     {
@@ -57,7 +57,7 @@
     }
   ],
   "schema_version": 1,
-  "snapshot_digest": "7d3f4b2c31ab5e90c84f5da6cf8b2078a5a7f9dcb35886dd55c43f1351533e0a",
+  "snapshot_digest": "4d145d8148ce1054bffa1e9395fffc92db3b464078c760cc711f4d4f1aa75b1f",
   "snapshot_id": "douyin-market-leads-2026-07-26",
   "source_count": 3,
   "summary": {

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping
 
 from hot_game_observatory import ObservationError, evaluate_snapshot
-from work_package_compiler import digest
+from work_package_compiler import CompileError, digest, require_canonical_routing
 
 
 class GateError(ValueError):
@@ -63,6 +63,10 @@ def gate_market_hypotheses(
     as_of: str,
 ) -> Dict[str, Any]:
     """Evaluate hypotheses against a fresh market receipt and fail closed."""
+    try:
+        require_canonical_routing(routing)
+    except CompileError as exc:
+        raise GateError(f"canonical routing check failed: {exc}") from exc
 
     market_receipt = evaluate_snapshot(snapshot, as_of)
     raw_hypotheses = _require_list(hypotheses, "hypotheses")

@@ -48,6 +48,13 @@ class MarketLoopGateTests(unittest.TestCase):
         receipt = gate_market_hypotheses(snapshot, [hypothesis], self.routing, AS_OF)
         self.assertEqual(receipt["rejected"][0]["reason"], "protected_surface_requires_separate_spec_gate")
 
+    def test_noncanonical_routing_is_rejected(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        routing = copy.deepcopy(self.routing)
+        routing["protected_surfaces"] = ["unrelated"]
+        with self.assertRaisesRegex(GateError, "canonical routing"):
+            gate_market_hypotheses(snapshot, [self.hypothesis], routing, AS_OF)
+
     def test_missing_proposed_changes_is_rejected(self):
         snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
         hypothesis = copy.deepcopy(self.hypothesis)

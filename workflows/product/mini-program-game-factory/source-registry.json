@@ -57,6 +57,15 @@
       "cadence": "continuous_lead_discovery",
       "strength": "mechanic_and_growth_context",
       "limitations": ["开发者数据可能为自报", "文章发布时间不等于排名发生时间"]
+    },
+    {
+      "source_key": "search-and-social-leads",
+      "platform": "multi_platform",
+      "source_type": "search_or_social_lead",
+      "fetch_mode": "public_web_read_only",
+      "cadence": "continuous_lead_discovery",
+      "strength": "discovery_only",
+      "limitations": ["不能参与 current-hot quorum", "只能生成待复核线索"]
     }
   ],
   "promotion_policy": {

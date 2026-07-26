@@ -64,7 +64,7 @@
       "retrieved_at": "2026-07-26T16:52:36Z",
       "freshness": "current run",
       "access_status": "ok",
-      "notes": "62 full-suite tests passed, including 32 observatory adversarial/contract tests and 7 local-media intake tests; direct media hash/size readback rejects unstable files and empty mechanic evidence, rank/gameplay role reuse, stale gameplay timestamps, missing or mismatched digest-bound human classification, and prefilled review at intake; lineages and declared media digests are deduplicated; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest. Exact repaired-commit independent review remains pending."
+      "notes": "68 full-suite tests passed, including 35 observatory adversarial/contract tests and 7 local-media intake tests; direct media hash/size readback rejects unstable or symlink paths, empty mechanic evidence, rank/gameplay role reuse, stale gameplay timestamps, missing or mismatched digest-bound human classification, and prefilled review at intake; all source types bind exact evidence levels and canonical registry entries; lineages and declared media digests are deduplicated; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest. New exact-commit independent review remains pending."
     },
     {
       "id": "src-market-loop-gate-001",
@@ -73,7 +73,7 @@
       "retrieved_at": "2026-07-26T16:52:36Z",
       "freshness": "current run",
       "access_status": "ok",
-      "notes": "11 market-loop tests passed inside the 62-test suite; proposed_changes is mandatory and protected-surface matching scans proposed changes, abstract mechanics and differentiation after case, whitespace, repeated separator, ASCII/Unicode hyphen and NFKC normalization; receipt binds market, hypothesis and routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false. Exact repaired-commit independent review remains pending."
+      "notes": "12 market-loop tests passed inside the 68-test suite; noncanonical routing is rejected; proposed_changes is mandatory and protected-surface matching scans proposed changes, abstract mechanics and differentiation after case, whitespace, repeated separator, ASCII/Unicode hyphen and NFKC normalization; receipt binds market, hypothesis and canonical routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false. New exact-commit independent review remains pending."
     },
     {
       "id": "src-market-source-packet-001",

@@ -7,7 +7,8 @@
     "path": "evidence/hot-game-snapshot-2026-07-26.json",
     "snapshot_id": "douyin-market-leads-2026-07-26",
     "observed_at": "2026-07-26T12:00:00+08:00",
-    "sha256": "7d3f4b2c31ab5e90c84f5da6cf8b2078a5a7f9dcb35886dd55c43f1351533e0a",
+    "sha256": "a1d786bbe19c3e3c8e6c33a4d3a0586c2c63aa1eb42071dad52610c63c621795",
+    "canonical_digest": "4d145d8148ce1054bffa1e9395fffc92db3b464078c760cc711f4d4f1aa75b1f",
     "source_count": 3
   },
   "source_registry": "source-registry.json",
@@ -40,14 +41,14 @@
   "receipts": {
     "hot_game": {
       "path": "evidence/hot-game-receipt-2026-07-26.json",
-      "digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
+      "digest": "607435cc60584e6cf84396a83926e2a1a8634e5594ca34d94fab6d55788d1668",
       "verified_current_hot": 0,
       "recent_market_lead": 2,
       "stale_lead": 1
     },
     "market_loop": {
       "path": "evidence/market-loop-receipt-2026-07-26.json",
-      "digest": "c7c805f21950972366aabdb1059285032b2f3e99a501e680daf20015414ff235",
+      "digest": "e6343a8a808cb014478cbecdd759ab429dd74833259ce585c0b3f3cd277cecfd",
       "accepted": 0,
       "rejected": 2
     }

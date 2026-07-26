@@ -13,6 +13,9 @@ class CompileError(ValueError):
     pass
 
 
+CANONICAL_ROUTING_PATH = Path(__file__).resolve().parents[1] / "model-routing.json"
+
+
 def canonical_bytes(value: Any) -> bytes:
     return json.dumps(
         value,
@@ -26,6 +29,15 @@ def digest(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
 
 
+def require_canonical_routing(routing: Mapping[str, Any]) -> None:
+    try:
+        canonical = json.loads(CANONICAL_ROUTING_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CompileError(f"canonical routing is unavailable: {exc}") from exc
+    if digest(routing) != digest(canonical):
+        raise CompileError("routing does not match canonical routing")
+
+
 def route_task(
     routing: Mapping[str, Any],
     *,
@@ -35,6 +47,7 @@ def route_task(
     platform_contract_known: bool,
     prior_gate_failures: int,
 ) -> str:
+    require_canonical_routing(routing)
     protected: Set[str] = set(routing["protected_surfaces"])
     touched = set(touched_fields)
     escalation = routing["escalation_rules"]
@@ -159,7 +172,7 @@ def compile_work_package(seed: Mapping[str, Any], routing: Mapping[str, Any]) ->
         "accuracy_contract": {
             "same_gates_for_all_models": routing["accuracy_policy"]["same_gates_for_all_models"],
             "model_self_report_is_evidence": routing["accuracy_policy"]["model_self_report_is_evidence"],
-            "candidate_only": route == "low_cost",
+            "candidate_only": True,
         },
     }
     package["compile_digest"] = digest(package)

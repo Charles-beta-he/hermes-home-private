@@ -12,6 +12,22 @@ AS_OF = "2026-07-26T12:00:00+08:00"
 
 
 def source(source_id, source_type, published_at, url=None, game_name="Game A", platform="douyin"):
+    evidence_levels = {
+        "direct_app_rank_capture": "direct",
+        "direct_gameplay_capture": "direct",
+        "official_platform_case": "official",
+        "first_party_creator_report": "first_party_claim",
+        "third_party_rank_report": "third_party_claim",
+        "search_or_social_lead": "lead_only",
+    }
+    registry_keys = {
+        "direct_app_rank_capture": "douyin-client-hot-chart",
+        "direct_gameplay_capture": "douyin-direct-gameplay",
+        "official_platform_case": "douyin-open-platform-cases",
+        "first_party_creator_report": "industry-media-and-creator-talks",
+        "third_party_rank_report": "dataeye-adx",
+        "search_or_social_lead": "search-and-social-leads",
+    }
     result = {
         "source_id": source_id,
         "source_type": source_type,
@@ -20,7 +36,8 @@ def source(source_id, source_type, published_at, url=None, game_name="Game A", p
         "published_at": published_at,
         "accessed_at": AS_OF,
         "url": url or f"https://example.com/{source_id}",
-        "evidence_level": "direct" if source_type.startswith("direct_") else "third_party_claim",
+        "evidence_level": evidence_levels[source_type],
+        "registry_source_key": registry_keys[source_type],
         "subject_bindings": [{
             "platform": platform,
             "game_name": game_name,
@@ -288,6 +305,8 @@ class HotGameObservatoryTests(unittest.TestCase):
     def test_discovery_only_source_cannot_satisfy_current_quorum(self):
         snapshot = observation(["rank-direct"], direct_gameplay=True)
         snapshot["sources"][1]["source_type"] = "search_or_social_lead"
+        snapshot["sources"][1]["evidence_level"] = "lead_only"
+        snapshot["sources"][1]["registry_source_key"] = "search-and-social-leads"
         snapshot["observations"][0]["popularity_signals"] = [{
             "source_id": "rank-second",
             "kind": "topic_views",
@@ -321,6 +340,33 @@ class HotGameObservatoryTests(unittest.TestCase):
         receipt = evaluate_snapshot(snapshot, AS_OF)
         self.assertNotEqual(receipt["observations"][0]["status"], "verified_current_hot")
         self.assertFalse(receipt["observations"][0]["direct_gameplay"])
+
+    def test_symlink_local_media_is_rejected(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "capture.bin"
+            target.write_bytes(b"synthetic capture")
+            link = Path(directory) / "capture-link.bin"
+            link.symlink_to(target)
+            rank_source = snapshot["sources"][0]
+            rank_source["local_media_path"] = str(link)
+            rank_source["evidence_digest"] = hashlib.sha256(target.read_bytes()).hexdigest()
+            rank_source["media_size_bytes"] = target.stat().st_size
+            rank_source["content_review"]["evidence_digest"] = rank_source["evidence_digest"]
+            with self.assertRaisesRegex(ObservationError, "non-symlink regular file"):
+                evaluate_snapshot(snapshot, AS_OF)
+
+    def test_non_direct_source_type_and_evidence_level_must_match(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        snapshot["sources"][1]["evidence_level"] = "lead_only"
+        with self.assertRaisesRegex(ObservationError, "source_type and evidence_level"):
+            evaluate_snapshot(snapshot, AS_OF)
+
+    def test_source_must_match_canonical_registry_entry(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        snapshot["sources"][1]["registry_source_key"] = "dataeye-adx"
+        with self.assertRaisesRegex(ObservationError, "registry"):
+            evaluate_snapshot(snapshot, AS_OF)
 
     def test_real_snapshot_remains_recent_lead_not_verified_hot(self):
         path = Path(__file__).parents[1] / "evidence" / "hot-game-snapshot-2026-07-26.json"
@@ -357,7 +403,14 @@ class HotGameObservatoryTests(unittest.TestCase):
         graph = json.loads((root / "capability-graph.json").read_text(encoding="utf-8"))
         observatory = next(node for node in graph["nodes"] if node["id"] == "market-observatory")
         self.assertTrue(
-            {"human-media-content-review", "distinct-role-media", "direct-gameplay-freshness"}
+            {
+                "canonical-source-registry",
+                "canonical-evidence-level",
+                "no-symlink-local-media",
+                "human-media-content-review",
+                "distinct-role-media",
+                "direct-gameplay-freshness",
+            }
             <= set(observatory["gates"])
         )
         extractor = next(wrapper for wrapper in graph["agent_wrappers"] if wrapper["id"] == "cheap-market-extractor")

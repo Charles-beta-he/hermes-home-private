@@ -4,7 +4,8 @@
   "snapshot_observed_at": "2026-07-26T12:00:00+08:00",
   "snapshot_id": "douyin-market-leads-2026-07-26",
   "snapshot_path": "evidence/hot-game-snapshot-2026-07-26.json",
-  "snapshot_sha256": "7d3f4b2c31ab5e90c84f5da6cf8b2078a5a7f9dcb35886dd55c43f1351533e0a",
+  "snapshot_sha256": "a1d786bbe19c3e3c8e6c33a4d3a0586c2c63aa1eb42071dad52610c63c621795",
+  "snapshot_canonical_digest": "4d145d8148ce1054bffa1e9395fffc92db3b464078c760cc711f4d4f1aa75b1f",
   "source_packet_path": "evidence/source-packet.json",
   "time_readback": {
     "source_published_at_and_accessed_at": "preserved per source in evidence/source-packet.json and the immutable snapshot",
@@ -13,9 +14,9 @@
   },
   "receipt_readback": {
     "hot_game_receipt": "evidence/hot-game-receipt-2026-07-26.json",
-    "hot_game_digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
+    "hot_game_digest": "607435cc60584e6cf84396a83926e2a1a8634e5594ca34d94fab6d55788d1668",
     "market_loop_receipt": "evidence/market-loop-receipt-2026-07-26.json",
-    "market_loop_digest": "c7c805f21950972366aabdb1059285032b2f3e99a501e680daf20015414ff235"
+    "market_loop_digest": "e6343a8a808cb014478cbecdd759ab429dd74833259ce585c0b3f3cd277cecfd"
   },
   "status": "PASS_LOCAL_SOURCE_AND_TIME_BINDING",
   "market_certification": false,

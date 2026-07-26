@@ -6,6 +6,7 @@
     {
       "source_id": "replace-rank-capture-id",
       "source_type": "direct_app_rank_capture",
+      "registry_source_key": "douyin-client-hot-chart",
       "publisher": "Douyin client chart",
       "independence_key": "replace-with-original-rank-capture-lineage",
       "published_at": "2026-07-26T12:00:00+08:00",
@@ -21,6 +22,7 @@
     {
       "source_id": "replace-gameplay-capture-id",
       "source_type": "direct_gameplay_capture",
+      "registry_source_key": "douyin-direct-gameplay",
       "publisher": "Direct gameplay capture",
       "independence_key": "replace-with-original-gameplay-capture-lineage",
       "published_at": "2026-07-26T12:00:00+08:00",

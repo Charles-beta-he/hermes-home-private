@@ -48,6 +48,12 @@ class WorkPackageCompilerTests(unittest.TestCase):
         )
         self.assertEqual(route, "high_reasoning")
 
+    def test_noncanonical_routing_is_rejected(self):
+        routing = copy.deepcopy(self.routing)
+        routing["protected_surfaces"] = ["unrelated"]
+        with self.assertRaisesRegex(CompileError, "canonical routing"):
+            compile_work_package(self.seed, routing)
+
     def test_blocks_unknown_platform_contract(self):
         route = route_task(
             self.routing,
@@ -93,6 +99,12 @@ class WorkPackageCompilerTests(unittest.TestCase):
         self.assertEqual(result["closure_state"], "work_package_compiled")
         self.assertFalse(result["authority"]["may_publish"])
         self.assertFalse(result["authority"]["may_submit_platform"])
+    def test_standard_route_output_also_remains_candidate_only_without_promotion_receipt(self):
+        seed = copy.deepcopy(self.seed)
+        seed["generation"]["task_type"] = "implement_frozen_spec"
+        result = compile_work_package(seed, self.routing)
+        self.assertEqual(result["model_route"], "standard")
+        self.assertTrue(result["accuracy_contract"]["candidate_only"])
 
 
 if __name__ == "__main__":

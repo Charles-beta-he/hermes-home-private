@@ -26,7 +26,7 @@ highest_evidenced_state: local_contract_verified
   evidence: evidence/hot-game-receipt-2026-07-26.json, evidence/market-loop-receipt-2026-07-26.json
   closure: recent_market_lead
   loop_gate: accepted 0 / rejected 2; may_freeze_kernel false; may_compile_work_package false
-  verification: 62/62 tests; delayed material findings reproduced and locally remediated; exact repaired-commit independent review pending
+  verification: 68/68 tests; delayed old-tree material findings reproduced and locally remediated; new exact-commit independent review pending
   blocker: no 7-day locally digest-verified and human-classified direct rank/gameplay captures; no two current subject-bound independent lineages
 
 - stage: strategy

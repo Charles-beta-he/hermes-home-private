@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Tuple
@@ -40,6 +41,15 @@ DIRECT_CONTENT_CLASSIFICATIONS = {
     "direct_app_rank_capture": "app_rank_capture",
     "direct_gameplay_capture": "gameplay_capture",
 }
+EVIDENCE_LEVEL_BY_SOURCE_TYPE = {
+    "direct_app_rank_capture": "direct",
+    "direct_gameplay_capture": "direct",
+    "official_platform_case": "official",
+    "first_party_creator_report": "first_party_claim",
+    "third_party_rank_report": "third_party_claim",
+    "search_or_social_lead": "lead_only",
+}
+SOURCE_REGISTRY_PATH = Path(__file__).resolve().parents[1] / "source-registry.json"
 CURRENT_CORROBORATION_SOURCE_TYPES = {
     "direct_app_rank_capture",
     "official_platform_case",
@@ -92,19 +102,45 @@ def _stable_identity(stat_result: os.stat_result) -> Tuple[int, int, int, int]:
 
 def _digest_file(path: Path) -> Tuple[str, int]:
     digest = hashlib.sha256()
-    with path.open("rb") as stream:
+    initial_path = os.lstat(path)
+    if not stat.S_ISREG(initial_path.st_mode):
+        raise ObservationError(f"local media path must be a non-symlink regular file: {path}")
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise ObservationError(f"local media cannot be opened without following links: {path}") from exc
+    with os.fdopen(descriptor, "rb") as stream:
         before = os.fstat(stream.fileno())
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
         after = os.fstat(stream.fileno())
     if _stable_identity(before) != _stable_identity(after):
         raise ObservationError(f"local media changed while hashing: {path}")
-    if _stable_identity(path.stat()) != _stable_identity(after):
+    final_path = os.lstat(path)
+    if not stat.S_ISREG(final_path.st_mode) or _stable_identity(final_path) != _stable_identity(after):
         raise ObservationError(f"local media path changed while hashing: {path}")
     return digest.hexdigest(), after.st_size
 
 
+def _canonical_source_registry() -> Dict[str, Mapping[str, Any]]:
+    try:
+        payload = json.loads(SOURCE_REGISTRY_PATH.read_text(encoding="utf-8"))
+        entries = _require_list(payload.get("sources"), "source-registry.sources")
+    except (OSError, json.JSONDecodeError, ObservationError) as exc:
+        raise ObservationError(f"canonical source registry is unavailable: {exc}") from exc
+    result: Dict[str, Mapping[str, Any]] = {}
+    for index, raw_entry in enumerate(entries):
+        entry = _require_mapping(raw_entry, f"source-registry.sources[{index}]")
+        key = entry.get("source_key")
+        if not isinstance(key, str) or not key or key in result:
+            raise ObservationError("canonical source registry contains an invalid or duplicate source_key")
+        result[key] = entry
+    return result
+
+
 def _validate_sources(snapshot: Mapping[str, Any], as_of: datetime) -> Dict[str, Mapping[str, Any]]:
+    registry = _canonical_source_registry()
     source_index: Dict[str, Mapping[str, Any]] = {}
     for index, raw_source in enumerate(_require_list(snapshot.get("sources"), "sources")):
         source = _require_mapping(raw_source, f"sources[{index}]")
@@ -116,6 +152,26 @@ def _validate_sources(snapshot: Mapping[str, Any], as_of: datetime) -> Dict[str,
         source_type = source.get("source_type")
         if source_type not in SOURCE_TYPES:
             raise ObservationError(f"unsupported source_type for {source_id}: {source_type}")
+        evidence_level = source.get("evidence_level")
+        if evidence_level != EVIDENCE_LEVEL_BY_SOURCE_TYPE[source_type]:
+            raise ObservationError(
+                f"source {source_id} source_type and evidence_level must match the canonical mapping"
+            )
+        registry_source_key = source.get("registry_source_key")
+        if not isinstance(registry_source_key, str) or not registry_source_key:
+            raise ObservationError(f"source {source_id} must reference a canonical registry source")
+        registry_entry = registry.get(registry_source_key)
+        if registry_entry is None:
+            raise ObservationError(f"source {source_id} must reference a canonical registry source")
+        if registry_entry.get("source_type") != source_type:
+            raise ObservationError(f"source {source_id} does not match its canonical registry source_type")
+        bindings = _require_list(source.get("subject_bindings"), f"source {source_id}.subject_bindings")
+        registry_platform = registry_entry.get("platform")
+        if registry_platform != "multi_platform":
+            for binding_index, raw_binding in enumerate(bindings):
+                binding = _require_mapping(raw_binding, f"source {source_id}.subject_bindings[{binding_index}]")
+                if binding.get("platform") != registry_platform:
+                    raise ObservationError(f"source {source_id} does not match its canonical registry platform")
         publisher = source.get("publisher")
         if not isinstance(publisher, str) or not publisher.strip():
             raise ObservationError(f"source {source_id} must name its publisher")

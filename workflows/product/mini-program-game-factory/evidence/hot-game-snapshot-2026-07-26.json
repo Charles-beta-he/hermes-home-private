@@ -6,6 +6,7 @@
     {
       "source_id": "dataeye-jade-36kr-2026-06-22",
       "source_type": "third_party_rank_report",
+      "registry_source_key": "dataeye-adx",
       "publisher": "DataEye via 36Kr",
       "independence_key": "dataeye-jade-analysis-2026-06",
       "published_at": "2026-06-22T16:01:00+08:00",
@@ -21,6 +22,7 @@
     {
       "source_id": "sniper-alien-gamelook-qq-2025-12-25",
       "source_type": "first_party_creator_report",
+      "registry_source_key": "industry-media-and-creator-talks",
       "publisher": "GameLook via Tencent News",
       "independence_key": "sniper-alien-creator-talk-2025",
       "published_at": "2025-12-25T23:39:00+08:00",
@@ -35,12 +37,14 @@
     {
       "source_id": "acquisition-report-netease-2026-05-11",
       "source_type": "third_party_rank_report",
+      "registry_source_key": "insightrackr-heat-engine",
       "publisher": "游娱fan via NetEase",
       "independence_key": "heat-engine-insightrackr-report-2026",
       "published_at": "2026-05-11T20:31:00+08:00",
       "accessed_at": "2026-07-26T12:00:00+08:00",
       "url": "https://m.163.com/dy/article/KSM4N3SM05466ZM9.html",
       "evidence_level": "third_party_claim",
+      "subject_bindings": [],
       "boundary": "summary of Heat Engine and Insightrackr report; methodology lead, not a per-game direct rank"
     }
   ],
