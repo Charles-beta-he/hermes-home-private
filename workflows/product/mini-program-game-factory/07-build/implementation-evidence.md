@@ -38,9 +38,10 @@ python3 market_loop_gate.py \
 ```
 
 - Python compilation: 10 files PASS
-- Full unit suite: 52/52 PASS
-  - 观测台 25 项；直接媒体绑定 6 项；市场 loop 9 项；原编译器/批处理 12 项。
+- Full unit suite: 54/54 PASS
+  - 观测台 27 项；直接媒体绑定 6 项；市场 loop 9 项；原编译器/批处理 12 项。
   - 独立审查发现并修复受保护面大小写/空白/连字符/Unicode 分隔符绕过，以及空机制字段满足 direct gameplay 的问题；修复后 fresh 只读复审结论为 `no material findings`。
+  - 对绑定旧提交 `39b7a7524` 的异步审查做当前树复核：其 3 项 P1 已由来源双时间窗、current-hot 来源类型/数值门禁和 `snapshot_digest` 修复；其 2 项 P2 已通过状态清单补齐、机制字段契约澄清及两条一致性测试修复。
 - JSON parse/readback: PASS
 - Capability graph node/dependency/wrapper references: PASS
 - `git diff --check`: PASS

@@ -1,6 +1,6 @@
 {
   "schema": "product_workflow_evidence_bundle_v1",
-  "generated_at": "2026-07-26T15:54:39Z",
+  "generated_at": "2026-07-26T16:16:49Z",
   "workflow_slug": "mini-program-game-factory",
   "sources": [
     {
@@ -61,19 +61,19 @@
       "id": "src-market-tests-001",
       "source_type": "log",
       "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/hot-game-receipt-2026-07-26.json",
-      "retrieved_at": "2026-07-26T15:47:58Z",
+      "retrieved_at": "2026-07-26T16:16:49Z",
       "freshness": "current run",
       "access_status": "ok",
-      "notes": "52 full-suite tests passed, including 25 observatory adversarial tests and 6 local-media intake tests; direct media hash/size readback rejects unstable files and empty mechanic evidence, direct evidence lineages are collapsed by declared original lineage, and any declared media digest is deduplicated across direct/indirect claims; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest."
+      "notes": "54 full-suite tests passed, including 27 observatory adversarial/contract tests and 6 local-media intake tests; direct media hash/size readback rejects unstable files and empty mechanic evidence, direct evidence lineages are collapsed by declared original lineage, any declared media digest is deduplicated across direct/indirect claims, and emitted-state plus mechanic-field inventories are checked against graph/schema; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest."
     },
     {
       "id": "src-market-loop-gate-001",
       "source_type": "log_and_receipt",
       "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/market-loop-receipt-2026-07-26.json",
-      "retrieved_at": "2026-07-26T15:47:58Z",
+      "retrieved_at": "2026-07-26T16:16:49Z",
       "freshness": "current run",
       "access_status": "ok",
-      "notes": "9 market-loop tests passed inside the 52-test suite; protected-surface matching normalizes case, whitespace, repeated separators, ASCII/Unicode hyphens and NFKC variants; receipt binds market, hypothesis and routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false."
+      "notes": "9 market-loop tests passed inside the 54-test suite; protected-surface matching normalizes case, whitespace, repeated separators, ASCII/Unicode hyphens and NFKC variants; receipt binds market, hypothesis and routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false."
     },
     {
       "id": "src-market-source-packet-001",

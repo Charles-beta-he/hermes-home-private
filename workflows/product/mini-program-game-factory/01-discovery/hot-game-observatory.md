@@ -42,7 +42,9 @@
 
 ## 热度状态机
 
-`search_lead → recent_market_lead → verified_current_hot → mechanic_observed → kernel_hypothesis`
+`unranked_lead → recent_market_lead → verified_current_hot → mechanic_observed → kernel_hypothesis`
+
+`stale_lead` 是信号超过 60 天后的降级状态；`search_or_social_lead` 是来源类型，不是状态，只能形成 `unranked_lead` 或辅助发现，不能参与 current-hot quorum。
 
 - `verified_current_hot`：至少一条 7 天内、可本地摘要回读的客户端榜单直接证据；至少两个 7 天内、主体绑定正确且证据类型合格的独立 lineage；以及 7 天内可本地摘要回读的直接试玩证据。搜索/社交发现信号不参与该 quorum。
 - `recent_market_lead`：60 天内存在主体绑定正确的排名/数值热度信号，但未满足实时榜单或独立来源门禁。来源的发布时间和访问时间也必须在 60 天内。
@@ -60,14 +62,14 @@
 - `session_loop`
 - `goal_or_exit`
 - `failure_pressure`
-- `session_length_seconds`
 - `randomness`
 - `spectator_hook`
 - `social_hook`
-- `monetization_observation`
 - `content_burden`
 - `reusable_mechanics`
 - `non_copyable_expression`
+
+可选补充字段为 `session_length_seconds` 与 `monetization_observation`。只有来源实际观察或披露时才填写；未观察时保持缺失，低成本模型不得估算或补造。它们不属于当前 `mechanic_observed` 完整性门禁。
 
 低成本模型可做 OCR 后的字段提取、标签、去重和聚类候选，但不得补造缺失证据，也不得把候选升级为 `verified_current_hot`。
 

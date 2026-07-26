@@ -4,7 +4,9 @@
   "closure_states": [
     "source_registry",
     "market_snapshot",
+    "unranked_lead",
     "recent_market_lead",
+    "stale_lead",
     "verified_current_hot",
     "mechanic_observed",
     "trend_clustered",

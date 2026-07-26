@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from hot_game_observatory import ObservationError, evaluate_snapshot
+from hot_game_observatory import MECHANIC_FIELDS, ObservationError, evaluate_snapshot
 
 
 AS_OF = "2026-07-26T12:00:00+08:00"
@@ -271,6 +271,22 @@ class HotGameObservatoryTests(unittest.TestCase):
         statuses = {item["status"] for item in receipt["observations"]}
         self.assertNotIn("verified_current_hot", statuses)
         self.assertIn("recent_market_lead", statuses)
+
+    def test_all_emitted_states_are_registered_in_capability_graph(self):
+        graph_path = Path(__file__).parents[1] / "capability-graph.json"
+        graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        emitted_states = {
+            "verified_current_hot",
+            "recent_market_lead",
+            "stale_lead",
+            "unranked_lead",
+        }
+        self.assertTrue(emitted_states <= set(graph["closure_states"]))
+
+    def test_schema_required_mechanic_fields_match_validator(self):
+        schema_path = Path(__file__).parents[1] / "hot-game-observation-schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        self.assertEqual(set(schema["required_mechanic_fields"]), MECHANIC_FIELDS)
 
 
 if __name__ == "__main__":
