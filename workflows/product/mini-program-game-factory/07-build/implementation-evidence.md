@@ -38,10 +38,10 @@ python3 market_loop_gate.py \
 ```
 
 - Python compilation: 10 files PASS
-- Full unit suite: 54/54 PASS
-  - 观测台 27 项；直接媒体绑定 6 项；市场 loop 9 项；原编译器/批处理 12 项。
-  - 独立审查发现并修复受保护面大小写/空白/连字符/Unicode 分隔符绕过，以及空机制字段满足 direct gameplay 的问题；修复后 fresh 只读复审结论为 `no material findings`。
-  - 对绑定旧提交 `39b7a7524` 的异步审查做当前树复核：其 3 项 P1 已由来源双时间窗、current-hot 来源类型/数值门禁和 `snapshot_digest` 修复；其 2 项 P2 已通过状态清单补齐、机制字段契约澄清及两条一致性测试修复。
+- Full unit suite: 62/62 PASS
+  - 观测台 32 项；直接媒体绑定 7 项；市场 loop 11 项；原编译器/批处理 12 项。
+  - 旧的 `no material findings` 结论已被后到异步审查推翻，不再作为当前认证证据。该审查复现出两个 material finding：榜单与试玩复用同一媒体可错误晋级 `verified_current_hot`；缺失 `proposed_changes` 且保护面藏在 `abstract_mechanics` 可错误接受 `kernel_hypothesis`。
+  - 当前本地修复要求榜单/试玩摘要隔离、7 天内试玩 `captured_at`、摘要绑定且类型一致的人工 `content_review`，并禁止 intake 接受预填复核；市场门禁要求非空 `proposed_changes`，同时扫描 proposed changes、abstract mechanics 和 differentiation。对应负例已加入并通过；修复后的精确提交独立复审仍为 PENDING。
 - JSON parse/readback: PASS
 - Capability graph node/dependency/wrapper references: PASS
 - `git diff --check`: PASS
@@ -49,9 +49,10 @@ python3 market_loop_gate.py \
 - Market snapshot digest: `7d3f4b2c31ab5e90c84f5da6cf8b2078a5a7f9dcb35886dd55c43f1351533e0a`
 - Market receipt digest: `3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7`
 - Real snapshot hypotheses: accepted 0, rejected 2；均为 `source_observation_not_verified_current_hot`。
-- Hypotheses digest: `4e9c570bed230c2aa4c85d5bd136f3f0fd37c76be7c594ffb4b71ac6e2251dfb`
-- Loop receipt digest: `caf3826ca56c6ddb4b7f001c34f6e443d6e77e2b399244e10cc30e5be930fcbd`
-- Receipt binding adversarial tests: snapshot 物料变化、被拒候选变化、来源主体错配、旧来源伪装新信号、弱发现来源凑 quorum、直接来源等级伪装、本地媒体摘要错配均 fail closed。
+- Hypotheses digest: `52cf6cbc4849cab07b1c2ad136b1b95a2bf144d8b15caf92017e7290a23896e3`
+- Routing digest: `518b9f693b308766227babd7c5b7bcd566b125d4481ca458b25d1fed08ed6db1`
+- Loop receipt digest: `c7c805f21950972366aabdb1059285032b2f3e99a501e680daf20015414ff235`
+- Receipt/gate adversarial tests: snapshot 物料变化、被拒候选变化、来源主体错配、旧来源伪装新信号、弱发现来源凑 quorum、直接来源等级伪装、本地媒体摘要错配、榜单/试玩复用摘要、过期试玩时间、缺失/错误人工分类、预填人工复核、缺失 proposed changes 及抽象机制夹带保护面均 fail closed。
 - `may_freeze_kernel=false`, `may_compile_work_package=false`, all external authorities false
 
 ## Claim boundary

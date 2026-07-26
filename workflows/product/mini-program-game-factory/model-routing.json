@@ -13,7 +13,8 @@
     "monetization_policy",
     "platform_api",
     "privacy_contract",
-    "release_decision"
+    "release_decision",
+    "content_review"
   ],
   "routes": {
     "low_cost": {

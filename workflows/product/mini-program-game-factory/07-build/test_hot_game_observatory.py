@@ -28,11 +28,26 @@ def source(source_id, source_type, published_at, url=None, game_name="Game A", p
         }],
     }
     if source_type.startswith("direct_"):
-        media = Path(__file__).resolve()
+        media = (
+            Path(__file__).with_name("market_loop_gate.py").resolve()
+            if source_type == "direct_gameplay_capture"
+            else Path(__file__).resolve()
+        )
         result.pop("url")
         result["local_media_path"] = str(media)
         result["evidence_digest"] = hashlib.sha256(media.read_bytes()).hexdigest()
         result["media_size_bytes"] = media.stat().st_size
+        result["content_review"] = {
+            "reviewer_kind": "human",
+            "reviewer_id": "unit-test-reviewer",
+            "reviewed_at": "2026-07-25T12:00:00+08:00",
+            "classification": (
+                "app_rank_capture"
+                if source_type == "direct_app_rank_capture"
+                else "gameplay_capture"
+            ),
+            "evidence_digest": result["evidence_digest"],
+        }
     return result
 
 
@@ -66,6 +81,7 @@ def observation(rank_sources, direct_gameplay=False, rank_at="2026-07-24T12:00:0
             "mechanic_evidence": ([{
                 "source_id": "play",
                 "direct_playback": True,
+                "captured_at": "2026-07-24T12:00:00+08:00",
                 "core_action": "tap",
                 "state_transition": "hidden to revealed",
                 "session_loop": "inspect-act-resolve",
@@ -116,6 +132,39 @@ class HotGameObservatoryTests(unittest.TestCase):
         receipt = evaluate_snapshot(snapshot, AS_OF)
         self.assertEqual(receipt["observations"][0]["status"], "recent_market_lead")
         self.assertEqual(receipt["observations"][0]["independent_signal_lineages"], 1)
+
+    def test_rank_and_gameplay_cannot_reuse_the_same_media_digest(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        rank = next(item for item in snapshot["sources"] if item["source_id"] == "rank-direct")
+        play = next(item for item in snapshot["sources"] if item["source_id"] == "play")
+        play["local_media_path"] = rank["local_media_path"]
+        play["evidence_digest"] = rank["evidence_digest"]
+        play["media_size_bytes"] = rank["media_size_bytes"]
+        play["content_review"]["evidence_digest"] = rank["evidence_digest"]
+        receipt = evaluate_snapshot(snapshot, AS_OF)
+        self.assertNotEqual(receipt["observations"][0]["status"], "verified_current_hot")
+        self.assertFalse(receipt["observations"][0]["direct_gameplay"])
+
+    def test_direct_media_without_human_content_review_cannot_verify_current(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        for source_item in snapshot["sources"]:
+            source_item.pop("content_review", None)
+        receipt = evaluate_snapshot(snapshot, AS_OF)
+        self.assertNotEqual(receipt["observations"][0]["status"], "verified_current_hot")
+
+    def test_content_review_classification_must_match_direct_source_type(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        rank = next(item for item in snapshot["sources"] if item["source_id"] == "rank-direct")
+        rank["content_review"] = {
+            "reviewer_kind": "human",
+            "reviewer_id": "test-reviewer",
+            "reviewed_at": "2026-07-25T12:00:00+08:00",
+            "classification": "gameplay_capture",
+            "evidence_digest": rank["evidence_digest"],
+        }
+        receipt = evaluate_snapshot(snapshot, AS_OF)
+        self.assertNotEqual(receipt["observations"][0]["status"], "verified_current_hot")
+        self.assertFalse(receipt["observations"][0]["fresh_direct_rank"])
 
     def test_direct_evidence_without_digest_fails_closed(self):
         snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
@@ -264,6 +313,15 @@ class HotGameObservatoryTests(unittest.TestCase):
         self.assertNotEqual(receipt["observations"][0]["status"], "verified_current_hot")
         self.assertFalse(receipt["observations"][0]["direct_gameplay"])
 
+    def test_stale_gameplay_capture_timestamp_cannot_verify_current(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        snapshot["observations"][0]["mechanic_evidence"][0]["captured_at"] = (
+            "2026-04-01T12:00:00+08:00"
+        )
+        receipt = evaluate_snapshot(snapshot, AS_OF)
+        self.assertNotEqual(receipt["observations"][0]["status"], "verified_current_hot")
+        self.assertFalse(receipt["observations"][0]["direct_gameplay"])
+
     def test_real_snapshot_remains_recent_lead_not_verified_hot(self):
         path = Path(__file__).parents[1] / "evidence" / "hot-game-snapshot-2026-07-26.json"
         snapshot = json.loads(path.read_text(encoding="utf-8"))
@@ -287,6 +345,23 @@ class HotGameObservatoryTests(unittest.TestCase):
         schema_path = Path(__file__).parents[1] / "hot-game-observation-schema.json"
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         self.assertEqual(set(schema["required_mechanic_fields"]), MECHANIC_FIELDS)
+
+    def test_direct_media_review_contract_is_registered_in_schema_and_graph(self):
+        root = Path(__file__).parents[1]
+        schema = json.loads((root / "hot-game-observation-schema.json").read_text(encoding="utf-8"))
+        requirements = schema["direct_evidence_requirements"]
+        self.assertIn("human_content_review", requirements)
+        self.assertIn("distinct_role_media", requirements)
+        self.assertIn("gameplay_capture_time", requirements)
+
+        graph = json.loads((root / "capability-graph.json").read_text(encoding="utf-8"))
+        observatory = next(node for node in graph["nodes"] if node["id"] == "market-observatory")
+        self.assertTrue(
+            {"human-media-content-review", "distinct-role-media", "direct-gameplay-freshness"}
+            <= set(observatory["gates"])
+        )
+        extractor = next(wrapper for wrapper in graph["agent_wrappers"] if wrapper["id"] == "cheap-market-extractor")
+        self.assertIn("write_content_review", extractor["cannot_do"])
 
 
 if __name__ == "__main__":

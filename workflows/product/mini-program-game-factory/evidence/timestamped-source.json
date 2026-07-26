@@ -1,6 +1,6 @@
 {
   "schema": "timestamped_source_v1",
-  "created_at": "2026-07-26T15:54:39Z",
+  "created_at": "2026-07-26T16:52:36Z",
   "snapshot_observed_at": "2026-07-26T12:00:00+08:00",
   "snapshot_id": "douyin-market-leads-2026-07-26",
   "snapshot_path": "evidence/hot-game-snapshot-2026-07-26.json",
@@ -9,13 +9,13 @@
   "time_readback": {
     "source_published_at_and_accessed_at": "preserved per source in evidence/source-packet.json and the immutable snapshot",
     "evaluation_as_of": "2026-07-26T12:00:00+08:00",
-    "packet_created_at_utc": "2026-07-26T15:54:39Z"
+    "packet_created_at_utc": "2026-07-26T16:52:36Z"
   },
   "receipt_readback": {
     "hot_game_receipt": "evidence/hot-game-receipt-2026-07-26.json",
     "hot_game_digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
     "market_loop_receipt": "evidence/market-loop-receipt-2026-07-26.json",
-    "market_loop_digest": "caf3826ca56c6ddb4b7f001c34f6e443d6e77e2b399244e10cc30e5be930fcbd"
+    "market_loop_digest": "c7c805f21950972366aabdb1059285032b2f3e99a501e680daf20015414ff235"
   },
   "status": "PASS_LOCAL_SOURCE_AND_TIME_BINDING",
   "market_certification": false,

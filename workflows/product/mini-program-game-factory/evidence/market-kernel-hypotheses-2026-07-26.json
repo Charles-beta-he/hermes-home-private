@@ -11,6 +11,9 @@
       "voluntary cash-out",
       "short-session value reversal"
     ],
+    "proposed_changes": [
+      "replace collectible valuation with an original repair diagnosis decision"
+    ],
     "differentiation": "Replace collectible valuation with an original equipment-diagnosis loop where each inspection consumes limited time and changes repair options.",
     "non_copyable_exclusions": [
       "game names",
@@ -30,6 +33,9 @@
       "single-action confirmation feedback",
       "asymmetric hide-and-detect counterplay",
       "friend challenge"
+    ],
+    "proposed_changes": [
+      "replace target theme and feedback framing with original content"
     ],
     "differentiation": "Use original signal-tracing and decoy placement rather than characters, weapons, source scenes, or copied level layouts.",
     "non_copyable_exclusions": [

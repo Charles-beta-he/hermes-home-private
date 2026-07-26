@@ -26,10 +26,10 @@
 1. 每周保存抖音/微信客户端榜单截图或录屏；网页榜单、行业报告和社交帖子只作补充。
 2. 对同一游戏的多条视频、转载和榜单记录去重，转载不增加独立来源数。
 3. 用 `hot_game_observatory.py` 按 `as_of` 计算证据新鲜度；超过窗口自动降级。
-4. 只有 7 天内直接榜单读回、两个独立来源和直接试玩同时成立，才标记 `verified_current_hot`。
+4. 只有 7 天内直接榜单读回、两个独立来源、摘要绑定人工内容分类和使用不同媒体摘要的直接试玩同时成立，才标记 `verified_current_hot`。
 5. 市场观测输出 `MechanicObservation`，只描述动作、状态、闭环、压力和传播钩子，不向玩法线复制名称、美术、关卡或数值。
 6. 单次上榜只产生 `kernel_hypothesis`；仍需差异化、规则模拟和人工试玩，不能直接冻结内核。
-7. 用 `market_loop_gate.py` 将市场 receipt 与抽象玩法候选串联：只有 `verified_current_hot` 观察可进入 `kernel_hypothesis`；无论是否进入，`may_freeze_kernel`、`may_compile_work_package` 和发布权限均保持 false。
+7. 用 `market_loop_gate.py` 将市场 receipt 与抽象玩法候选串联：只有 `verified_current_hot` 观察且候选显式声明非空 `proposed_changes`，并且 `proposed_changes`、`abstract_mechanics`、`differentiation` 均不触及保护面时，才可进入 `kernel_hypothesis`；无论是否进入，`may_freeze_kernel`、`may_compile_work_package` 和发布权限均保持 false。
 8. 当前市场候选的确定性读回保存到 `evidence/market-loop-receipt-2026-07-26.json`；`accepted=0` 是缺少直接证据时的预期 fail-closed 结果。
 
 当前输入规范、状态机和人工采集方法见 `01-discovery/hot-game-observatory.md`。

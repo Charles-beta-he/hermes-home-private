@@ -62,8 +62,10 @@
   "promotion_policy": {
     "verified_current_hot": [
       "7_days_local_digest_verified_direct_rank",
+      "digest_bound_human_content_review_matches_capture_role",
       "2_current_subject_bound_independent_lineages",
       "7_days_local_digest_verified_direct_gameplay",
+      "rank_and_gameplay_use_distinct_media_digests",
       "discovery_only_sources_excluded_from_quorum"
     ],
     "credentials": "never_store",

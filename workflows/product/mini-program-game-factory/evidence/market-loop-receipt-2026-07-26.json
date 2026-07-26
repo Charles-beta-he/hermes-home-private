@@ -11,8 +11,8 @@
   },
   "authority_boundary": "verified market evidence may nominate an abstract kernel hypothesis only; spec, simulation, golden cases, human playtest, platform, and release gates remain closed",
   "closure_state": "market_to_kernel_gate_evaluated",
-  "digest": "caf3826ca56c6ddb4b7f001c34f6e443d6e77e2b399244e10cc30e5be930fcbd",
-  "hypotheses_digest": "4e9c570bed230c2aa4c85d5bd136f3f0fd37c76be7c594ffb4b71ac6e2251dfb",
+  "digest": "c7c805f21950972366aabdb1059285032b2f3e99a501e680daf20015414ff235",
+  "hypotheses_digest": "52cf6cbc4849cab07b1c2ad136b1b95a2bf144d8b15caf92017e7290a23896e3",
   "market_receipt_digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
   "market_summary": {
     "recent_market_lead": 2,
@@ -39,7 +39,7 @@
       "state": "rejected"
     }
   ],
-  "routing_digest": "59b8a8a178d206cb5f4c8f72fc82d09687a882b413609a21fa04a201b78bc616",
+  "routing_digest": "518b9f693b308766227babd7c5b7bcd566b125d4481ca458b25d1fed08ed6db1",
   "schema_version": 1,
   "summary": {
     "accepted": 0,

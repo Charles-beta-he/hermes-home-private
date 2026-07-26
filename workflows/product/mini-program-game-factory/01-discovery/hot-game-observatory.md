@@ -38,7 +38,9 @@
 - 来源身份、证据等级、访问时间和摘要；直接来源的 `source_type` 与 `evidence_level=direct` 必须一致；
 - `subject_bindings` 将来源显式绑定到平台、游戏，排名证据还必须绑定榜单；
 - `independence_key`（同一原始报告/视频的转载共用一个 lineage；任何来源如声明相同 `evidence_digest` 也会跨 direct/indirect 归并，不能靠改 source type 或 key 重复计数）；
-- 可回读 URL 或本地证据路径；直接截图/录屏必须保存 SHA-256 摘要。只有本地媒体可重新读取且摘要一致时，直接证据才能参与 `verified_current_hot` 晋级；仅声明远端 URL 与摘要仍保持线索状态。
+- 可回读 URL 或本地证据路径；直接截图/录屏必须保存 SHA-256 摘要。只有本地媒体可重新读取且摘要一致，并有 7 天内、摘要绑定、分类与来源类型一致的人工内容复核时，直接证据才能参与 `verified_current_hot` 晋级；榜单媒体和试玩媒体不得复用同一摘要，试玩机制还必须声明 7 天内 `captured_at`。仅声明远端 URL 与摘要仍保持线索状态。
+
+人工内容复核写入 `content_review`：`reviewer_kind` 必须为 `human`，`reviewer_id` 非空，`reviewed_at` 在 7 天窗口内，`evidence_digest` 必须等于媒体摘要，`classification` 对榜单为 `app_rank_capture`、对试玩为 `gameplay_capture`。该字段必须在 intake 完成摘要绑定后由人工填写，低成本模型不得生成或修改。
 
 ## 热度状态机
 
@@ -46,7 +48,7 @@
 
 `stale_lead` 是信号超过 60 天后的降级状态；`search_or_social_lead` 是来源类型，不是状态，只能形成 `unranked_lead` 或辅助发现，不能参与 current-hot quorum。
 
-- `verified_current_hot`：至少一条 7 天内、可本地摘要回读的客户端榜单直接证据；至少两个 7 天内、主体绑定正确且证据类型合格的独立 lineage；以及 7 天内可本地摘要回读的直接试玩证据。搜索/社交发现信号不参与该 quorum。
+- `verified_current_hot`：至少一条 7 天内、可本地摘要回读并经摘要绑定人工分类复核的客户端榜单直接证据；至少两个 7 天内、主体绑定正确且证据类型合格的独立 lineage；以及 7 天内、使用不同媒体摘要且经人工分类复核的直接试玩证据。搜索/社交发现信号不参与该 quorum。
 - `recent_market_lead`：60 天内存在主体绑定正确的排名/数值热度信号，但未满足实时榜单或独立来源门禁。来源的发布时间和访问时间也必须在 60 天内。
 - `stale_lead`：只有超过 60 天的信号。
 - `unranked_lead`：只有讨论或玩法描述，没有可核对热度信号。

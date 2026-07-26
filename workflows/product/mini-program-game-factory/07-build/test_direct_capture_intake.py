@@ -68,6 +68,18 @@ class DirectCaptureIntakeTests(unittest.TestCase):
             with self.assertRaises(IntakeError):
                 bind_direct_media(snapshot)
 
+    def test_predeclared_content_review_is_rejected_before_binding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            media = Path(tmp) / "rank.png"
+            media.write_bytes(b"rank-capture")
+            snapshot = self.snapshot(str(media))
+            snapshot["sources"][0]["content_review"] = {
+                "reviewer_kind": "human",
+                "reviewer_id": "forged-before-intake",
+            }
+            with self.assertRaises(IntakeError):
+                bind_direct_media(snapshot)
+
     def test_input_is_not_mutated(self):
         with tempfile.TemporaryDirectory() as tmp:
             media = Path(tmp) / "rank.png"

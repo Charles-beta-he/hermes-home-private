@@ -31,7 +31,7 @@
       "consumes": ["source_registry", "direct_rank_capture", "direct_gameplay_capture", "public_market_source"],
       "produces": ["market_snapshot", "mechanic_observations", "market_evidence_receipt"],
       "side_effects": "external_read_and_local_write",
-      "gates": ["freshness", "source-reference", "subject-binding", "independent-lineages", "local-digest-readback", "direct-gameplay", "clean-room-boundary"]
+      "gates": ["freshness", "source-reference", "subject-binding", "independent-lineages", "local-digest-readback", "human-media-content-review", "distinct-role-media", "direct-gameplay-freshness", "direct-gameplay", "clean-room-boundary"]
     },
     {
       "id": "trend-synthesis",
@@ -132,7 +132,7 @@
       "role": "creator",
       "wraps": ["market-observatory", "trend-synthesis"],
       "authority": "local_candidate_write",
-      "cannot_do": ["invent_evidence", "promote_verified_hot", "freeze_kernel", "publish"]
+      "cannot_do": ["invent_evidence", "write_content_review", "promote_verified_hot", "freeze_kernel", "publish"]
     },
     {
       "id": "cheap-content-worker",

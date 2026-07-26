@@ -14,9 +14,9 @@
 - `06-planning/research-development-flow.md`：从玩法假设到发布观察的研发流程。
 - `07-build/work_package_compiler.py`：确定性单候选编译器。
 - `07-build/batch_compile.py`：批次隔离编译器。
-- `07-build/hot_game_observatory.py`：热度新鲜度、主体绑定、证据 lineage、直接媒体摘要回读和直接试玩门禁；仅有远端 URL 的直接证据不会晋级 `verified_current_hot`。
-- `07-build/direct_capture_intake.py`：把本地榜单/试玩媒体绑定为绝对路径、SHA-256 和字节数，摘要不匹配时 fail closed。
-- `07-build/market_loop_gate.py`：将已验证市场观察转换为抽象 `kernel_hypothesis` 候选；不开放内核冻结、工作包编译或发布。
+- `07-build/hot_game_observatory.py`：热度新鲜度、主体绑定、证据 lineage、直接媒体摘要读回、摘要绑定人工分类复核和榜单/试玩媒体角色隔离门禁；仅有远端 URL 或未复核的直接证据不会晋级 `verified_current_hot`。
+- `07-build/direct_capture_intake.py`：把本地榜单/试玩媒体绑定为绝对路径、SHA-256 和字节数，摘要不匹配时 fail closed；intake 后仍需人工填写摘要绑定的 `content_review`，模型不得代填。
+- `07-build/market_loop_gate.py`：将已验证市场观察转换为抽象 `kernel_hypothesis` 候选；要求显式 `proposed_changes`，并扫描候选变化、抽象机制及差异化描述中的保护面；不开放内核冻结、工作包编译或发布。
 - `evidence/market-kernel-hypotheses-2026-07-26.json`：首批抽象机制候选，明确排除不可复制表达。
 - `evidence/market-loop-receipt-2026-07-26.json`：市场→研发 loop 的确定性门禁读回。
 - `evidence/source-packet.json`：三条真实来源 URL、发布时间/访问时间与 snapshot/receipt 摘要的本地证据包。

@@ -36,6 +36,10 @@ MECHANIC_FIELDS = {
 }
 DIRECT_RANK_SOURCE_TYPES = {"direct_app_rank_capture"}
 DIRECT_EVIDENCE_SOURCE_TYPES = {"direct_app_rank_capture", "direct_gameplay_capture"}
+DIRECT_CONTENT_CLASSIFICATIONS = {
+    "direct_app_rank_capture": "app_rank_capture",
+    "direct_gameplay_capture": "gameplay_capture",
+}
 CURRENT_CORROBORATION_SOURCE_TYPES = {
     "direct_app_rank_capture",
     "official_platform_case",
@@ -167,10 +171,34 @@ def _validate_sources(snapshot: Mapping[str, Any], as_of: datetime) -> Dict[str,
                 ):
                     raise ObservationError(f"direct source {source_id} media_size_bytes does not match local media")
                 local_digest_verified = True
+
+        content_kind_verified = False
+        if is_direct and local_digest_verified:
+            review = source.get("content_review")
+            if isinstance(review, Mapping):
+                reviewer_id = review.get("reviewer_id")
+                review_digest = review.get("evidence_digest")
+                review_age_ok = False
+                try:
+                    review_age_ok = (
+                        _age_days(as_of, review.get("reviewed_at"), f"source {source_id}.content_review.reviewed_at")
+                        <= CURRENT_RANK_DAYS
+                    )
+                except ObservationError:
+                    review_age_ok = False
+                content_kind_verified = (
+                    review.get("reviewer_kind") == "human"
+                    and isinstance(reviewer_id, str)
+                    and bool(reviewer_id.strip())
+                    and review.get("classification") == DIRECT_CONTENT_CLASSIFICATIONS[source_type]
+                    and review_digest == digest
+                    and review_age_ok
+                )
         _age_days(as_of, source.get("published_at"), f"source {source_id}.published_at")
         _age_days(as_of, source.get("accessed_at"), f"source {source_id}.accessed_at")
         validated_source = dict(source)
         validated_source["_local_digest_verified"] = local_digest_verified
+        validated_source["_content_kind_verified"] = content_kind_verified
         source_index[source_id] = validated_source
     if not source_index:
         raise ObservationError("at least one source is required")
@@ -282,6 +310,7 @@ def _evaluate_observation(
 
     market_signal_ages: List[float] = []
     current_source_ids: List[str] = []
+    direct_rank_digests = set()
     fresh_direct_rank = False
     recent_signal = False
 
@@ -311,7 +340,10 @@ def _evaluate_observation(
             and _source_within_days(source, as_of, CURRENT_RANK_DAYS)
             and (
                 source.get("source_type") not in DIRECT_EVIDENCE_SOURCE_TYPES
-                or source.get("_local_digest_verified") is True
+                or (
+                    source.get("_local_digest_verified") is True
+                    and source.get("_content_kind_verified") is True
+                )
             )
         )
         if current_eligible:
@@ -322,6 +354,7 @@ def _evaluate_observation(
             and source.get("source_type") in DIRECT_RANK_SOURCE_TYPES
         ):
             fresh_direct_rank = True
+            direct_rank_digests.add(source["evidence_digest"])
 
     for signal_index, raw_signal in enumerate(popularity_signals):
         signal = _require_mapping(raw_signal, f"{observation_id}.popularity_signals[{signal_index}]")
@@ -352,7 +385,10 @@ def _evaluate_observation(
             and _source_within_days(source, as_of, CURRENT_RANK_DAYS)
             and (
                 source.get("source_type") not in DIRECT_EVIDENCE_SOURCE_TYPES
-                or source.get("_local_digest_verified") is True
+                or (
+                    source.get("_local_digest_verified") is True
+                    and source.get("_content_kind_verified") is True
+                )
             )
         ):
             current_source_ids.append(source_id)
@@ -377,7 +413,15 @@ def _evaluate_observation(
             mechanic.get("direct_playback") is True
             and source.get("source_type") == "direct_gameplay_capture"
             and source.get("_local_digest_verified") is True
+            and source.get("_content_kind_verified") is True
             and _source_within_days(source, as_of, CURRENT_RANK_DAYS)
+            and _age_days(
+                as_of,
+                mechanic.get("captured_at"),
+                f"{observation_id}.mechanic captured_at",
+            )
+            <= CURRENT_RANK_DAYS
+            and source.get("evidence_digest") not in direct_rank_digests
         ):
             direct_gameplay = True
 

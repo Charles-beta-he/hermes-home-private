@@ -42,6 +42,11 @@ def _normalize_surface(value: str) -> str:
     return re.sub(r"[\W_]+", "_", normalized, flags=re.UNICODE).strip("_")
 
 
+def _mentions_protected_surface(value: str, protected: Iterable[str]) -> bool:
+    candidate = f"_{_normalize_surface(value)}_"
+    return any(f"_{surface}_" in candidate for surface in protected)
+
+
 def _reject(hypothesis_id: str, reason: str, details: Iterable[str] = ()) -> Dict[str, Any]:
     return {
         "hypothesis_id": hypothesis_id,
@@ -103,22 +108,26 @@ def gate_market_hypotheses(
             rejected.append(_reject(hypothesis_id, "missing_non_copyable_exclusions"))
             continue
 
-        proposed_changes = raw.get("proposed_changes", [])
-        if not isinstance(proposed_changes, list) or any(not isinstance(item, str) for item in proposed_changes):
-            raise GateError(f"{hypothesis_id}.proposed_changes must be an array of strings")
+        abstract_mechanics = _non_empty_strings(raw.get("abstract_mechanics"), f"{hypothesis_id}.abstract_mechanics")
+        differentiation = raw.get("differentiation")
+        if not isinstance(differentiation, str) or not differentiation.strip():
+            raise GateError(f"{hypothesis_id}.differentiation must be non-empty")
+        proposed_changes = raw.get("proposed_changes")
+        if not isinstance(proposed_changes, list) or not proposed_changes or any(
+            not isinstance(item, str) or not item.strip() for item in proposed_changes
+        ):
+            rejected.append(_reject(hypothesis_id, "missing_proposed_changes"))
+            continue
         protected_claims = sorted(
-            item for item in proposed_changes if _normalize_surface(item) in protected
+            item
+            for item in [*proposed_changes, *abstract_mechanics, differentiation]
+            if _mentions_protected_surface(item, protected)
         )
         if protected_claims:
             rejected.append(
                 _reject(hypothesis_id, "protected_surface_requires_separate_spec_gate", protected_claims)
             )
             continue
-
-        abstract_mechanics = _non_empty_strings(raw.get("abstract_mechanics"), f"{hypothesis_id}.abstract_mechanics")
-        differentiation = raw.get("differentiation")
-        if not isinstance(differentiation, str) or not differentiation.strip():
-            raise GateError(f"{hypothesis_id}.differentiation must be non-empty")
 
         accepted.append(
             {
@@ -129,6 +138,7 @@ def gate_market_hypotheses(
                     source_id: observation_index[source_id]["status"] for source_id in source_ids
                 },
                 "abstract_mechanics": abstract_mechanics,
+                "proposed_changes": proposed_changes,
                 "differentiation": differentiation,
                 "non_copyable_exclusions": exclusions,
                 "required_next_gates": [

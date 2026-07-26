@@ -14,6 +14,7 @@ class MarketLoopGateTests(unittest.TestCase):
             "hypothesis_id": "reveal-risk-stop-v1",
             "source_observation_ids": ["game-a-douyin"],
             "abstract_mechanics": ["progressive reveal", "risk escalation", "voluntary cash-out"],
+            "proposed_changes": ["replace collectible valuation"],
             "differentiation": "Replace collectible valuation with an original repair-diagnosis decision loop.",
             "non_copyable_exclusions": ["name", "art", "level layout"],
         }
@@ -46,6 +47,26 @@ class MarketLoopGateTests(unittest.TestCase):
         hypothesis["proposed_changes"] = ["win_condition"]
         receipt = gate_market_hypotheses(snapshot, [hypothesis], self.routing, AS_OF)
         self.assertEqual(receipt["rejected"][0]["reason"], "protected_surface_requires_separate_spec_gate")
+
+    def test_missing_proposed_changes_is_rejected(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        hypothesis = copy.deepcopy(self.hypothesis)
+        hypothesis.pop("proposed_changes")
+        receipt = gate_market_hypotheses(snapshot, [hypothesis], self.routing, AS_OF)
+        self.assertEqual(receipt["summary"]["accepted"], 0)
+        self.assertEqual(receipt["rejected"][0]["reason"], "missing_proposed_changes")
+
+    def test_protected_surface_embedded_in_abstract_mechanics_is_rejected(self):
+        snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)
+        hypothesis = copy.deepcopy(self.hypothesis)
+        hypothesis["proposed_changes"] = ["replace collectible valuation"]
+        hypothesis["abstract_mechanics"] = ["change win condition"]
+        receipt = gate_market_hypotheses(snapshot, [hypothesis], self.routing, AS_OF)
+        self.assertEqual(receipt["summary"]["accepted"], 0)
+        self.assertEqual(
+            receipt["rejected"][0]["reason"],
+            "protected_surface_requires_separate_spec_gate",
+        )
 
     def test_protected_surface_claim_normalizes_case_whitespace_and_hyphens(self):
         snapshot = observation(["rank-direct", "rank-second"], direct_gameplay=True)

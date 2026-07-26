@@ -65,6 +65,10 @@ def bind_direct_media(snapshot: Mapping[str, Any], base_dir: Optional[Path] = No
             continue
         if raw_source.get("source_type") not in DIRECT_SOURCE_TYPES or raw_source.get("evidence_level") != "direct":
             raise IntakeError(f"source {source_id} may not bind local media unless it is direct evidence")
+        if raw_source.get("content_review") is not None:
+            raise IntakeError(
+                f"source {source_id}.content_review must be added by a human after media binding"
+            )
         if not isinstance(media_value, str) or not media_value.strip():
             raise IntakeError(f"source {source_id}.local_media_path must be non-empty")
 

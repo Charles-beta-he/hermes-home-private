@@ -34,6 +34,9 @@
     "evidence_digest": "lowercase_sha256",
     "local_media_path": "absolute path when https url is absent; digest and optional size are read back when present",
     "current_hot_readback": "current-hot promotion requires readable local media whose stable file identity, byte size and SHA-256 match during readback",
+    "human_content_review": "current-hot promotion requires a digest-bound human review from the last 7 days whose classification matches app_rank_capture or gameplay_capture",
+    "distinct_role_media": "a rank capture digest cannot also satisfy the gameplay capture requirement for the same observation",
+    "gameplay_capture_time": "direct mechanic evidence must declare captured_at within the current-hot window",
     "independence_lineage": "independence_key collapses the same original lineage; any equal declared evidence_digest also collapses claims across direct/indirect keys"
   },
   "subject_binding_requirements": {

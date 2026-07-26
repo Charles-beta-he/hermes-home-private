@@ -15,7 +15,8 @@
         {"platform": "douyin", "game_name": "replace-game-name", "charts": ["hot"]}
       ],
       "local_media_path": "/replace-with-screenshot-or-recording-path",
-      "evidence_digest": "replace-with-sha256"
+      "evidence_digest": "replace-with-sha256",
+      "content_review": null
     },
     {
       "source_id": "replace-gameplay-capture-id",
@@ -29,7 +30,8 @@
         {"platform": "douyin", "game_name": "replace-game-name", "charts": []}
       ],
       "local_media_path": "/replace-with-gameplay-recording-path",
-      "evidence_digest": "replace-with-sha256"
+      "evidence_digest": "replace-with-sha256",
+      "content_review": null
     }
   ],
   "observations": [
@@ -51,6 +53,7 @@
         {
           "source_id": "replace-gameplay-capture-id",
           "direct_playback": true,
+          "captured_at": "2026-07-26T12:00:00+08:00",
           "core_action": "replace",
           "state_transition": "replace",
           "session_loop": "replace",
