@@ -2,6 +2,9 @@
 
 | Spec / acceptance claim | Artifact evidence | Test/readback evidence | Status | Remaining gap |
 |---|---|---|---|---|
+| 助手通过持续外部观测而非模型记忆识别热门玩法 | `source-registry.json`, `hot-game-observatory.md`, observation schema | snapshot source refs parse PASS | PASS（机制层） | 仍需周期性真实输入 |
+| 实时热门不能由旧文章或单一来源自证 | freshness/independence/direct-play rules | observatory negative tests PASS | PASS | 无 7 天内客户端榜单证据 |
+| 首批市场样本保持证据边界 | 2026-07-26 snapshot | receipt: verified 0 / recent 2 / stale 1 | PASS（诚实状态） | 缺直接榜单与试玩录屏 |
 | 玩法、内容、平台、商业化边界独立 | `game-product-contract.md`, `capability-graph.json` | JSON parse PASS | PASS（规格层） | 运行时实现未做 |
 | 低风险内容任务路由 low_cost | `model-routing.json`, `route_task` | `test_routes_allowlisted_content_generation_to_low_cost` PASS | PASS | 真实 provider 调用未做 |
 | protected surface 自动升级 | `protected_surfaces`, `route_task` | protected change test PASS | PASS | 无 |
@@ -19,5 +22,6 @@
 ## Closure
 
 - Highest evidenced state: `local_contract_verified`
-- Workflow state: `blocked_at_runtime_and_platform_evidence`
+- Highest market state: `recent_market_lead`
+- Workflow state: `blocked_at_fresh_market_runtime_and_platform_evidence`
 - External side effects: closed

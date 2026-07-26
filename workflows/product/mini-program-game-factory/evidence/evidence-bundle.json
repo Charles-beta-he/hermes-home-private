@@ -1,6 +1,6 @@
 {
   "schema": "product_workflow_evidence_bundle_v1",
-  "generated_at": "2026-07-26T12:50:01Z",
+  "generated_at": "2026-07-26T13:49:03Z",
   "workflow_slug": "mini-program-game-factory",
   "sources": [
     {
@@ -29,6 +29,42 @@
       "freshness": "current run",
       "access_status": "ok",
       "notes": "12 tests passed before final CLI/evidence refresh."
+    },
+    {
+      "id": "src-market-jade-001",
+      "source_type": "third_party_rank_report",
+      "source_ref": "https://36kr.com/p/3863826372646147",
+      "retrieved_at": "2026-07-26T13:20:00Z",
+      "freshness": "article 2026-06-22; cited ranks 2026-05-30 to 2026-06-15",
+      "access_status": "ok",
+      "notes": "DataEye via 36Kr; supports recent jade-opening mechanic and historical rank leads, not real-time platform rank."
+    },
+    {
+      "id": "src-market-sniper-001",
+      "source_type": "first_party_creator_report",
+      "source_ref": "https://news.qq.com/rain/a/20251225A07HDZ00",
+      "retrieved_at": "2026-07-26T13:25:00Z",
+      "freshness": "historical 2025 developer conference report",
+      "access_status": "ok",
+      "notes": "GameLook/Tencent transcript of creator claims; supports historical mechanic study, not current popularity."
+    },
+    {
+      "id": "src-market-growth-001",
+      "source_type": "third_party_report",
+      "source_ref": "https://m.163.com/dy/article/KSM4N3SM05466ZM9.html",
+      "retrieved_at": "2026-07-26T13:30:00Z",
+      "freshness": "published 2026-05-11",
+      "access_status": "ok",
+      "notes": "Supports multi-signal acquisition/content methodology; not a direct per-game chart readback."
+    },
+    {
+      "id": "src-market-tests-001",
+      "source_type": "log",
+      "source_ref": "python3 -m unittest -v test_hot_game_observatory.py",
+      "retrieved_at": "2026-07-26T13:49:03Z",
+      "freshness": "current run",
+      "access_status": "ok",
+      "notes": "10 observatory tests passed; receipt reports verified 0, recent 2, stale 1."
     }
   ],
   "claims": [
@@ -63,14 +99,34 @@
       "confidence": "high",
       "verification_status": "verified",
       "interpretation_boundary": "fact"
+    },
+    {
+      "id": "claim-market-observatory-boundary",
+      "claim": "当前首批样本只有两个近期市场线索和一个历史线索，没有任何游戏达到当前热门已验证状态。",
+      "source_ids": ["src-market-jade-001", "src-market-sniper-001", "src-market-tests-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "status is as-of 2026-07-26 and expires with time"
+    },
+    {
+      "id": "claim-market-input-method",
+      "claim": "可靠识别当前热门玩法需要把客户端榜单、直接试玩和独立传播/投放信号绑定到同一时间窗口。",
+      "source_ids": ["src-market-jade-001", "src-market-growth-001", "src-market-tests-001"],
+      "confidence": "high",
+      "verification_status": "verified_method_contract",
+      "interpretation_boundary": "does not prove any individual game is currently hot"
     }
   ],
   "open_questions": [
+    "2026-07-26 前后 7 天内抖音小游戏热门榜/畅销榜的客户端直接读回",
+    "候选热门游戏的直接试玩录屏与核心规则复核",
     "抖音和微信小游戏当前个人主体、广告与送审要求",
     "线路整理玩法的真实可理解性、乐趣与复玩意愿",
     "Cocos 当前稳定版本和平台构建兼容矩阵"
   ],
   "blocked_evidence": [
+    "实时平台榜单截图/录屏和第二独立来源",
+    "候选游戏直接试玩证据",
     "真实平台 SDK/审核/广告回调",
     "真实用户留存与商业指标"
   ]

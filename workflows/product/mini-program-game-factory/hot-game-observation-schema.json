@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "required_snapshot_fields": [
+    "schema_version",
+    "snapshot_id",
+    "observed_at",
+    "sources",
+    "observations"
+  ],
+  "source_types": [
+    "direct_app_rank_capture",
+    "direct_gameplay_capture",
+    "official_platform_case",
+    "first_party_creator_report",
+    "third_party_rank_report",
+    "search_or_social_lead"
+  ],
+  "required_source_fields": [
+    "source_id",
+    "source_type",
+    "publisher",
+    "independence_key",
+    "published_at",
+    "accessed_at",
+    "url",
+    "evidence_level"
+  ],
+  "direct_evidence_requirements": {
+    "source_types": ["direct_app_rank_capture", "direct_gameplay_capture"],
+    "evidence_digest": "lowercase_sha256"
+  },
+  "evidence_levels": [
+    "direct",
+    "official",
+    "first_party_claim",
+    "third_party_claim",
+    "lead_only"
+  ],
+  "platforms": ["douyin", "wechat", "kuaishou", "multi_platform"],
+  "status_rules": {
+    "verified_current_hot": {
+      "rank_max_age_days": 7,
+      "requires_direct_rank_readback": true,
+      "minimum_independent_sources": 2,
+      "requires_direct_gameplay": true
+    },
+    "recent_market_lead": {
+      "signal_max_age_days": 60
+    }
+  },
+  "required_mechanic_fields": [
+    "core_action",
+    "state_transition",
+    "session_loop",
+    "goal_or_exit",
+    "failure_pressure",
+    "randomness",
+    "spectator_hook",
+    "social_hook",
+    "content_burden",
+    "reusable_mechanics",
+    "non_copyable_expression"
+  ]
+}

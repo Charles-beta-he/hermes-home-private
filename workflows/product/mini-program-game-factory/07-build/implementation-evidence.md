@@ -23,8 +23,23 @@ python3 batch_compile.py --batch sample-batch.json --routing ../model-routing.js
 - Rejected candidate: `invalid-oversized-grid` → `parameter grid_size out of bounds: 100`
 - External publish/platform submission/credential/payment authority: all false
 
+## 热门玩法观测台验证（2026-07-26T13:49:03Z）
+
+```bash
+python3 -m py_compile hot_game_observatory.py test_hot_game_observatory.py work_package_compiler.py batch_compile.py test_work_package_compiler.py test_batch_compile.py
+python3 -m unittest -v test_hot_game_observatory.py test_batch_compile.py test_work_package_compiler.py
+python3 hot_game_observatory.py ../evidence/hot-game-snapshot-2026-07-26.json --as-of 2026-07-26T12:00:00+08:00 --output ../evidence/hot-game-receipt-2026-07-26.json
+```
+
+- Combined unit tests: 22/22 PASS（其中观测台 10 项）
+- JSON parse: PASS
+- Capability graph node/dependency/wrapper references: PASS
+- Market receipt: `verified_current_hot=0`, `recent_market_lead=2`, `stale_lead=1`, `unranked_lead=0`
+- Receipt digest: `90a08abc4cda2cd6a64552fbb324a75b5a6432cd42921260e30a8fb751fcc7ec`
+- `may_freeze_kernel=false`
+
 ## Claim boundary
 
-证明：本地路由、字段隔离、参数边界、确定性编译、批次失败隔离和副作用关闭。
+证明：本地路由、字段隔离、参数边界、确定性编译、批次失败隔离和副作用关闭；热门玩法观测会按时间失效、独立来源和直接试玩门禁 fail closed。
 
-不证明：玩法有趣、Cocos 运行时正确、真实平台 SDK/审核/广告、真实用户指标或商业结果。
+不证明：当前平台完整榜单、任何游戏已经达到 `verified_current_hot`、玩法有趣、Cocos 运行时正确、真实平台 SDK/审核/广告、真实用户指标或商业结果。

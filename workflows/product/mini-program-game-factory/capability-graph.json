@@ -2,6 +2,13 @@
   "schema_version": 1,
   "workflow_id": "mini-program-game-factory",
   "closure_states": [
+    "source_registry",
+    "market_snapshot",
+    "recent_market_lead",
+    "verified_current_hot",
+    "mechanic_observed",
+    "trend_clustered",
+    "kernel_hypothesis",
     "seed",
     "kernel_draft",
     "kernel_verified",
@@ -16,13 +23,33 @@
   ],
   "nodes": [
     {
+      "id": "market-observatory",
+      "kind": "workflow",
+      "responsibility": "collect time-bounded rank, propagation and gameplay evidence without promoting model inference to market fact",
+      "consumes": ["source_registry", "direct_rank_capture", "direct_gameplay_capture", "public_market_source"],
+      "produces": ["market_snapshot", "mechanic_observations", "market_evidence_receipt"],
+      "side_effects": "external_read_and_local_write",
+      "gates": ["freshness", "source-reference", "independent-publishers", "direct-gameplay", "clean-room-boundary"]
+    },
+    {
+      "id": "trend-synthesis",
+      "kind": "workflow",
+      "responsibility": "deduplicate products and cluster abstract mechanics across sources and observation periods",
+      "consumes": ["mechanic_observations", "market_evidence_receipt"],
+      "produces": ["trend_clusters", "kernel_hypotheses"],
+      "depends_on": ["market-observatory"],
+      "side_effects": "local_write",
+      "gates": ["dedupe", "cross-period-support", "non-copyable-expression-exclusion", "human-review"]
+    },
+    {
       "id": "idea-intake",
       "kind": "atomic_module",
       "responsibility": "normalize an opportunity into a testable gameplay hypothesis",
-      "consumes": ["user_seed", "source_evidence"],
+      "consumes": ["user_seed", "source_evidence", "trend_clusters", "kernel_hypotheses"],
       "produces": ["gameplay_hypothesis"],
+      "depends_on": ["trend-synthesis"],
       "side_effects": "none",
-      "gates": ["source-boundary"]
+      "gates": ["source-boundary", "market-status-boundary", "differentiation"]
     },
     {
       "id": "kernel-design",
@@ -88,6 +115,13 @@
     }
   ],
   "agent_wrappers": [
+    {
+      "id": "cheap-market-extractor",
+      "role": "creator",
+      "wraps": ["market-observatory", "trend-synthesis"],
+      "authority": "local_candidate_write",
+      "cannot_do": ["invent_evidence", "promote_verified_hot", "freeze_kernel", "publish"]
+    },
     {
       "id": "cheap-content-worker",
       "role": "creator",

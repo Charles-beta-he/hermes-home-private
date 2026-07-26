@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "douyin-market-leads-2026-07-26",
+  "observed_at": "2026-07-26T12:00:00+08:00",
+  "sources": [
+    {
+      "source_id": "dataeye-jade-36kr-2026-06-22",
+      "source_type": "third_party_rank_report",
+      "publisher": "DataEye via 36Kr",
+      "independence_key": "dataeye-jade-analysis-2026-06",
+      "published_at": "2026-06-22T16:01:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://36kr.com/p/3863826372646147",
+      "evidence_level": "third_party_claim",
+      "boundary": "DataEye-ADX claims reproduced by 36Kr; not a direct platform chart readback"
+    },
+    {
+      "source_id": "sniper-alien-gamelook-qq-2025-12-25",
+      "source_type": "first_party_creator_report",
+      "publisher": "GameLook via Tencent News",
+      "independence_key": "sniper-alien-creator-talk-2025",
+      "published_at": "2025-12-25T23:39:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://news.qq.com/rain/a/20251225A07HDZ00",
+      "evidence_level": "first_party_claim",
+      "boundary": "developer conference speech; historical self-reported DAU and rank, not current platform telemetry"
+    },
+    {
+      "source_id": "acquisition-report-netease-2026-05-11",
+      "source_type": "third_party_rank_report",
+      "publisher": "游娱fan via NetEase",
+      "independence_key": "heat-engine-insightrackr-report-2026",
+      "published_at": "2026-05-11T20:31:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://m.163.com/dy/article/KSM4N3SM05466ZM9.html",
+      "evidence_level": "third_party_claim",
+      "boundary": "summary of Heat Engine and Insightrackr report; methodology lead, not a per-game direct rank"
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": "lightly-handled-douyin-2026-06",
+      "platform": "douyin",
+      "game_name": "轻松拿捏了",
+      "rank_signals": [
+        {
+          "source_id": "dataeye-jade-36kr-2026-06-22",
+          "chart": "hot",
+          "rank": 1,
+          "captured_at": "2026-06-08T12:00:00+08:00",
+          "direct_readback": false
+        },
+        {
+          "source_id": "dataeye-jade-36kr-2026-06-22",
+          "chart": "grossing",
+          "rank": 7,
+          "captured_at": "2026-06-08T12:00:00+08:00",
+          "direct_readback": false
+        }
+      ],
+      "popularity_signals": [],
+      "mechanic_evidence": [
+        {
+          "source_id": "dataeye-jade-36kr-2026-06-22",
+          "direct_playback": false,
+          "core_action": "选择原石、逐步开窗/剥离并决定何时卖出",
+          "state_transition": "未开原石→局部揭示价值→报价变化→继续切割或套现",
+          "session_loop": "买原石→开玉石→竞价售卖→再购入",
+          "goal_or_exit": "在不确定价值下选择高价退出",
+          "failure_pressure": "继续切割可能由涨转亏，产生后悔和再来一次冲动",
+          "randomness": "高结果随机性；具体概率未披露",
+          "spectator_hook": "10–20 秒内出现涨跌和贫富反转，适合切片",
+          "social_hook": "文章未观察到内置社交玩法",
+          "content_burden": "核心闭环短且扩展空间有限，长期重复风险高",
+          "reusable_mechanics": ["逐步揭示", "随时止盈", "风险递增", "短局情绪反转"],
+          "non_copyable_expression": ["游戏名称", "玉石素材", "具体 UI", "原石布局", "文案与数值"]
+        }
+      ]
+    },
+    {
+      "observation_id": "crazy-buy-douyin-2026-05",
+      "platform": "douyin",
+      "game_name": "疯狂买买买",
+      "rank_signals": [
+        {
+          "source_id": "dataeye-jade-36kr-2026-06-22",
+          "chart": "hot",
+          "rank": 29,
+          "captured_at": "2026-05-30T12:00:00+08:00",
+          "direct_readback": false
+        },
+        {
+          "source_id": "dataeye-jade-36kr-2026-06-22",
+          "chart": "grossing",
+          "rank": 49,
+          "captured_at": "2026-05-30T12:00:00+08:00",
+          "direct_readback": false
+        }
+      ],
+      "popularity_signals": [
+        {
+          "source_id": "dataeye-jade-36kr-2026-06-22",
+          "kind": "topic_views",
+          "value": 170000000,
+          "captured_at": "2026-06-22T16:01:00+08:00"
+        }
+      ],
+      "mechanic_evidence": [
+        {
+          "source_id": "dataeye-jade-36kr-2026-06-22",
+          "direct_playback": false,
+          "core_action": "选择原石、开窗并在报价变化时决定卖出",
+          "state_transition": "购买→揭示→估值波动→售出",
+          "session_loop": "买原石→开玉石→竞价售卖",
+          "goal_or_exit": "在价值反转前兑现收益",
+          "failure_pressure": "贪心继续导致价值回落",
+          "randomness": "高结果随机性；概率未知",
+          "spectator_hook": "开窗和报价反转可直接形成短视频高潮",
+          "social_hook": "话题传播强；内置社交未由来源证明",
+          "content_burden": "题材素材可变但玩法深度有限",
+          "reusable_mechanics": ["揭示未知", "报价反馈", "止盈决策"],
+          "non_copyable_expression": ["名称", "美术", "素材脚本", "关卡与经济数值"]
+        }
+      ]
+    },
+    {
+      "observation_id": "sniper-alien-douyin-2025",
+      "platform": "douyin",
+      "game_name": "狙击外星人",
+      "rank_signals": [
+        {
+          "source_id": "sniper-alien-gamelook-qq-2025-12-25",
+          "chart": "hot",
+          "rank": 1,
+          "captured_at": "2025-11-30T12:00:00+08:00",
+          "direct_readback": false
+        }
+      ],
+      "popularity_signals": [
+        {
+          "source_id": "sniper-alien-gamelook-qq-2025-12-25",
+          "kind": "developer_reported_douyin_dau",
+          "value": 2500000,
+          "captured_at": "2025-11-30T12:00:00+08:00"
+        },
+        {
+          "source_id": "sniper-alien-gamelook-qq-2025-12-25",
+          "kind": "developer_reported_topic_views",
+          "value": 1000000000,
+          "captured_at": "2025-11-30T12:00:00+08:00"
+        }
+      ],
+      "mechanic_evidence": [
+        {
+          "source_id": "sniper-alien-gamelook-qq-2025-12-25",
+          "direct_playback": false,
+          "core_action": "在场景中寻找伪装目标并点击狙击",
+          "state_transition": "隐藏目标→识别→命中/误判→关卡进度",
+          "session_loop": "观察场景→找物→点击射击→收集/解锁",
+          "goal_or_exit": "找出并击中全部伪装目标",
+          "failure_pressure": "来源未给出明确失败规则",
+          "randomness": "主线随机性未披露",
+          "spectator_hook": "放大目标和爆头反馈，把找物包装成低门槛射击",
+          "social_hook": "你狙我躲好友房真人 PK，分享与搜索形成裂变",
+          "content_burden": "约 100 个精制关卡；开发者强调乐趣密度而非无限扩关",
+          "reusable_mechanics": ["伪装找物", "低门槛射击反馈", "非对称躲藏与狙击", "好友约战"],
+          "non_copyable_expression": ["外星人角色", "关卡场景", "枪械表现", "彩蛋", "名称与社交话题"]
+        }
+      ]
+    }
+  ]
+}

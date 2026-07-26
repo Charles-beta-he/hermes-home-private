@@ -3,10 +3,10 @@ schema: product_workflow_state_v1
 slug: mini-program-game-factory
 title: 小程序游戏批量研发工厂
 chain: full-lifecycle
-current_stage: shipping
+current_stage: discovery
 status: blocked
 created_at: 2026-07-26T12:44:35Z
-updated_at: 2026-07-26T12:50:01Z
+updated_at: 2026-07-26T13:49:03Z
 authority_boundary: local-artifacts-only
 highest_evidenced_state: local_contract_verified
 ---
@@ -21,9 +21,11 @@ highest_evidenced_state: local_contract_verified
   evidence: spec-packet.md
 
 - stage: discovery
-  status: accepted
-  artifact: 01-discovery/opportunity-analysis.md
-  evidence: evidence/evidence-bundle.json
+  status: reopened_market_gate
+  artifact: 01-discovery/hot-game-observatory.md
+  evidence: evidence/hot-game-receipt-2026-07-26.json
+  closure: recent_market_lead
+  blocker: no 7-day direct platform rank readback and no direct gameplay capture
 
 - stage: strategy
   status: accepted
@@ -72,8 +74,9 @@ highest_evidenced_state: local_contract_verified
 
 ## Next Safe Dependency Order
 
-1. R0 pure gameplay rule simulator and golden cases.
-2. R1 one-level playable runtime slice.
-3. Human playtest acceptance.
-4. Read-only official platform contract research.
-5. Only then request exact authority for platform sandbox/submission.
+1. Capture a fresh Douyin mini-game hot/grossing chart and direct gameplay samples; re-run M0 receipt.
+2. Cluster verified/recent mechanics and reassess whether `circuit-untangle` remains a justified hypothesis.
+3. Only after the market gate, implement R0 pure gameplay rule simulator and golden cases for the selected hypothesis.
+4. R1 one-level playable runtime slice and human playtest acceptance.
+5. Read-only official platform contract research.
+6. Only then request exact authority for platform sandbox/submission.

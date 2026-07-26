@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "replace-with-date-and-platform",
+  "observed_at": "2026-07-26T12:00:00+08:00",
+  "sources": [
+    {
+      "source_id": "replace-rank-capture-id",
+      "source_type": "direct_app_rank_capture",
+      "publisher": "Douyin client chart",
+      "independence_key": "replace-with-original-rank-capture-lineage",
+      "published_at": "2026-07-26T12:00:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://replace-with-replayable-source-or-local-evidence-index.example",
+      "evidence_level": "direct",
+      "local_media_path": "replace-with-screenshot-or-recording-path",
+      "evidence_digest": "replace-with-sha256"
+    },
+    {
+      "source_id": "replace-gameplay-capture-id",
+      "source_type": "direct_gameplay_capture",
+      "publisher": "Direct gameplay capture",
+      "independence_key": "replace-with-original-gameplay-capture-lineage",
+      "published_at": "2026-07-26T12:00:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://replace-with-share-link-or-local-evidence-index.example",
+      "evidence_level": "direct",
+      "local_media_path": "replace-with-gameplay-recording-path",
+      "evidence_digest": "replace-with-sha256"
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": "replace-game-platform-date",
+      "platform": "douyin",
+      "game_name": "replace-game-name",
+      "rank_signals": [
+        {
+          "source_id": "replace-rank-capture-id",
+          "chart": "hot",
+          "rank": 1,
+          "captured_at": "2026-07-26T12:00:00+08:00",
+          "direct_readback": true
+        }
+      ],
+      "popularity_signals": [],
+      "mechanic_evidence": [
+        {
+          "source_id": "replace-gameplay-capture-id",
+          "direct_playback": true,
+          "core_action": "replace",
+          "state_transition": "replace",
+          "session_loop": "replace",
+          "goal_or_exit": "replace",
+          "failure_pressure": "replace or state none observed",
+          "randomness": "replace or unknown",
+          "spectator_hook": "replace",
+          "social_hook": "replace or none observed",
+          "content_burden": "replace",
+          "reusable_mechanics": ["replace"],
+          "non_copyable_expression": ["name", "art", "specific levels", "copy", "proprietary values"]
+        }
+      ]
+    }
+  ]
+}
