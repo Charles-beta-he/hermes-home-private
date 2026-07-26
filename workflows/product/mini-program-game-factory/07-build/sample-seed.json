@@ -1,0 +1,33 @@
+{
+  "kernel": {
+    "kernel_id": "circuit-untangle",
+    "version": "0.1.0",
+    "state_fields": ["grid", "power_sources", "targets", "moves_left", "seed"],
+    "actions": ["rotate_node", "swap_adjacent", "request_hint"],
+    "win_condition": "all_required_targets_connected_and_no_short_circuit",
+    "lose_condition": "moves_left_zero_and_not_won",
+    "score_rule": "base_plus_moves_left_minus_hints",
+    "seed_policy": "explicit_integer_seed",
+    "tunable_parameters": {
+      "grid_size": {"min": 3, "max": 8},
+      "moves": {"min": 5, "max": 80},
+      "target_count": {"min": 1, "max": 12}
+    },
+    "golden_cases": ["single_path_win", "short_circuit_not_win", "zero_moves_loss", "same_seed_same_board", "content_swap_same_result"]
+  },
+  "content": {
+    "content_id": "data-center-repair-zh-cn",
+    "kernel_id": "circuit-untangle",
+    "theme": "数据中心抢修",
+    "locale": "zh-CN",
+    "copy": {"title": "链路抢修", "win": "供电恢复", "lose": "抢修超时"},
+    "level_parameters": {"grid_size": 5, "moves": 28, "target_count": 4},
+    "assets": [{"ref": "brief://rack-node", "license": "original-required"}]
+  },
+  "generation": {
+    "task_type": "generate_theme_variants",
+    "model_tier": "low_cost",
+    "confidence": 0.92,
+    "template_version": "content-pack-v1"
+  }
+}

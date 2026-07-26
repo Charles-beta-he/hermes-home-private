@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "workflow_id": "mini-program-game-factory",
+  "closure_states": [
+    "seed",
+    "kernel_draft",
+    "kernel_verified",
+    "content_candidate",
+    "work_package_compiled",
+    "runtime_verified",
+    "human_accepted",
+    "platform_ready",
+    "published",
+    "observing",
+    "stopped"
+  ],
+  "nodes": [
+    {
+      "id": "idea-intake",
+      "kind": "atomic_module",
+      "responsibility": "normalize an opportunity into a testable gameplay hypothesis",
+      "consumes": ["user_seed", "source_evidence"],
+      "produces": ["gameplay_hypothesis"],
+      "side_effects": "none",
+      "gates": ["source-boundary"]
+    },
+    {
+      "id": "kernel-design",
+      "kind": "workflow",
+      "responsibility": "define deterministic rules independent of theme and platform",
+      "consumes": ["gameplay_hypothesis"],
+      "produces": ["gameplay_kernel"],
+      "depends_on": ["idea-intake"],
+      "subnodes": ["state-model", "action-model", "win-lose-model", "golden-cases"],
+      "side_effects": "local_write",
+      "gates": ["kernel-schema", "determinism", "golden-cases"]
+    },
+    {
+      "id": "content-factory",
+      "kind": "workflow",
+      "responsibility": "generate theme and level content against a frozen kernel",
+      "consumes": ["gameplay_kernel", "content_seed"],
+      "produces": ["content_pack_candidates"],
+      "depends_on": ["kernel-design"],
+      "subnodes": ["theme", "copy", "level-params", "asset-brief", "rights-metadata"],
+      "side_effects": "local_write",
+      "gates": ["content-schema", "protected-surface", "parameter-bounds", "rights", "dedupe"]
+    },
+    {
+      "id": "work-package-compiler",
+      "kind": "adapter",
+      "responsibility": "compile frozen kernel plus approved content into deterministic implementation packets",
+      "consumes": ["gameplay_kernel", "content_pack", "model_route"],
+      "produces": ["work_package"],
+      "depends_on": ["kernel-design", "content-factory"],
+      "side_effects": "local_write",
+      "gates": ["deterministic-compile", "provenance"]
+    },
+    {
+      "id": "implementation",
+      "kind": "workflow",
+      "responsibility": "implement bounded vertical slices from frozen work packages",
+      "consumes": ["work_package"],
+      "produces": ["code", "tests", "runtime_receipt"],
+      "depends_on": ["work-package-compiler"],
+      "side_effects": "local_write",
+      "gates": ["tests", "runtime-smoke", "performance"]
+    },
+    {
+      "id": "platform-adapter",
+      "kind": "adapter",
+      "responsibility": "bind lifecycle, storage and ads to an official platform contract",
+      "consumes": ["runtime", "official_platform_contract"],
+      "produces": ["platform_build"],
+      "depends_on": ["implementation"],
+      "side_effects": "external_read",
+      "gates": ["official-contract", "typed-errors", "reward-idempotency"]
+    },
+    {
+      "id": "release-gate",
+      "kind": "gate",
+      "responsibility": "block submission or publish until objective and human evidence converges",
+      "consumes": ["platform_build", "evidence_bundle"],
+      "produces": ["ready_or_blocked"],
+      "depends_on": ["platform-adapter"],
+      "side_effects": "none",
+      "outcomes": {"pass": "platform_ready", "warn": "review", "fail": "repair", "blocked": "human_gate"}
+    }
+  ],
+  "agent_wrappers": [
+    {
+      "id": "cheap-content-worker",
+      "role": "creator",
+      "wraps": ["content-factory"],
+      "authority": "local_write",
+      "cannot_do": ["modify_kernel", "modify_monetization", "modify_platform_contract", "publish"]
+    },
+    {
+      "id": "kernel-architect",
+      "role": "creator",
+      "wraps": ["kernel-design"],
+      "authority": "local_write",
+      "cannot_do": ["self_certify", "publish"]
+    },
+    {
+      "id": "evidence-verifier",
+      "role": "verifier",
+      "wraps": ["work-package-compiler", "release-gate"],
+      "authority": "read_only",
+      "cannot_do": ["repair_own_finding", "publish"]
+    }
+  ],
+  "cannot_prove": [
+    "fun",
+    "retention",
+    "revenue",
+    "platform_approval",
+    "production_performance"
+  ]
+}

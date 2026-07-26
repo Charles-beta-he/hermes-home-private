@@ -1,0 +1,214 @@
+{
+  "accepted": [
+    {
+      "accuracy_contract": {
+        "candidate_only": true,
+        "model_self_report_is_evidence": false,
+        "same_gates_for_all_models": true
+      },
+      "authority": {
+        "may_enter_credentials": false,
+        "may_pay": false,
+        "may_publish": false,
+        "may_submit_platform": false
+      },
+      "closure_state": "work_package_compiled",
+      "compile_digest": "5cf24b21beab6258d18b07291406c3c5ff04d00ad83e4fd0666bf6ff890eb6e0",
+      "content": {
+        "assets": [
+          {
+            "license": "original-required",
+            "ref": "brief://rack-node"
+          }
+        ],
+        "content_id": "data-center-repair-zh-cn",
+        "copy": {
+          "lose": "抢修超时",
+          "title": "链路抢修",
+          "win": "供电恢复"
+        },
+        "kernel_id": "circuit-untangle",
+        "level_parameters": {
+          "grid_size": 5,
+          "moves": 28,
+          "target_count": 4
+        },
+        "locale": "zh-CN",
+        "theme": "数据中心抢修"
+      },
+      "content_digest": "7a95ed03a6b01ab77d4838b1746506cdd1284a61fe9b8dee9c3d22cc442569b6",
+      "generation": {
+        "confidence": 0.92,
+        "task_type": "generate_theme_variants",
+        "template_version": "content-pack-v1"
+      },
+      "kernel": {
+        "actions": [
+          "rotate_node",
+          "swap_adjacent",
+          "request_hint"
+        ],
+        "golden_cases": [
+          "single_path_win",
+          "short_circuit_not_win",
+          "zero_moves_loss",
+          "same_seed_same_board",
+          "content_swap_same_result"
+        ],
+        "kernel_id": "circuit-untangle",
+        "lose_condition": "moves_left_zero_and_not_won",
+        "score_rule": "base_plus_moves_left_minus_hints",
+        "seed_policy": "explicit_integer_seed",
+        "state_fields": [
+          "grid",
+          "power_sources",
+          "targets",
+          "moves_left",
+          "seed"
+        ],
+        "tunable_parameters": {
+          "grid_size": {
+            "max": 8,
+            "min": 3
+          },
+          "moves": {
+            "max": 80,
+            "min": 5
+          },
+          "target_count": {
+            "max": 12,
+            "min": 1
+          }
+        },
+        "version": "0.1.0",
+        "win_condition": "all_required_targets_connected_and_no_short_circuit"
+      },
+      "kernel_digest": "734752fe58dd25ef3c66a0749cfd51d118f36b6e53fb2a76c1093a6316213363",
+      "model_route": "low_cost",
+      "required_gates": [
+        "schema",
+        "protected_surface",
+        "parameter_bounds",
+        "rights_metadata",
+        "dedupe",
+        "deterministic_compile"
+      ],
+      "schema_version": 1,
+      "work_package_id": "circuit-untangle@0.1.0::data-center-repair-zh-cn"
+    },
+    {
+      "accuracy_contract": {
+        "candidate_only": true,
+        "model_self_report_is_evidence": false,
+        "same_gates_for_all_models": true
+      },
+      "authority": {
+        "may_enter_credentials": false,
+        "may_pay": false,
+        "may_publish": false,
+        "may_submit_platform": false
+      },
+      "closure_state": "work_package_compiled",
+      "compile_digest": "a28d64571ccc5376cb8f7c6a21edaf775db41c135f6e7f95dc68a1375fbda9ef",
+      "content": {
+        "assets": [
+          {
+            "license": "original-required",
+            "ref": "brief://rack-node"
+          }
+        ],
+        "content_id": "space-station-repair-zh-cn",
+        "copy": {
+          "lose": "舱段离线",
+          "title": "轨道供能",
+          "win": "供能恢复"
+        },
+        "kernel_id": "circuit-untangle",
+        "level_parameters": {
+          "grid_size": 5,
+          "moves": 28,
+          "target_count": 4
+        },
+        "locale": "zh-CN",
+        "theme": "太空站供能"
+      },
+      "content_digest": "81bd9e24eb65cccf550e4a49e1718c14151bd6f201defe8f5582e20b85ee7829",
+      "generation": {
+        "confidence": 0.92,
+        "task_type": "generate_theme_variants",
+        "template_version": "content-pack-v1"
+      },
+      "kernel": {
+        "actions": [
+          "rotate_node",
+          "swap_adjacent",
+          "request_hint"
+        ],
+        "golden_cases": [
+          "single_path_win",
+          "short_circuit_not_win",
+          "zero_moves_loss",
+          "same_seed_same_board",
+          "content_swap_same_result"
+        ],
+        "kernel_id": "circuit-untangle",
+        "lose_condition": "moves_left_zero_and_not_won",
+        "score_rule": "base_plus_moves_left_minus_hints",
+        "seed_policy": "explicit_integer_seed",
+        "state_fields": [
+          "grid",
+          "power_sources",
+          "targets",
+          "moves_left",
+          "seed"
+        ],
+        "tunable_parameters": {
+          "grid_size": {
+            "max": 8,
+            "min": 3
+          },
+          "moves": {
+            "max": 80,
+            "min": 5
+          },
+          "target_count": {
+            "max": 12,
+            "min": 1
+          }
+        },
+        "version": "0.1.0",
+        "win_condition": "all_required_targets_connected_and_no_short_circuit"
+      },
+      "kernel_digest": "734752fe58dd25ef3c66a0749cfd51d118f36b6e53fb2a76c1093a6316213363",
+      "model_route": "low_cost",
+      "required_gates": [
+        "schema",
+        "protected_surface",
+        "parameter_bounds",
+        "rights_metadata",
+        "dedupe",
+        "deterministic_compile"
+      ],
+      "schema_version": 1,
+      "work_package_id": "circuit-untangle@0.1.0::space-station-repair-zh-cn"
+    }
+  ],
+  "authority": {
+    "may_publish": false,
+    "may_submit_platform": false
+  },
+  "batch_digest": "c482efd446d3422c33bc22ebbb2869add9eeb4365e7d78a4eda1d63841bd5e64",
+  "rejected": [
+    {
+      "candidate_id": "invalid-oversized-grid",
+      "error": "parameter grid_size out of bounds: 100",
+      "state": "rejected"
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "accepted": 2,
+    "rejected": 1,
+    "total": 3
+  }
+}

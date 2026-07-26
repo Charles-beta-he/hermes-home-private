@@ -1,0 +1,77 @@
+{
+  "schema": "product_workflow_evidence_bundle_v1",
+  "generated_at": "2026-07-26T12:50:01Z",
+  "workflow_slug": "mini-program-game-factory",
+  "sources": [
+    {
+      "id": "src-user-001",
+      "source_type": "user_statement",
+      "source_ref": "current conversation",
+      "retrieved_at": "2026-07-26T12:50:01Z",
+      "freshness": "current",
+      "access_status": "ok",
+      "notes": "用户认可方向，并要求整理工作流、分离玩法与内容、抽象研发流程、支持低成本模型批量推进且不影响准确率。"
+    },
+    {
+      "id": "src-transcript-001",
+      "source_type": "transcript",
+      "source_ref": "https://www.qianwen.com/record#share?share_id=b3b7c9981b6f44f4928211e41ffeb1a8",
+      "retrieved_at": "2026-07-26T12:30:00Z",
+      "freshness": "recording dated 2026-07-26",
+      "access_status": "ok",
+      "notes": "浏览器直接读取标题、时长及原文；约 44:00–1:10:00 涉及小游戏技术与商业化陈述。"
+    },
+    {
+      "id": "src-local-tests-001",
+      "source_type": "log",
+      "source_ref": "python3 -m unittest -v test_batch_compile.py test_work_package_compiler.py",
+      "retrieved_at": "2026-07-26T12:50:01Z",
+      "freshness": "current run",
+      "access_status": "ok",
+      "notes": "12 tests passed before final CLI/evidence refresh."
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-user-goal",
+      "claim": "用户希望将小游戏方向形成可批量推进的低成本研发工作流。",
+      "source_ids": ["src-user-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "user_preference"
+    },
+    {
+      "id": "claim-course-content",
+      "claim": "录音讨论了 PixiJS/Phaser/Cocos、微信/抖音小游戏和激励视频等方向。",
+      "source_ids": ["src-transcript-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "fact"
+    },
+    {
+      "id": "claim-commercial-outcome",
+      "claim": "批量制作小游戏可快速获得收入。",
+      "source_ids": ["src-transcript-001"],
+      "confidence": "low",
+      "verification_status": "assumption",
+      "interpretation_boundary": "model_interpretation"
+    },
+    {
+      "id": "claim-local-contract",
+      "claim": "本地编译器可以隔离越权/越界候选，并对相同输入生成确定性摘要。",
+      "source_ids": ["src-local-tests-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "fact"
+    }
+  ],
+  "open_questions": [
+    "抖音和微信小游戏当前个人主体、广告与送审要求",
+    "线路整理玩法的真实可理解性、乐趣与复玩意愿",
+    "Cocos 当前稳定版本和平台构建兼容矩阵"
+  ],
+  "blocked_evidence": [
+    "真实平台 SDK/审核/广告回调",
+    "真实用户留存与商业指标"
+  ]
+}
