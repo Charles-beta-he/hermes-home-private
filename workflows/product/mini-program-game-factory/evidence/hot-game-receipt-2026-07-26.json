@@ -1,7 +1,7 @@
 {
   "as_of": "2026-07-26T12:00:00+08:00",
   "authority_boundary": "market evidence may nominate hypotheses; it cannot freeze kernels or publish",
-  "digest": "90a08abc4cda2cd6a64552fbb324a75b5a6432cd42921260e30a8fb751fcc7ec",
+  "digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
   "may_freeze_kernel": false,
   "observations": [
     {
@@ -13,7 +13,7 @@
       "direct_gameplay": false,
       "fresh_direct_rank": false,
       "game_name": "轻松拿捏了",
-      "independent_signal_lineages": 1,
+      "independent_signal_lineages": 0,
       "mechanic_evidence_count": 1,
       "observation_id": "lightly-handled-douyin-2026-06",
       "platform": "douyin",
@@ -30,7 +30,7 @@
       "direct_gameplay": false,
       "fresh_direct_rank": false,
       "game_name": "疯狂买买买",
-      "independent_signal_lineages": 1,
+      "independent_signal_lineages": 0,
       "mechanic_evidence_count": 1,
       "observation_id": "crazy-buy-douyin-2026-05",
       "platform": "douyin",
@@ -47,7 +47,7 @@
       "direct_gameplay": false,
       "fresh_direct_rank": false,
       "game_name": "狙击外星人",
-      "independent_signal_lineages": 1,
+      "independent_signal_lineages": 0,
       "mechanic_evidence_count": 1,
       "observation_id": "sniper-alien-douyin-2025",
       "platform": "douyin",
@@ -57,6 +57,7 @@
     }
   ],
   "schema_version": 1,
+  "snapshot_digest": "7d3f4b2c31ab5e90c84f5da6cf8b2078a5a7f9dcb35886dd55c43f1351533e0a",
   "snapshot_id": "douyin-market-leads-2026-07-26",
   "source_count": 3,
   "summary": {

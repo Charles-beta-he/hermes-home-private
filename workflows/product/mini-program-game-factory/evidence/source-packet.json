@@ -1,0 +1,66 @@
+{
+  "schema": "source_packet_v1",
+  "packet_id": "mini-program-game-factory-market-evidence-2026-07-26",
+  "created_at": "2026-07-26T15:54:39Z",
+  "market_as_of": "2026-07-26T12:00:00+08:00",
+  "snapshot": {
+    "path": "evidence/hot-game-snapshot-2026-07-26.json",
+    "snapshot_id": "douyin-market-leads-2026-07-26",
+    "observed_at": "2026-07-26T12:00:00+08:00",
+    "sha256": "7d3f4b2c31ab5e90c84f5da6cf8b2078a5a7f9dcb35886dd55c43f1351533e0a",
+    "source_count": 3
+  },
+  "source_registry": "source-registry.json",
+  "sources": [
+    {
+      "source_id": "dataeye-jade-36kr-2026-06-22",
+      "source_type": "third_party_rank_report",
+      "published_at": "2026-06-22T16:01:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://36kr.com/p/3863826372646147",
+      "boundary": "DataEye-ADX claims reproduced by 36Kr; not a direct platform chart readback"
+    },
+    {
+      "source_id": "sniper-alien-gamelook-qq-2025-12-25",
+      "source_type": "first_party_creator_report",
+      "published_at": "2025-12-25T23:39:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://news.qq.com/rain/a/20251225A07HDZ00",
+      "boundary": "developer conference speech; historical self-reported DAU and rank, not current platform telemetry"
+    },
+    {
+      "source_id": "acquisition-report-netease-2026-05-11",
+      "source_type": "third_party_rank_report",
+      "published_at": "2026-05-11T20:31:00+08:00",
+      "accessed_at": "2026-07-26T12:00:00+08:00",
+      "url": "https://m.163.com/dy/article/KSM4N3SM05466ZM9.html",
+      "boundary": "summary of Heat Engine and Insightrackr report; methodology lead, not a per-game direct rank"
+    }
+  ],
+  "receipts": {
+    "hot_game": {
+      "path": "evidence/hot-game-receipt-2026-07-26.json",
+      "digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
+      "verified_current_hot": 0,
+      "recent_market_lead": 2,
+      "stale_lead": 1
+    },
+    "market_loop": {
+      "path": "evidence/market-loop-receipt-2026-07-26.json",
+      "digest": "caf3826ca56c6ddb4b7f001c34f6e443d6e77e2b399244e10cc30e5be930fcbd",
+      "accepted": 0,
+      "rejected": 2
+    }
+  },
+  "authority": {
+    "may_freeze_kernel": false,
+    "may_compile_work_package": false,
+    "may_submit_platform": false,
+    "may_publish": false,
+    "may_enter_credentials": false,
+    "may_pay": false
+  },
+  "truth_status": "blocked_pending_direct_client_rank_and_gameplay_media",
+  "boundary": "Search results, third-party reports and historical creator claims are market leads only. They do not prove current platform rank or directly observed gameplay.",
+  "runtime_execution": false
+}

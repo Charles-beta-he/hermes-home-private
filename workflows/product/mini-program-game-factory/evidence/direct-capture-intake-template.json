@@ -10,9 +10,11 @@
       "independence_key": "replace-with-original-rank-capture-lineage",
       "published_at": "2026-07-26T12:00:00+08:00",
       "accessed_at": "2026-07-26T12:00:00+08:00",
-      "url": "https://replace-with-replayable-source-or-local-evidence-index.example",
       "evidence_level": "direct",
-      "local_media_path": "replace-with-screenshot-or-recording-path",
+      "subject_bindings": [
+        {"platform": "douyin", "game_name": "replace-game-name", "charts": ["hot"]}
+      ],
+      "local_media_path": "/replace-with-screenshot-or-recording-path",
       "evidence_digest": "replace-with-sha256"
     },
     {
@@ -22,9 +24,11 @@
       "independence_key": "replace-with-original-gameplay-capture-lineage",
       "published_at": "2026-07-26T12:00:00+08:00",
       "accessed_at": "2026-07-26T12:00:00+08:00",
-      "url": "https://replace-with-share-link-or-local-evidence-index.example",
       "evidence_level": "direct",
-      "local_media_path": "replace-with-gameplay-recording-path",
+      "subject_bindings": [
+        {"platform": "douyin", "game_name": "replace-game-name", "charts": []}
+      ],
+      "local_media_path": "/replace-with-gameplay-recording-path",
       "evidence_digest": "replace-with-sha256"
     }
   ],

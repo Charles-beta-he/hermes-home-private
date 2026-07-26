@@ -1,0 +1,24 @@
+{
+  "schema": "timestamped_source_v1",
+  "created_at": "2026-07-26T15:54:39Z",
+  "snapshot_observed_at": "2026-07-26T12:00:00+08:00",
+  "snapshot_id": "douyin-market-leads-2026-07-26",
+  "snapshot_path": "evidence/hot-game-snapshot-2026-07-26.json",
+  "snapshot_sha256": "7d3f4b2c31ab5e90c84f5da6cf8b2078a5a7f9dcb35886dd55c43f1351533e0a",
+  "source_packet_path": "evidence/source-packet.json",
+  "time_readback": {
+    "source_published_at_and_accessed_at": "preserved per source in evidence/source-packet.json and the immutable snapshot",
+    "evaluation_as_of": "2026-07-26T12:00:00+08:00",
+    "packet_created_at_utc": "2026-07-26T15:54:39Z"
+  },
+  "receipt_readback": {
+    "hot_game_receipt": "evidence/hot-game-receipt-2026-07-26.json",
+    "hot_game_digest": "3ff542da33cec341651a9472c14c2a29eb9d8dd62be140f4d0a0cea6511a68b7",
+    "market_loop_receipt": "evidence/market-loop-receipt-2026-07-26.json",
+    "market_loop_digest": "caf3826ca56c6ddb4b7f001c34f6e443d6e77e2b399244e10cc30e5be930fcbd"
+  },
+  "status": "PASS_LOCAL_SOURCE_AND_TIME_BINDING",
+  "market_certification": false,
+  "current_hot_verified": 0,
+  "boundary": "This artifact proves local source/time binding only. It does not upgrade indirect or historical evidence into direct current platform evidence."
+}

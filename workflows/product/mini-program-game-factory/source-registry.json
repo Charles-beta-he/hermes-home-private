@@ -61,9 +61,10 @@
   ],
   "promotion_policy": {
     "verified_current_hot": [
-      "7_days_direct_rank",
-      "2_independent_publishers",
-      "direct_gameplay_capture"
+      "7_days_local_digest_verified_direct_rank",
+      "2_current_subject_bound_independent_lineages",
+      "7_days_local_digest_verified_direct_gameplay",
+      "discovery_only_sources_excluded_from_quorum"
     ],
     "credentials": "never_store",
     "model_output": "candidate_only"

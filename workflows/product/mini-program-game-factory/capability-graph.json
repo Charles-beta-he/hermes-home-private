@@ -29,17 +29,27 @@
       "consumes": ["source_registry", "direct_rank_capture", "direct_gameplay_capture", "public_market_source"],
       "produces": ["market_snapshot", "mechanic_observations", "market_evidence_receipt"],
       "side_effects": "external_read_and_local_write",
-      "gates": ["freshness", "source-reference", "independent-publishers", "direct-gameplay", "clean-room-boundary"]
+      "gates": ["freshness", "source-reference", "subject-binding", "independent-lineages", "local-digest-readback", "direct-gameplay", "clean-room-boundary"]
     },
     {
       "id": "trend-synthesis",
       "kind": "workflow",
       "responsibility": "deduplicate products and cluster abstract mechanics across sources and observation periods",
       "consumes": ["mechanic_observations", "market_evidence_receipt"],
-      "produces": ["trend_clusters", "kernel_hypotheses"],
+      "produces": ["trend_clusters", "kernel_hypothesis_candidates"],
       "depends_on": ["market-observatory"],
       "side_effects": "local_write",
       "gates": ["dedupe", "cross-period-support", "non-copyable-expression-exclusion", "human-review"]
+    },
+    {
+      "id": "market-to-kernel-gate",
+      "kind": "gate",
+      "responsibility": "admit only hypotheses backed by verified_current_hot observations while keeping kernel freeze, work-package compilation and release authority closed",
+      "consumes": ["market_evidence_receipt", "kernel_hypothesis_candidates", "model_routing_contract"],
+      "produces": ["kernel_hypotheses", "market_loop_receipt"],
+      "depends_on": ["market-observatory", "trend-synthesis"],
+      "side_effects": "local_write",
+      "gates": ["verified-current-hot", "observation-reference", "protected-surface", "non-copyable-expression-exclusion", "deterministic-receipt"]
     },
     {
       "id": "idea-intake",
@@ -47,7 +57,7 @@
       "responsibility": "normalize an opportunity into a testable gameplay hypothesis",
       "consumes": ["user_seed", "source_evidence", "trend_clusters", "kernel_hypotheses"],
       "produces": ["gameplay_hypothesis"],
-      "depends_on": ["trend-synthesis"],
+      "depends_on": ["market-to-kernel-gate"],
       "side_effects": "none",
       "gates": ["source-boundary", "market-status-boundary", "differentiation"]
     },
@@ -139,7 +149,7 @@
     {
       "id": "evidence-verifier",
       "role": "verifier",
-      "wraps": ["work-package-compiler", "release-gate"],
+      "wraps": ["market-to-kernel-gate", "work-package-compiler", "release-gate"],
       "authority": "read_only",
       "cannot_do": ["repair_own_finding", "publish"]
     }

@@ -12,6 +12,10 @@
       "accessed_at": "2026-07-26T12:00:00+08:00",
       "url": "https://36kr.com/p/3863826372646147",
       "evidence_level": "third_party_claim",
+      "subject_bindings": [
+        {"platform": "douyin", "game_name": "轻松拿捏了", "charts": ["hot", "grossing"]},
+        {"platform": "douyin", "game_name": "疯狂买买买", "charts": ["hot", "grossing"]}
+      ],
       "boundary": "DataEye-ADX claims reproduced by 36Kr; not a direct platform chart readback"
     },
     {
@@ -23,6 +27,9 @@
       "accessed_at": "2026-07-26T12:00:00+08:00",
       "url": "https://news.qq.com/rain/a/20251225A07HDZ00",
       "evidence_level": "first_party_claim",
+      "subject_bindings": [
+        {"platform": "douyin", "game_name": "狙击外星人", "charts": ["hot"]}
+      ],
       "boundary": "developer conference speech; historical self-reported DAU and rank, not current platform telemetry"
     },
     {

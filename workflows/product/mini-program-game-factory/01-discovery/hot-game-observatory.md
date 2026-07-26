@@ -29,22 +29,23 @@
 
 每条观测必须保存：
 
-- `observed_at`、`platform`、`source_type`、`source_url`；
+- `observed_at`、`platform`、`source_type`，以及可回读 HTTPS URL 或绝对本地证据路径；
 - 游戏名称或稳定标识；
 - 榜单名、排名/播放/投放等原始信号；
 - 信号实际发生时间，而不是只保存文章发布时间；
 - 核心动作、闭环、胜负/退出条件和局长；
 - `direct_readback` / `direct_playback` 标志；
-- 来源身份、证据等级、访问时间和摘要；
-- `independence_key`（同一报告/视频的转载共用一个 lineage）；
-- 可回读 URL 或本地证据路径；直接截图/录屏必须保存 SHA-256 摘要。
+- 来源身份、证据等级、访问时间和摘要；直接来源的 `source_type` 与 `evidence_level=direct` 必须一致；
+- `subject_bindings` 将来源显式绑定到平台、游戏，排名证据还必须绑定榜单；
+- `independence_key`（同一原始报告/视频的转载共用一个 lineage；任何来源如声明相同 `evidence_digest` 也会跨 direct/indirect 归并，不能靠改 source type 或 key 重复计数）；
+- 可回读 URL 或本地证据路径；直接截图/录屏必须保存 SHA-256 摘要。只有本地媒体可重新读取且摘要一致时，直接证据才能参与 `verified_current_hot` 晋级；仅声明远端 URL 与摘要仍保持线索状态。
 
 ## 热度状态机
 
 `search_lead → recent_market_lead → verified_current_hot → mechanic_observed → kernel_hypothesis`
 
-- `verified_current_hot`：至少一条 7 天内客户端/官方榜单直接读回、至少两个独立来源、且有直接试玩证据。
-- `recent_market_lead`：60 天内存在排名/热度信号，但未满足实时榜单或独立来源门禁。
+- `verified_current_hot`：至少一条 7 天内、可本地摘要回读的客户端榜单直接证据；至少两个 7 天内、主体绑定正确且证据类型合格的独立 lineage；以及 7 天内可本地摘要回读的直接试玩证据。搜索/社交发现信号不参与该 quorum。
+- `recent_market_lead`：60 天内存在主体绑定正确的排名/数值热度信号，但未满足实时榜单或独立来源门禁。来源的发布时间和访问时间也必须在 60 天内。
 - `stale_lead`：只有超过 60 天的信号。
 - `unranked_lead`：只有讨论或玩法描述，没有可核对热度信号。
 

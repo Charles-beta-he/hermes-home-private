@@ -14,7 +14,13 @@
 - `06-planning/research-development-flow.md`：从玩法假设到发布观察的研发流程。
 - `07-build/work_package_compiler.py`：确定性单候选编译器。
 - `07-build/batch_compile.py`：批次隔离编译器。
-- `07-build/hot_game_observatory.py`：热度新鲜度、独立来源和直接试玩门禁。
+- `07-build/hot_game_observatory.py`：热度新鲜度、主体绑定、证据 lineage、直接媒体摘要回读和直接试玩门禁；仅有远端 URL 的直接证据不会晋级 `verified_current_hot`。
+- `07-build/direct_capture_intake.py`：把本地榜单/试玩媒体绑定为绝对路径、SHA-256 和字节数，摘要不匹配时 fail closed。
+- `07-build/market_loop_gate.py`：将已验证市场观察转换为抽象 `kernel_hypothesis` 候选；不开放内核冻结、工作包编译或发布。
+- `evidence/market-kernel-hypotheses-2026-07-26.json`：首批抽象机制候选，明确排除不可复制表达。
+- `evidence/market-loop-receipt-2026-07-26.json`：市场→研发 loop 的确定性门禁读回。
+- `evidence/source-packet.json`：三条真实来源 URL、发布时间/访问时间与 snapshot/receipt 摘要的本地证据包。
+- `evidence/timestamped-source.json`：市场快照、评估时点和 receipt 的时间绑定；明确不将间接材料升级为客户端直接证据。
 - `evidence/direct-capture-intake-template.json`：用户提供榜单截图/录屏和试玩证据时的导入模板。
 
 ## 运行
@@ -22,11 +28,20 @@
 ```bash
 cd /Users/charles/.hermes/workflows/product/mini-program-game-factory/07-build
 python3 -m unittest -v test_batch_compile.py test_work_package_compiler.py
-python3 -m unittest -v test_hot_game_observatory.py
+python3 -m unittest -v test_direct_capture_intake.py test_hot_game_observatory.py test_market_loop_gate.py
+python3 direct_capture_intake.py \
+  ../evidence/direct-capture-draft.json \
+  --output ../evidence/direct-capture-bound.json
 python3 hot_game_observatory.py \
   ../evidence/hot-game-snapshot-2026-07-26.json \
   --as-of 2026-07-26T12:00:00+08:00 \
   --output ../evidence/hot-game-receipt-2026-07-26.json
+python3 market_loop_gate.py \
+  --snapshot ../evidence/hot-game-snapshot-2026-07-26.json \
+  --hypotheses ../evidence/market-kernel-hypotheses-2026-07-26.json \
+  --routing ../model-routing.json \
+  --as-of 2026-07-26T12:00:00+08:00 \
+  --output ../evidence/market-loop-receipt-2026-07-26.json
 python3 work_package_compiler.py \
   --seed sample-seed.json \
   --routing ../model-routing.json \

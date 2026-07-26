@@ -29,6 +29,8 @@
 4. 只有 7 天内直接榜单读回、两个独立来源和直接试玩同时成立，才标记 `verified_current_hot`。
 5. 市场观测输出 `MechanicObservation`，只描述动作、状态、闭环、压力和传播钩子，不向玩法线复制名称、美术、关卡或数值。
 6. 单次上榜只产生 `kernel_hypothesis`；仍需差异化、规则模拟和人工试玩，不能直接冻结内核。
+7. 用 `market_loop_gate.py` 将市场 receipt 与抽象玩法候选串联：只有 `verified_current_hot` 观察可进入 `kernel_hypothesis`；无论是否进入，`may_freeze_kernel`、`may_compile_work_package` 和发布权限均保持 false。
+8. 当前市场候选的确定性读回保存到 `evidence/market-loop-receipt-2026-07-26.json`；`accepted=0` 是缺少直接证据时的预期 fail-closed 结果。
 
 当前输入规范、状态机和人工采集方法见 `01-discovery/hot-game-observatory.md`。
 

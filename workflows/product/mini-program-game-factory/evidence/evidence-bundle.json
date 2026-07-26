@@ -1,6 +1,6 @@
 {
   "schema": "product_workflow_evidence_bundle_v1",
-  "generated_at": "2026-07-26T13:49:03Z",
+  "generated_at": "2026-07-26T15:54:39Z",
   "workflow_slug": "mini-program-game-factory",
   "sources": [
     {
@@ -60,11 +60,29 @@
     {
       "id": "src-market-tests-001",
       "source_type": "log",
-      "source_ref": "python3 -m unittest -v test_hot_game_observatory.py",
-      "retrieved_at": "2026-07-26T13:49:03Z",
+      "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/hot-game-receipt-2026-07-26.json",
+      "retrieved_at": "2026-07-26T15:47:58Z",
       "freshness": "current run",
       "access_status": "ok",
-      "notes": "10 observatory tests passed; receipt reports verified 0, recent 2, stale 1."
+      "notes": "52 full-suite tests passed, including 25 observatory adversarial tests and 6 local-media intake tests; direct media hash/size readback rejects unstable files and empty mechanic evidence, direct evidence lineages are collapsed by declared original lineage, and any declared media digest is deduplicated across direct/indirect claims; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest."
+    },
+    {
+      "id": "src-market-loop-gate-001",
+      "source_type": "log_and_receipt",
+      "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/market-loop-receipt-2026-07-26.json",
+      "retrieved_at": "2026-07-26T15:47:58Z",
+      "freshness": "current run",
+      "access_status": "ok",
+      "notes": "9 market-loop tests passed inside the 52-test suite; protected-surface matching normalizes case, whitespace, repeated separators, ASCII/Unicode hyphens and NFKC variants; receipt binds market, hypothesis and routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false."
+    },
+    {
+      "id": "src-market-source-packet-001",
+      "source_type": "local_source_and_time_binding",
+      "source_ref": "evidence/source-packet.json + evidence/timestamped-source.json",
+      "retrieved_at": "2026-07-26T15:54:39Z",
+      "freshness": "packet created from the 2026-07-26 snapshot and receipts",
+      "access_status": "ok",
+      "notes": "Binds the three actual source URLs and their published/accessed timestamps to the snapshot and receipt digests. Explicitly preserves verified_current_hot=0 and does not upgrade indirect evidence into direct client evidence."
     }
   ],
   "claims": [
@@ -103,7 +121,7 @@
     {
       "id": "claim-market-observatory-boundary",
       "claim": "当前首批样本只有两个近期市场线索和一个历史线索，没有任何游戏达到当前热门已验证状态。",
-      "source_ids": ["src-market-jade-001", "src-market-sniper-001", "src-market-tests-001"],
+      "source_ids": ["src-market-jade-001", "src-market-sniper-001", "src-market-tests-001", "src-market-source-packet-001"],
       "confidence": "high",
       "verification_status": "verified",
       "interpretation_boundary": "status is as-of 2026-07-26 and expires with time"
@@ -115,6 +133,14 @@
       "confidence": "high",
       "verification_status": "verified_method_contract",
       "interpretation_boundary": "does not prove any individual game is currently hot"
+    },
+    {
+      "id": "claim-market-loop-fail-closed",
+      "claim": "当前未验证市场线索不能进入 kernel_hypothesis；即使未来满足 verified_current_hot，市场门禁也不授予内核冻结、工作包编译、送审或发布权限。",
+      "source_ids": ["src-market-tests-001", "src-market-loop-gate-001"],
+      "confidence": "high",
+      "verification_status": "verified_local_gate",
+      "interpretation_boundary": "local deterministic gate only; does not prove external market truth"
     }
   ],
   "open_questions": [
