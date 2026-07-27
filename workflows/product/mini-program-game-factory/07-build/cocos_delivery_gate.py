@@ -157,6 +157,8 @@ def verify_devtools_handoff(receipt: Mapping[str, Any], project_root: Path) -> M
     if not path_value:
         raise DeliveryGateError("handoff artifact path is missing")
     path = Path(path_value)
+    if not path.is_absolute():
+        raise DeliveryGateError("handoff artifact path must be absolute")
     if path.is_symlink():
         raise DeliveryGateError("handoff artifact symlink is rejected")
     if not path.is_file():

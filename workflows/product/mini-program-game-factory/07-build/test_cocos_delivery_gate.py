@@ -184,6 +184,15 @@ class CocosDeliveryGateTests(unittest.TestCase):
             with self.assertRaisesRegex(DeliveryGateError, "unknown fields"):
                 verify_devtools_handoff(receipt, GENERATED_PROJECT)
 
+    def test_handoff_rejects_relative_artifact_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact = Path(tmp) / "game.zip"
+            artifact.write_bytes(b"verified-artifact")
+            receipt = self._handoff(artifact)
+            receipt["artifact"]["path"] = "game.zip"
+            with self.assertRaisesRegex(DeliveryGateError, "must be absolute"):
+                verify_devtools_handoff(receipt, GENERATED_PROJECT)
+
     def test_handoff_rejects_symlink_artifact_and_open_authority(self):
         with tempfile.TemporaryDirectory() as tmp:
             real_artifact = Path(tmp) / "real-game.zip"
