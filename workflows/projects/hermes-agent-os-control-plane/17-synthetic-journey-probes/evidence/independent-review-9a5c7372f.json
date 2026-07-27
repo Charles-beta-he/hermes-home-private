@@ -1,0 +1,81 @@
+{
+  "schema": "synthetic_probe_independent_review_receipt_v1",
+  "recorded_at": "2026-07-27T09:42:39Z",
+  "candidate": {
+    "commit": "9a5c7372f3381047510d26fe357d6f37ed6c0068",
+    "tree": "b929a1e9464031bb35d5cc6b6800e1dd8dda3325",
+    "scope": "workflows/projects/hermes-agent-os-control-plane/17-synthetic-journey-probes"
+  },
+  "reviewer": {
+    "route": "claude-code",
+    "model": "claude-fable-5",
+    "provider": "firstParty",
+    "independent_from_producer_route": true,
+    "result_subtype": "success",
+    "terminal_reason": "completed",
+    "is_error": false,
+    "web_search_requests": 0,
+    "permission_denials": []
+  },
+  "artifact": {
+    "source_path": "/tmp/claude-synthetic-review-9a5.json",
+    "sha256": "3ed2a8a8bc89a0a09f74242ab3a9a0d7f554310392e22abfc4029c9222d8b659"
+  },
+  "verification": {
+    "reviewed_head_match": true,
+    "detached_worktree_clean": true,
+    "tests": {
+      "command": "python3 -m unittest -v test_synthetic_probe.py",
+      "count": 13,
+      "result": "pass"
+    },
+    "parent_recheck": {
+      "command": "python3 -m unittest -q test_synthetic_probe.py",
+      "count": 13,
+      "result": "pass"
+    },
+    "reviewer_hashes_matched_verification_record": true,
+    "default_off_verified": true,
+    "run_without_out_created_file": false,
+    "output_escape_attempts_rejected": true,
+    "global_certification_claimed": false
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      {
+        "id": "P2-probe-input-parent-symlink",
+        "summary": "Probe declaration input checks only the final component for symlink/non-regular-file behavior; journey target traversal is fully hardened.",
+        "blocking": false
+      },
+      {
+        "id": "P2-schema-defense-in-depth",
+        "summary": "Schema does not itself reject absolute or traversal target paths and leaves assertion value types broad; runtime validation rejects unsafe paths.",
+        "blocking": false
+      },
+      {
+        "id": "P2-validate-only-side-effect-label",
+        "summary": "Validate-only receipts label local_read for reading the probe declaration although no journey target is read; verification documentation states this distinction.",
+        "blocking": false
+      }
+    ]
+  },
+  "vote": {
+    "value": "ACCEPT",
+    "scope": "candidate commit and local synthetic journey probe only",
+    "global_agent_os_certified": false,
+    "unverified_integrations": [
+      "cron",
+      "taskpool",
+      "gateway",
+      "external_delivery"
+    ]
+  },
+  "prior_attempt": {
+    "route": "delegate_task",
+    "status": "timeout",
+    "verdict": "NO_VERDICT",
+    "accepted_as_gate_evidence": false
+  }
+}
