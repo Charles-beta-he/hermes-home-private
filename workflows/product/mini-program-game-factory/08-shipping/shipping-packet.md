@@ -37,6 +37,6 @@ build_authority_closed
 
 ## Handoff verifier 边界
 
-只有严格字段、project digest、Creator version、platform target、artifact digest、Creator build、DevTools import、simulator compile 和 real-device preview 全部匹配时，verifier 才返回 `devtools_handoff_verified`。任何未知字段、symlink artifact、摘要篡改、平台错配、缺失/false readback、开放 authority 或已开始的 upload/review/publish/rollback 都 fail closed。
+只有严格字段、project digest、Creator version、platform target、artifact digest、Creator build、DevTools import、simulator compile 和 real-device preview 的供应方 readback 全部匹配时，verifier 才返回 `devtools_handoff_receipt_integrity_verified`。该状态只证明 receipt 结构、绑定、产物完整性及供应方声明一致，不代表 verifier 独立观察过 Creator、DevTools、模拟器或真机执行。任何未知字段、symlink artifact、摘要篡改、平台错配、缺失/false readback、开放 authority 或已开始的 upload/review/publish/rollback 都 fail closed。
 
 权限：`may_build_cocos=false`、`may_invoke_devtools=false`、`may_enter_credentials=false`、`may_preview_device=false`、`may_submit_platform=false`、`may_publish=false`、`may_pay=false`。

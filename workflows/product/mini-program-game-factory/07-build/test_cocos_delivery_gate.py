@@ -149,7 +149,8 @@ class CocosDeliveryGateTests(unittest.TestCase):
             artifact.write_bytes(b"verified-artifact")
             receipt = self._handoff(artifact)
             verified = verify_devtools_handoff(receipt, GENERATED_PROJECT)
-            self.assertEqual(verified["closure_state"], "devtools_handoff_verified")
+            self.assertEqual(verified["closure_state"], "devtools_handoff_receipt_integrity_verified")
+            self.assertIn("does not independently observe", verified["claim_boundary"])
             self.assertEqual(verified["artifact"]["sha256"], receipt["artifact"]["sha256"])
 
     def test_handoff_verifier_rejects_missing_real_device_readback(self):

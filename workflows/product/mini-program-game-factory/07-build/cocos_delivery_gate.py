@@ -177,7 +177,8 @@ def verify_devtools_handoff(receipt: Mapping[str, Any], project_root: Path) -> M
         raise DeliveryGateError("handoff cannot claim upload, review, publish or rollback")
     return {
         "schema_version": 1,
-        "closure_state": "devtools_handoff_verified",
+        "closure_state": "devtools_handoff_receipt_integrity_verified",
+        "claim_boundary": "verifies receipt structure, bindings, artifact integrity, and supplied human readbacks; does not independently observe Creator, DevTools, simulator, or device execution",
         "project_digest": manifest["project_digest"],
         "platform": platform,
         "creator_version": receipt["creator_version"],

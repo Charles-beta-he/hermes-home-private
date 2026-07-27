@@ -25,7 +25,7 @@
     "ready_to_build",
     "runtime_verified",
     "creator_build_verified",
-    "devtools_handoff_verified",
+    "devtools_handoff_receipt_integrity_verified",
     "human_accepted",
     "platform_ready",
     "published",
@@ -331,7 +331,7 @@
         "human_handoff_receipt"
       ],
       "produces": [
-        "devtools_handoff_verified"
+        "devtools_handoff_receipt_integrity_verified"
       ],
       "depends_on": [
         "cocos-creator-build"
