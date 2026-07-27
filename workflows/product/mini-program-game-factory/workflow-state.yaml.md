@@ -6,9 +6,9 @@ chain: full-lifecycle
 current_stage: discovery
 status: blocked
 created_at: 2026-07-26T12:44:35Z
-updated_at: 2026-07-26T17:47:50Z
+updated_at: 2026-07-27T03:41:55Z
 authority_boundary: local-artifacts-only
-highest_evidenced_state: local_contract_verified
+highest_evidenced_state: creator_project_candidate_materialized
 ---
 
 # Workflow State: 小程序游戏批量研发工厂
@@ -55,15 +55,20 @@ highest_evidenced_state: local_contract_verified
   evidence: tasks/task-candidates.json
 
 - stage: build
-  status: accepted
-  artifact: 07-build/work_package_compiler.py, 07-build/direct_capture_intake.py, 07-build/hot_game_observatory.py, 07-build/market_loop_gate.py
-  evidence: 07-build/implementation-evidence.md
-  closure: local_contract_verified
+  status: local_runtime_and_project_candidate_verified_build_preflight_blocked
+  artifact: 07-build/cocos_work_package_adapter.py, 07-build/cocos_project_generator.py, 07-build/cocos_delivery_gate.py, runtime/cocos/runtime-core/
+  evidence: evidence/cocos-sample-candidate/candidate-manifest.json, evidence/cocos-node-runtime-smoke.json, evidence/cocos-creator-project-candidate/project-manifest.json, evidence/cocos-build-preflight-blocked.json
+  closure: creator_project_candidate_materialized
+  certification: current mutable slice; prior local-contract certificate does not cover these files
+  node runtime: fixed-seed GameplayKernel smoke passed; LocalPlatformStub reports official_sdk=false and grants no reward
+  Creator project: deterministic 18-file import candidate verified; Creator import/build not executed
+  build preflight: blocked with no command because Creator CLI/version, AppID, editor-exported config and build authority are absent
+  authority: local candidate materialization and verification only; build, DevTools, credentials, device preview, submission and publish remain false
 
 - stage: shipping
-  status: blocked
-  artifact: 08-shipping/shipping-packet.md
-  blocker: no playable runtime, no current official platform contract, no human playtest
+  status: blocked_at_creator_devtools_device_and_external_authority
+  artifact: 08-shipping/shipping-packet.md, 08-shipping/devtools-handoff-template.json
+  blocker: no Creator import/build receipt, no current official platform contract, no DevTools/device receipt, no human playtest
   authority: no platform submission or publish
 
 - stage: launch
@@ -79,6 +84,7 @@ highest_evidenced_state: local_contract_verified
 1. Capture a fresh Douyin mini-game hot/grossing chart and direct gameplay samples; re-run M0 receipt.
 2. Re-run `market_loop_gate.py`; only `verified_current_hot` observations may admit an abstract `kernel_hypothesis` candidate.
 3. For an admitted candidate, complete differentiation review, kernel specification, offline rule simulation and golden/negative cases before any freeze request.
-4. R1 one-level playable runtime slice and human playtest acceptance.
-5. Read-only official platform contract research.
-6. Only then request exact authority for platform sandbox/submission.
+4. Install or identify an exact Cocos Creator 3.8 version and read back its callable CLI without entering platform credentials.
+5. Import the digest-bound project candidate, export the real platform build config and provide the platform AppID through the human/third-party boundary.
+6. Re-run build preflight; only an exact grant may invoke the emitted Creator command, followed by Creator artifact digest readback.
+7. Only after build, DevTools and device receipts converge request exact authority for platform sandbox/submission.

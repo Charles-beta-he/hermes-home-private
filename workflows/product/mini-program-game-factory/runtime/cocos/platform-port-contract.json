@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "contract_id": "cocos-platform-port-v1",
+  "owner": "PlatformAdapter",
+  "operations": {
+    "lifecycle": ["on_show", "on_hide"],
+    "storage": ["load", "save", "remove"],
+    "share": ["share"],
+    "login": ["login"],
+    "rewarded_ad": ["request", "show", "observe_completion"],
+    "system_info": ["read"]
+  },
+  "typed_result": {
+    "success": ["operation", "platform", "receipt_id"],
+    "failure": ["operation", "platform", "error_code", "retryable"]
+  },
+  "forbidden_ownership": [
+    "state_fields",
+    "actions",
+    "win_condition",
+    "lose_condition",
+    "score_rule",
+    "seed_policy",
+    "reward_granted_without_platform_completion",
+    "submit_platform",
+    "publish",
+    "rollback"
+  ],
+  "implementations": {
+    "douyin": {"namespace": "tt", "status": "contract_pending"},
+    "wechat": {"namespace": "wx", "status": "contract_pending"}
+  },
+  "authority": {
+    "may_invoke_platform_sdk": false,
+    "may_grant_reward": false,
+    "may_submit_platform": false,
+    "may_publish": false
+  }
+}

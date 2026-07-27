@@ -1,0 +1,22 @@
+{
+  "assets": [
+    {
+      "license": "original-required",
+      "ref": "brief://rack-node"
+    }
+  ],
+  "content_id": "data-center-repair-zh-cn",
+  "copy": {
+    "lose": "抢修超时",
+    "title": "链路抢修",
+    "win": "供电恢复"
+  },
+  "kernel_id": "circuit-untangle",
+  "level_parameters": {
+    "grid_size": 5,
+    "moves": 28,
+    "target_count": 4
+  },
+  "locale": "zh-CN",
+  "theme": "数据中心抢修"
+}

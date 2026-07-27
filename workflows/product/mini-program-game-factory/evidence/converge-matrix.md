@@ -18,12 +18,25 @@
 | 批量失败隔离 | `compile_batch` | accepted 2 / rejected 1 | PASS | 大批量性能未测 |
 | 未有 promotion receipt 的任意模型产物仅为 candidate | `accuracy_contract`, authority flags | low-cost 与 standard candidate-only tests PASS | PASS | promotion receipt 尚未实现，故不能自动提升 |
 | 发布/送审/凭证/支付保持关闭 | authority fields | fresh CLI readback all false | PASS | 精确授权前持续关闭 |
+| Cocos 只消费摘要有效的引擎中立 WorkPackage | `cocos_work_package_adapter.py`, profile, packet schema | tampered digest 与错误引擎/版本负例 PASS | PASS（本地 mutable slice） | 尚未绑定新 commit/tree 独立认证 |
+| Cocos candidate 物料化确定且不打开权限 | `evidence/cocos-sample-candidate/` | 4/4 文件 SHA-256、manifest digest readback PASS；Cocos adapter tests PASS | PASS（本地候选） | 不证明 Creator 工程或运行时 |
+| GameplayKernel 和 LocalPlatformStub 可脱离 Creator 运行且不伪造官方能力 | `runtime/cocos/runtime-core/`, `evidence/cocos-node-runtime-smoke.json` | Node 24.14.0 strict build；10/10 tests PASS；固定 seed/input `state_sha256=6d45b138...`；`official_sdk=false`、`rewardGranted=false` | PASS（Node runtime） | 不证明 Creator runtime 或官方 SDK |
+| Creator 3.8 project candidate 确定、文件闭包完整且可静态编译 | `cocos_project_generator.py`, `evidence/cocos-creator-project-candidate/` | 18-file manifest、`project_digest=54198717...`、重复生成等价、CLI verify、generated TypeScript compile、tamper/symlink negatives PASS | PASS（import candidate） | Creator import/preview/build 未执行 |
+| Build preflight 缺前提时不执行、不泄漏 AppID、不生成命令 | `cocos_delivery_gate.py`, `evidence/cocos-build-preflight-blocked.json` | exit 2；5 个精确 blocker；`command=null`；fake executable 未执行；version/config/AppID/authority/symlink negatives PASS | PASS（fail-closed preflight） | 需 Creator、AppID、editor-exported config、exact build grant |
+| DevTools handoff 只接受 digest-bound 人工/设备事实且不开放后续权限 | `cocos_delivery_gate.py`, `devtools-handoff-template.json` | strict fields、artifact digest、platform target、device readback、unknown field、symlink、authority、external-stage negatives PASS | PASS（verifier contract） | 无真实 build artifact、DevTools 或设备 receipt |
+| Cocos Creator 构建、DevTools、真机与平台发布分阶段 | C1–C10 workflow、CapabilityGraph、handoff template | Creator build/DevTools/device/upload/review/publish 仍 blocked；所有 Cocos/platform authority false | PASS（边界） | 需 exact Creator、官方 SDK/target、平台和人工证据 |
 | 玩法乐趣、留存、收入 | 风险与指标契约 | 无真实用户/平台证据 | BLOCKED | 需可玩版本、人工试玩和上线数据 |
 
 ## Closure
 
-- Highest evidenced state: `local_contract_verified`
+- Highest evidenced state: `creator_project_candidate_materialized` (Node runtime smoke and fail-closed build preflight are also evidenced; current mutable local slice)
+- Current mutable-slice regression: Python unittest `98/98 PASS`; Node tests `10/10 PASS`; Python compile `17/17 PASS`; JSON parse `39/39 PASS`; deterministic project digest and 18-file set PASS
+- Highest certified state: `local_contract_verified`
 - Highest market state: `recent_market_lead`
-- Workflow state: `blocked_at_fresh_market_runtime_and_platform_evidence`
+- Workflow state: `blocked_at_fresh_market_creator_devtools_device_and_external_authority`
 - External side effects: closed
-- H4 local verification certificate: `evidence/h4-local-verification-certificate.json` (reviewed commit `0747403e...`; market certification remains blocked)
+- Cocos integration candidate: `evidence/cocos-sample-candidate/candidate-manifest.json`
+- Cocos project candidate: `evidence/cocos-creator-project-candidate/project-manifest.json` (`project_digest=54198717068524d21f2935fca3d7a4ac0efafa3097dfce2f7d79abd77d95e268`)
+- Node runtime receipt: `evidence/cocos-node-runtime-smoke.json`
+- Build preflight receipt: `evidence/cocos-build-preflight-blocked.json` (`command=null`)
+- H4 local verification certificate: `evidence/h4-local-verification-certificate.json` (only the earlier reviewed tree; market and current Cocos slice certification remain blocked)

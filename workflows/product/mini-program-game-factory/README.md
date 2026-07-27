@@ -13,6 +13,14 @@
 - `04-prd/game-product-contract.md`：GameplayKernel、ContentPack、平台和商业化分层契约。
 - `06-planning/research-development-flow.md`：从玩法假设到发布观察的研发流程。
 - `07-build/work_package_compiler.py`：确定性单候选编译器。
+- `07-build/cocos_work_package_adapter.py`：校验上游摘要并生成本地、candidate-only 的 Cocos Creator 3.8 integration packet 与物料化 manifest；不调用 Creator。
+- `runtime/cocos/`：固定 Cocos 源码身份、integration schema、纯 TypeScript GameplayKernel/ContentPack/PlatformPort 与 fail-closed LocalPlatformStub。
+- `07-build/cocos_project_generator.py`：从已验证 candidate 和 Node-tested sources 确定性生成、摘要验证 Creator 3.8 project candidate；不调用 Creator。
+- `07-build/cocos_delivery_gate.py`：非执行 build preflight 与严格 DevTools handoff verifier；缺 CLI/version/AppID/exported config/authority 时不生成命令。
+- `evidence/cocos-node-runtime-smoke.json`：固定 seed/input 的 Node runtime readback，明确 `official_sdk=false`。
+- `evidence/cocos-build-preflight-blocked.json`：当前真实缺失前提和 `command=null` 的 fail-closed receipt。
+- `06-planning/cocos-integration-workflow.md`：C1–C10 的 Cocos、平台构建、DevTools、真机和发布证据阶段。
+- `08-shipping/devtools-handoff-template.json`：默认 blocked、无 AppID/凭据的开发者工具交接模板。
 - `07-build/batch_compile.py`：批次隔离编译器。
 - `07-build/hot_game_observatory.py`：热度新鲜度、主体绑定、证据 lineage、直接媒体摘要读回、摘要绑定人工分类复核和榜单/试玩媒体角色隔离门禁；仅有远端 URL 或未复核的直接证据不会晋级 `verified_current_hot`。
 - `07-build/direct_capture_intake.py`：把本地榜单/试玩媒体绑定为绝对路径、SHA-256 和字节数，摘要不匹配时 fail closed；intake 后仍需人工填写摘要绑定的 `content_review`，模型不得代填。
@@ -46,7 +54,23 @@ python3 work_package_compiler.py \
   --seed sample-seed.json \
   --routing ../model-routing.json \
   --output ../evidence/sample-work-package.json
+python3 cocos_work_package_adapter.py \
+  --work-package ../evidence/sample-work-package.json \
+  --profile ../runtime/cocos/cocos-integration-profile.json \
+  --output-root ../evidence/cocos-local-candidate
+python3 cocos_project_generator.py \
+  --verify ../evidence/cocos-creator-project-candidate
+python3 cocos_delivery_gate.py preflight \
+  --project ../evidence/cocos-creator-project-candidate \
+  --platform douyin
+
+export PATH="$HOME/.nvm/versions/node/v24.14.0/bin:$PATH"
+cd ../runtime/cocos/runtime-core
+npm test
+npm run smoke
 ```
+
+Cocos 适配器的输出是本地候选 bundle。输出根目录必须尚不存在；它不会调用 Cocos Creator、平台 SDK 或开发者工具，也不会打开构建、真机、送审或发布权限。
 
 批次输入是 seed 对象数组：
 
@@ -61,4 +85,4 @@ python3 batch_compile.py \
 
 低成本模型输出始终是 candidate。通过相同的 schema、protected-surface、参数边界、rights、golden、运行时与人工门禁之前，不获得合并、送审或发布权限。
 
-当前最高工程证据状态：`local_contract_verified`。当前最高市场状态：`recent_market_lead`，没有游戏满足 `verified_current_hot`。未证明 Cocos 运行时、平台 SDK、审核、留存、收入或玩法乐趣。
+当前最高工程证据状态：`creator_project_candidate_materialized`（本地 mutable slice，尚未获得新 commit/tree 独立认证）。当前最高市场状态：`recent_market_lead`，没有游戏满足 `verified_current_hot`。已证明摘要绑定的 Cocos 3.8 integration packet、Node GameplayKernel smoke、LocalPlatformStub 和 18-file Creator import candidate；当前 preflight 以 exit 2、`command=null` 精确阻塞于 Creator CLI/version、AppID、editor-exported config 和 build authority。未证明 Creator 已导入/构建、官方平台 SDK、开发者工具、真机、审核、留存、收入或玩法乐趣。

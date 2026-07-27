@@ -1,0 +1,32 @@
+{
+  "action_count": 8,
+  "all_targets_connected": true,
+  "authority": {
+    "creator_runtime_verified": false,
+    "may_publish": false,
+    "platform_sdk_verified": false
+  },
+  "closure_state": "node_runtime_smoke_passed",
+  "content_id": "data-center-repair-zh-cn",
+  "final_status": "won",
+  "kernel_id": "circuit-untangle",
+  "platform_stub": {
+    "official_sdk": false,
+    "platform": "douyin",
+    "rewarded_ad_result": {
+      "code": "OFFICIAL_SDK_UNAVAILABLE",
+      "ok": false,
+      "platform": "douyin",
+      "rewardGranted": false
+    }
+  },
+  "runtime": {
+    "executable": "/Users/charles/.nvm/versions/node/v24.14.0/bin/node",
+    "name": "node",
+    "version": "v24.14.0"
+  },
+  "score": 1200,
+  "seed": 20260727,
+  "short_circuit": false,
+  "state_sha256": "6d45b138ae542999c2bee788284db731d018b4749a973f4a6ff66a4c562fda67"
+}

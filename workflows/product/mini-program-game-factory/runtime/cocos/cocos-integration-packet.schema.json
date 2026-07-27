@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.hermes.invalid/mini-program-game-factory/cocos-integration-packet.schema.json",
+  "title": "CocosIntegrationPacket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "integration_id",
+    "closure_state",
+    "candidate_only",
+    "source_compile_digest",
+    "engine",
+    "platforms",
+    "materialization_contract",
+    "required_next_receipts",
+    "authority",
+    "integration_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "integration_id": {"type": "string", "minLength": 1},
+    "closure_state": {"const": "cocos_integration_planned"},
+    "candidate_only": {"const": true},
+    "source_compile_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "engine": {
+      "type": "object",
+      "required": ["family", "version_line", "source_repository", "source_commit", "source_license", "creator_cli_state"],
+      "properties": {
+        "family": {"const": "cocos-creator"},
+        "version_line": {"const": "3.8"},
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "creator_cli_state": {"const": "unavailable"}
+      }
+    },
+    "platforms": {"type": "array", "minItems": 2, "maxItems": 2},
+    "materialization_contract": {"type": "object"},
+    "required_next_receipts": {"type": "array", "minItems": 1},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "may_build_cocos",
+        "may_invoke_devtools",
+        "may_enter_credentials",
+        "may_preview_device",
+        "may_submit_platform",
+        "may_publish",
+        "may_pay"
+      ],
+      "properties": {
+        "may_build_cocos": {"const": false},
+        "may_invoke_devtools": {"const": false},
+        "may_enter_credentials": {"const": false},
+        "may_preview_device": {"const": false},
+        "may_submit_platform": {"const": false},
+        "may_publish": {"const": false},
+        "may_pay": {"const": false}
+      }
+    },
+    "integration_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "appid": null,
+  "authority": {
+    "may_build": false,
+    "may_invoke_devtools": false,
+    "may_publish": false
+  },
+  "closure_state": "appid_required",
+  "creator_task_name": "wechatgame",
+  "executable": false,
+  "platform": "wechat",
+  "schema_version": 1
+}

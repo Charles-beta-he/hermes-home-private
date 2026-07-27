@@ -33,9 +33,13 @@
 
 负责：场景、布局、动画、反馈、可访问性、性能预算。只消费 GameplayKernel 事件，不拥有胜负事实。
 
+当前唯一实现目标为 Cocos Creator 3.8 系列。Cocos 场景、组件和资源只负责表现与输入投影；不得把胜负、评分、随机性或广告触发事实藏入场景脚本。`WorkPackage` 保持引擎中立，经摘要校验后由 `CocosIntegrationPacket` 适配。
+
 ## 4. PlatformAdapter
 
 负责：启动/挂起、存储、分享、登录（若需要）、激励视频、合规与平台构建。平台失败必须返回 typed error；不得伪造广告完成或奖励发放。
+
+Cocos 侧共享 `PlatformPort`，抖音实现绑定 `tt.*`、微信实现绑定 `wx.*`；两者必须分别由当前官方契约和真实 runtime receipt 晋级。引擎源码存在适配面不等于本地平台能力已通过。
 
 ## 5. MonetizationPolicy
 

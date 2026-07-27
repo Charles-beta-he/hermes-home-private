@@ -1,0 +1,62 @@
+{
+  "authority": {
+    "may_build_cocos": false,
+    "may_enter_credentials": false,
+    "may_invoke_devtools": false,
+    "may_pay": false,
+    "may_preview_device": false,
+    "may_publish": false,
+    "may_submit_platform": false
+  },
+  "candidate_only": true,
+  "closure_state": "cocos_integration_planned",
+  "engine": {
+    "creator_cli_state": "unavailable",
+    "family": "cocos-creator",
+    "source_commit": "68818ea662aba96cf4d2353007e5b5d797a059f8",
+    "source_license": "MIT",
+    "source_repository": "https://github.com/cocos/cocos-engine",
+    "version_line": "3.8"
+  },
+  "integration_digest": "beddfa7f5f1375c80f808cafb2a6cb9b4dacc8d25dd04b29ba80087b550e214a",
+  "integration_id": "circuit-untangle@0.1.0::data-center-repair-zh-cn::cocos-creator-3.8",
+  "materialization_contract": {
+    "cocos_project_mutation": false,
+    "generated_files": [
+      "input/work-package.json",
+      "generated/gameplay-kernel.json",
+      "generated/content-pack.json",
+      "integration-packet.json"
+    ],
+    "writes_local_candidate_only": true
+  },
+  "platforms": [
+    {
+      "build_state": "build_pending",
+      "build_target_id": null,
+      "engine_source_state": "observed_at_pinned_commit",
+      "official_contract_state": "contract_pending",
+      "platform_id": "douyin",
+      "runtime_api_namespace": "tt"
+    },
+    {
+      "build_state": "build_pending",
+      "build_target_id": null,
+      "engine_source_state": "observed_at_pinned_commit",
+      "official_contract_state": "contract_pending",
+      "platform_id": "wechat",
+      "runtime_api_namespace": "wx"
+    }
+  ],
+  "required_next_receipts": [
+    "creator_installation_readback",
+    "exact_creator_version",
+    "official_platform_contract",
+    "exact_build_target",
+    "creator_build_receipt",
+    "devtools_import_receipt",
+    "real_device_preview_receipt"
+  ],
+  "schema_version": 1,
+  "source_compile_digest": "5cf24b21beab6258d18b07291406c3c5ff04d00ad83e4fd0666bf6ff890eb6e0"
+}

@@ -80,6 +80,69 @@ C. 冻结玩法内核 + 内容包 + 平台适配 + 商业化策略 + 证据门�
 - external_write：账号注册、广告申请、送审、发布，当前关闭。
 - payment/credential：当前关闭，必须人工处理。
 
+## Cocos Engine 整合决策（2026-07-27）
+
+### Goal
+- Cocos Creator 3.8 系列是唯一游戏制作运行时；`WorkPackage` 继续保持引擎中立。
+- 增加确定性的 `WorkPackage → CocosIntegrationPacket` 适配层，为后续 Cocos 项目模板、场景、内容和平台适配实现提供稳定输入。
+- 将 Cocos 本地候选物料化、Creator 构建、开发者工具导入、真机、上传、审核和发布拆成独立证据阶段。
+
+### Non-goals
+- 不因采用 Cocos 而自动冻结玩法、开放工作包晋级或继承旧 verifier 的认证。
+- 不把 Cocos Engine 仓库的小游戏适配源码等同于本地 Creator 构建成功。
+- 当前不调用 Creator、不登录开发者工具、不写入 AppID/凭据、不上传、不送审、不发布。
+- 不把 Godot/Laya/Unity 项目复制进运行时；它们仅作为 exporter、bridge 或 CI 结构参考。
+
+### Source facts and boundaries
+- 技术选型由用户明确确认：游戏制作采用 Cocos Engine。
+- 只读源码调研确认 `cocos/cocos-engine` 的 3.8 系列包含微信与 ByteDance/TikTok mini-game PAL/平台实现；这只证明引擎源码存在相关适配面。
+- 当前机器 fresh readback 未发现可调用的 Cocos Creator。Homebrew Node 25.8.1 因缺失动态库不可运行，但隔离的 NVM Node 24.14.0、npm/npx 11.9.0 已通过显式 PATH 真实执行；项目工具链不得依赖故障的全局 Node。
+- Cocos Creator 的精确安装版本、CLI、build target、项目模板和平台开发者工具仍需后续真实安装/官方文档/执行 receipt 绑定。
+
+### Business rules and invariants
+1. `CocosIntegrationPacket` 必须校验上游 `compile_digest`，拒绝被篡改的 WorkPackage。
+2. 适配输出只允许声明 `candidate_only`，所有构建、凭据、提交、发布和支付 authority 必须为 false。
+3. Cocos profile 必须显式绑定 3.8 系列和来源 commit；不得接受未固定版本或其他引擎。
+4. 相同 WorkPackage 与 profile 必须产生相同 integration digest。
+5. 物料化只写调用者指定的本地 staging 根目录，拒绝符号链接根目录和路径穿越。
+6. 平台能力以 `contract_pending`/`build_pending` 表示；未知 target/CLI 不得硬编码为已支持。
+7. GameplayKernel、ContentPack、PlatformAdapter、MonetizationPolicy 的所有权边界保持不变。
+
+### Acceptance criteria
+- 新增机器可读 Cocos profile、integration schema/packet 和工作流说明。
+- 测试先证明缺少适配器、摘要篡改、错误引擎/版本、路径逃逸和 authority 打开均会失败。
+- 有效样例可确定性生成本地 Cocos candidate bundle，并从磁盘读回摘要一致。
+- 原 68 项本地契约测试保持通过；新增测试通过；JSON 和 Python 静态检查通过。
+- CapabilityGraph 和 workflow state 明确区分 `cocos_integration_planned/materialized` 与 `runtime_verified/platform_ready/published`。
+
 ## 当前闭环边界
 
-本轮闭环到 `local_contract_verified`：产出机器可读工作流、路由策略、工作包编译器、负例测试和证据矩阵。不声称已实现 Cocos 运行时、真实平台 SDK、审核或商业结果。
+本轮从 `local_contract_verified` 推进到 Cocos 本地整合契约与候选物料化；真实 Creator 构建、可玩运行时、平台 SDK、开发者工具、真机、审核和商业结果仍需各自 receipt，不能由本轮证据继承或推定。
+
+## 全盘推进 Loop Contract（2026-07-27）
+
+```yaml
+objective: 除第三方注册、凭据、人工产品验收和平台外部写之外，把 Cocos 游戏制作链细化为本地可执行、可测试、可回放的工程闭环
+baseline: bde9d8310be50d5b90d2aeea983505da15c4ce0c + current scoped C1-C3 mutable slice
+authority:
+  max_side_effect: scoped_local_write_and_local_process
+  external_write: false
+  credentials: false
+  payment: false
+budgets:
+  max_iterations: 12
+  max_repeated_failure: 2
+acceptance:
+  - 可运行 GameplayKernel 与 ContentPack，确定性重放和负例通过
+  - 微信/抖音 PlatformPort 本地 stub 可运行且绝不伪造官方 SDK 成功
+  - 可生成摘要冻结的 Cocos Creator 3.8 项目模板
+  - 缺少 Creator 时 build preflight 结构化 fail-closed、零伪造产物
+  - 本地 runtime smoke、candidate manifest、handoff verifier 可真实执行
+  - 全套回归、Python/TS/JSON、fresh readback 与 scoped Git identity 收敛
+stop_conditions:
+  - success
+  - exact human or third-party boundary
+  - repeated-failure budget reached
+```
+
+非目标：不自动注册/登录 Cocos、抖音或微信；不输入 AppID/密钥；不上传、审核、发布、支付；不把本地 stub 冒充官方 SDK/Creator 运行时。

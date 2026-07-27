@@ -1,0 +1,145 @@
+[
+  {
+    "__type__": "cc.SceneAsset",
+    "_name": "main",
+    "_native": "",
+    "_objFlags": 0,
+    "asyncLoadAssets": false,
+    "scene": {
+      "__id__": 1
+    }
+  },
+  {
+    "__type__": "cc.Scene",
+    "_active": true,
+    "_children": [
+      {
+        "__id__": 2
+      }
+    ],
+    "_components": [],
+    "_globals": {
+      "__id__": 4
+    },
+    "_id": "a287c542-25f5-51d7-9c12-3868278f70cf",
+    "_name": "main",
+    "_objFlags": 0,
+    "_parent": null,
+    "_prefab": null,
+    "autoReleaseAssets": false
+  },
+  {
+    "__type__": "cc.Node",
+    "_active": true,
+    "_children": [],
+    "_components": [
+      {
+        "__id__": 3
+      }
+    ],
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": "GFBootstrapNode000000000",
+    "_layer": 33554432,
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "w": 1,
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_name": "GameBootstrap",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 1
+    },
+    "_prefab": null
+  },
+  {
+    "__prefab": null,
+    "__type__": "141a0pIHV1Sa5LtMJqnhJZi",
+    "_enabled": true,
+    "_id": "GFBootstrapComponent00000",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 2
+    },
+    "seed": 20260727
+  },
+  {
+    "__type__": "cc.SceneGlobals",
+    "_skybox": {
+      "__id__": 6
+    },
+    "ambient": {
+      "__id__": 5
+    },
+    "shadows": {
+      "__id__": 7
+    }
+  },
+  {
+    "__type__": "cc.AmbientInfo",
+    "_groundAlbedo": {
+      "__type__": "cc.Vec4",
+      "w": 1,
+      "x": 0.2,
+      "y": 0.2,
+      "z": 0.2
+    },
+    "_skyColor": {
+      "__type__": "cc.Vec4",
+      "w": 0.52,
+      "x": 0.2,
+      "y": 0.5,
+      "z": 0.8
+    },
+    "_skyIllum": 20000
+  },
+  {
+    "__type__": "cc.SkyboxInfo",
+    "_diffuseMapHDR": null,
+    "_diffuseMapLDR": null,
+    "_enabled": false,
+    "_envLightingType": 0,
+    "_envmap": null,
+    "_envmapHDR": null,
+    "_envmapLDR": null,
+    "_useHDR": true
+  },
+  {
+    "__type__": "cc.ShadowsInfo",
+    "_distance": 0,
+    "_enabled": false,
+    "_normal": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 1,
+      "z": 0
+    },
+    "_shadowColor": {
+      "__type__": "cc.Color",
+      "a": 76,
+      "b": 0,
+      "g": 0,
+      "r": 0
+    }
+  }
+]

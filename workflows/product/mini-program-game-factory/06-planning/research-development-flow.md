@@ -66,6 +66,21 @@ R4：平台适配 stub 契约；不伪造真实平台能力。
 R5：真实平台 SDK 与广告回调（需官方文档、账号和人工授权）。
 R6：送审/发布/指标观察（外部写，需精确授权）。
 
+### Cocos 制作与平台证据链
+
+C1：固定 Cocos Creator 3.8 integration profile，只记录已读回的引擎源码身份和默认关闭权限。
+C2：校验 `WorkPackage.compile_digest`，生成确定性 `CocosIntegrationPacket`。
+C3：物料化本地 candidate bundle，记录每个输入/生成文件 SHA-256；不修改真实 Cocos 工程。
+C4：读回 exact Creator 安装、版本、CLI 与模板摘要，冻结 Cocos 项目模板。
+C5：实现单关卡可玩闭环；GameplayKernel 不依赖 Cocos 场景状态，内容包可替换。
+C6：基于当前官方契约分别实现抖音 `tt.*` 与微信 `wx.*` PlatformAdapter。
+C7：使用 exact build target 构建，保存命令、exit code、产物目录和摘要。
+C8：开发者工具导入、模拟器编译、真机预览分别生成 receipt。
+C9：上传与审核只在精确人工授权后执行，并回读平台状态。
+C10：发布与回滚分别授权，回读线上版本和回滚结果。
+
+当前只完成 C1–C3；C4–C10 blocked。
+
 ## 质量门禁
 
 G0 Market：热度、机制和时间分别绑定原始来源；实时热度必须满足新鲜度、独立来源和直接试玩门禁。

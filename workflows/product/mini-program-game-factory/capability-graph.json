@@ -17,7 +17,15 @@
     "kernel_verified",
     "content_candidate",
     "work_package_compiled",
+    "cocos_integration_planned",
+    "cocos_candidate_materialized",
+    "node_runtime_smoke_passed",
+    "creator_project_candidate_materialized",
+    "build_preflight_blocked",
+    "ready_to_build",
     "runtime_verified",
+    "creator_build_verified",
+    "devtools_handoff_verified",
     "human_accepted",
     "platform_ready",
     "published",
@@ -29,132 +37,462 @@
       "id": "market-observatory",
       "kind": "workflow",
       "responsibility": "collect time-bounded rank, propagation and gameplay evidence without promoting model inference to market fact",
-      "consumes": ["source_registry", "direct_rank_capture", "direct_gameplay_capture", "public_market_source"],
-      "produces": ["market_snapshot", "mechanic_observations", "market_evidence_receipt"],
+      "consumes": [
+        "source_registry",
+        "direct_rank_capture",
+        "direct_gameplay_capture",
+        "public_market_source"
+      ],
+      "produces": [
+        "market_snapshot",
+        "mechanic_observations",
+        "market_evidence_receipt"
+      ],
       "side_effects": "external_read_and_local_write",
-      "gates": ["freshness", "canonical-source-registry", "canonical-evidence-level", "source-reference", "subject-binding", "independent-lineages", "local-digest-readback", "no-symlink-local-media", "human-media-content-review", "distinct-role-media", "direct-gameplay-freshness", "direct-gameplay", "clean-room-boundary"]
+      "gates": [
+        "freshness",
+        "canonical-source-registry",
+        "canonical-evidence-level",
+        "source-reference",
+        "subject-binding",
+        "independent-lineages",
+        "local-digest-readback",
+        "no-symlink-local-media",
+        "human-media-content-review",
+        "distinct-role-media",
+        "direct-gameplay-freshness",
+        "direct-gameplay",
+        "clean-room-boundary"
+      ]
     },
     {
       "id": "trend-synthesis",
       "kind": "workflow",
       "responsibility": "deduplicate products and cluster abstract mechanics across sources and observation periods",
-      "consumes": ["mechanic_observations", "market_evidence_receipt"],
-      "produces": ["trend_clusters", "kernel_hypothesis_candidates"],
-      "depends_on": ["market-observatory"],
+      "consumes": [
+        "mechanic_observations",
+        "market_evidence_receipt"
+      ],
+      "produces": [
+        "trend_clusters",
+        "kernel_hypothesis_candidates"
+      ],
+      "depends_on": [
+        "market-observatory"
+      ],
       "side_effects": "local_write",
-      "gates": ["dedupe", "cross-period-support", "non-copyable-expression-exclusion", "human-review"]
+      "gates": [
+        "dedupe",
+        "cross-period-support",
+        "non-copyable-expression-exclusion",
+        "human-review"
+      ]
     },
     {
       "id": "market-to-kernel-gate",
       "kind": "gate",
       "responsibility": "admit only hypotheses backed by verified_current_hot observations while keeping kernel freeze, work-package compilation and release authority closed",
-      "consumes": ["market_evidence_receipt", "kernel_hypothesis_candidates", "model_routing_contract"],
-      "produces": ["kernel_hypotheses", "market_loop_receipt"],
-      "depends_on": ["market-observatory", "trend-synthesis"],
+      "consumes": [
+        "market_evidence_receipt",
+        "kernel_hypothesis_candidates",
+        "model_routing_contract"
+      ],
+      "produces": [
+        "kernel_hypotheses",
+        "market_loop_receipt"
+      ],
+      "depends_on": [
+        "market-observatory",
+        "trend-synthesis"
+      ],
       "side_effects": "local_write",
-      "gates": ["verified-current-hot", "observation-reference", "canonical-model-routing", "protected-surface", "non-copyable-expression-exclusion", "deterministic-receipt"]
+      "gates": [
+        "verified-current-hot",
+        "observation-reference",
+        "canonical-model-routing",
+        "protected-surface",
+        "non-copyable-expression-exclusion",
+        "deterministic-receipt"
+      ]
     },
     {
       "id": "idea-intake",
       "kind": "atomic_module",
       "responsibility": "normalize an opportunity into a testable gameplay hypothesis",
-      "consumes": ["user_seed", "source_evidence", "trend_clusters", "kernel_hypotheses"],
-      "produces": ["gameplay_hypothesis"],
-      "depends_on": ["market-to-kernel-gate"],
+      "consumes": [
+        "user_seed",
+        "source_evidence",
+        "trend_clusters",
+        "kernel_hypotheses"
+      ],
+      "produces": [
+        "gameplay_hypothesis"
+      ],
+      "depends_on": [
+        "market-to-kernel-gate"
+      ],
       "side_effects": "none",
-      "gates": ["source-boundary", "market-status-boundary", "differentiation"]
+      "gates": [
+        "source-boundary",
+        "market-status-boundary",
+        "differentiation"
+      ]
     },
     {
       "id": "kernel-design",
       "kind": "workflow",
       "responsibility": "define deterministic rules independent of theme and platform",
-      "consumes": ["gameplay_hypothesis"],
-      "produces": ["gameplay_kernel"],
-      "depends_on": ["idea-intake"],
-      "subnodes": ["state-model", "action-model", "win-lose-model", "golden-cases"],
+      "consumes": [
+        "gameplay_hypothesis"
+      ],
+      "produces": [
+        "gameplay_kernel"
+      ],
+      "depends_on": [
+        "idea-intake"
+      ],
+      "subnodes": [
+        "state-model",
+        "action-model",
+        "win-lose-model",
+        "golden-cases"
+      ],
       "side_effects": "local_write",
-      "gates": ["kernel-schema", "determinism", "golden-cases"]
+      "gates": [
+        "kernel-schema",
+        "determinism",
+        "golden-cases"
+      ]
     },
     {
       "id": "content-factory",
       "kind": "workflow",
       "responsibility": "generate theme and level content against a frozen kernel",
-      "consumes": ["gameplay_kernel", "content_seed"],
-      "produces": ["content_pack_candidates"],
-      "depends_on": ["kernel-design"],
-      "subnodes": ["theme", "copy", "level-params", "asset-brief", "rights-metadata"],
+      "consumes": [
+        "gameplay_kernel",
+        "content_seed"
+      ],
+      "produces": [
+        "content_pack_candidates"
+      ],
+      "depends_on": [
+        "kernel-design"
+      ],
+      "subnodes": [
+        "theme",
+        "copy",
+        "level-params",
+        "asset-brief",
+        "rights-metadata"
+      ],
       "side_effects": "local_write",
-      "gates": ["content-schema", "protected-surface", "parameter-bounds", "rights", "dedupe"]
+      "gates": [
+        "content-schema",
+        "protected-surface",
+        "parameter-bounds",
+        "rights",
+        "dedupe"
+      ]
     },
     {
       "id": "work-package-compiler",
       "kind": "adapter",
       "responsibility": "compile frozen kernel plus approved content into deterministic implementation packets",
-      "consumes": ["gameplay_kernel", "content_pack", "model_route"],
-      "produces": ["work_package"],
-      "depends_on": ["kernel-design", "content-factory"],
+      "consumes": [
+        "gameplay_kernel",
+        "content_pack",
+        "model_route"
+      ],
+      "produces": [
+        "work_package"
+      ],
+      "depends_on": [
+        "kernel-design",
+        "content-factory"
+      ],
       "side_effects": "local_write",
-      "gates": ["canonical-model-routing", "deterministic-compile", "candidate-only-until-promotion-receipt", "provenance"]
+      "gates": [
+        "canonical-model-routing",
+        "deterministic-compile",
+        "candidate-only-until-promotion-receipt",
+        "provenance"
+      ]
+    },
+    {
+      "id": "cocos-integration",
+      "kind": "adapter",
+      "responsibility": "map a digest-valid engine-neutral work package into a deterministic local Cocos Creator 3.8 candidate without invoking Creator or platform tools",
+      "consumes": [
+        "work_package",
+        "cocos_integration_profile"
+      ],
+      "produces": [
+        "cocos_integration_packet",
+        "cocos_candidate_manifest"
+      ],
+      "depends_on": [
+        "work-package-compiler"
+      ],
+      "side_effects": "local_candidate_write",
+      "gates": [
+        "source-compile-digest",
+        "pinned-cocos-source",
+        "candidate-only",
+        "authority-closed",
+        "no-symlink-output",
+        "deterministic-materialization"
+      ]
+    },
+    {
+      "id": "gameplay-runtime-core",
+      "kind": "runtime",
+      "responsibility": "execute deterministic gameplay facts and candidate ContentPack normalization without Cocos Presentation or official platform SDK claims",
+      "consumes": [
+        "cocos_candidate_manifest",
+        "gameplay_kernel",
+        "content_pack"
+      ],
+      "produces": [
+        "node_runtime_smoke_receipt",
+        "platform_stub_results"
+      ],
+      "depends_on": [
+        "cocos-integration"
+      ],
+      "side_effects": "local_process",
+      "gates": [
+        "strict-typescript",
+        "fixed-seed",
+        "state-digest",
+        "official-sdk-false",
+        "reward-not-granted"
+      ]
+    },
+    {
+      "id": "cocos-project-generator",
+      "kind": "generator",
+      "responsibility": "materialize and verify a deterministic Creator 3.8 import candidate while keeping runtime/build authority closed",
+      "consumes": [
+        "cocos_candidate_manifest",
+        "node_tested_runtime_sources",
+        "pinned_serialization_reference"
+      ],
+      "produces": [
+        "creator_project_candidate",
+        "project_manifest"
+      ],
+      "depends_on": [
+        "gameplay-runtime-core"
+      ],
+      "side_effects": "local_candidate_write",
+      "gates": [
+        "complete-file-manifest",
+        "sha256-readback",
+        "no-symlink-files",
+        "typescript-typecheck",
+        "creator-import-pending"
+      ]
+    },
+    {
+      "id": "cocos-build-preflight",
+      "kind": "gate",
+      "responsibility": "produce a non-executing exact build plan only when project digest, non-symlink Creator executable, exact 3.8 readback, editor-exported config, AppID presence and explicit build authority converge",
+      "consumes": [
+        "project_manifest",
+        "creator_executable",
+        "creator_version_readback",
+        "editor_exported_build_config",
+        "appid_presence",
+        "build_authority"
+      ],
+      "produces": [
+        "build_preflight_receipt",
+        "ready_to_build_or_blocked"
+      ],
+      "depends_on": [
+        "cocos-project-generator"
+      ],
+      "side_effects": "none",
+      "gates": [
+        "project-digest",
+        "creator-cli",
+        "exact-version",
+        "config-target-appid-binding",
+        "no-secret-output",
+        "exact-authority"
+      ]
+    },
+    {
+      "id": "devtools-handoff-verifier",
+      "kind": "gate",
+      "responsibility": "verify artifact digest and human Creator/DevTools/simulator/device readbacks without granting upload, review or publish authority",
+      "consumes": [
+        "creator_build_artifact",
+        "human_handoff_receipt"
+      ],
+      "produces": [
+        "devtools_handoff_verified"
+      ],
+      "depends_on": [
+        "cocos-creator-build"
+      ],
+      "side_effects": "read_only",
+      "gates": [
+        "strict-fields",
+        "artifact-sha256",
+        "platform-target-project-binding",
+        "real-device-readback",
+        "no-open-authority",
+        "external-stages-not-started"
+      ]
     },
     {
       "id": "implementation",
       "kind": "workflow",
       "responsibility": "implement bounded vertical slices from frozen work packages",
-      "consumes": ["work_package"],
-      "produces": ["code", "tests", "runtime_receipt"],
-      "depends_on": ["work-package-compiler"],
+      "consumes": [
+        "work_package"
+      ],
+      "produces": [
+        "code",
+        "tests",
+        "runtime_receipt"
+      ],
+      "depends_on": [
+        "gameplay-runtime-core"
+      ],
       "side_effects": "local_write",
-      "gates": ["tests", "runtime-smoke", "performance"]
+      "gates": [
+        "tests",
+        "runtime-smoke",
+        "performance"
+      ]
+    },
+    {
+      "id": "cocos-creator-build",
+      "kind": "gate",
+      "responsibility": "require an exact Creator installation, official build target and digest-bound build receipt before any platform artifact claim",
+      "consumes": [
+        "ready_to_build",
+        "exact_creator_version",
+        "editor_exported_build_config"
+      ],
+      "produces": [
+        "creator_build_receipt",
+        "platform_build_candidate"
+      ],
+      "depends_on": [
+        "cocos-build-preflight"
+      ],
+      "side_effects": "local_process_requires_exact_authority",
+      "gates": [
+        "creator-installation-readback",
+        "exact-version",
+        "official-build-target",
+        "exit-zero",
+        "artifact-digest"
+      ]
     },
     {
       "id": "platform-adapter",
       "kind": "adapter",
       "responsibility": "bind lifecycle, storage and ads to an official platform contract",
-      "consumes": ["runtime", "official_platform_contract"],
-      "produces": ["platform_build"],
-      "depends_on": ["implementation"],
+      "consumes": [
+        "runtime",
+        "official_platform_contract"
+      ],
+      "produces": [
+        "platform_build"
+      ],
+      "depends_on": [
+        "devtools-handoff-verifier"
+      ],
       "side_effects": "external_read",
-      "gates": ["official-contract", "typed-errors", "reward-idempotency"]
+      "gates": [
+        "official-contract",
+        "typed-errors",
+        "reward-idempotency"
+      ]
     },
     {
       "id": "release-gate",
       "kind": "gate",
       "responsibility": "block submission or publish until objective and human evidence converges",
-      "consumes": ["platform_build", "evidence_bundle"],
-      "produces": ["ready_or_blocked"],
-      "depends_on": ["platform-adapter"],
+      "consumes": [
+        "platform_build",
+        "evidence_bundle"
+      ],
+      "produces": [
+        "ready_or_blocked"
+      ],
+      "depends_on": [
+        "platform-adapter"
+      ],
       "side_effects": "none",
-      "outcomes": {"pass": "platform_ready", "warn": "review", "fail": "repair", "blocked": "human_gate"}
+      "outcomes": {
+        "pass": "platform_ready",
+        "warn": "review",
+        "fail": "repair",
+        "blocked": "human_gate"
+      }
     }
   ],
   "agent_wrappers": [
     {
       "id": "cheap-market-extractor",
       "role": "creator",
-      "wraps": ["market-observatory", "trend-synthesis"],
+      "wraps": [
+        "market-observatory",
+        "trend-synthesis"
+      ],
       "authority": "local_candidate_write",
-      "cannot_do": ["invent_evidence", "write_content_review", "promote_verified_hot", "freeze_kernel", "publish"]
+      "cannot_do": [
+        "invent_evidence",
+        "write_content_review",
+        "promote_verified_hot",
+        "freeze_kernel",
+        "publish"
+      ]
     },
     {
       "id": "cheap-content-worker",
       "role": "creator",
-      "wraps": ["content-factory"],
+      "wraps": [
+        "content-factory"
+      ],
       "authority": "local_write",
-      "cannot_do": ["modify_kernel", "modify_monetization", "modify_platform_contract", "publish"]
+      "cannot_do": [
+        "modify_kernel",
+        "modify_monetization",
+        "modify_platform_contract",
+        "publish"
+      ]
     },
     {
       "id": "kernel-architect",
       "role": "creator",
-      "wraps": ["kernel-design"],
+      "wraps": [
+        "kernel-design"
+      ],
       "authority": "local_write",
-      "cannot_do": ["self_certify", "publish"]
+      "cannot_do": [
+        "self_certify",
+        "publish"
+      ]
     },
     {
       "id": "evidence-verifier",
       "role": "verifier",
-      "wraps": ["market-to-kernel-gate", "work-package-compiler", "release-gate"],
+      "wraps": [
+        "market-to-kernel-gate",
+        "work-package-compiler",
+        "release-gate"
+      ],
       "authority": "read_only",
-      "cannot_do": ["repair_own_finding", "publish"]
+      "cannot_do": [
+        "repair_own_finding",
+        "publish"
+      ]
     }
   ],
   "cannot_prove": [

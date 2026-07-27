@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "status": "blocked",
+  "platform": null,
+  "project_digest": null,
+  "creator_version": null,
+  "creator_build_target": null,
+  "artifact": {
+    "path": null,
+    "sha256": null,
+    "bytes": null
+  },
+  "readbacks": {
+    "creator_build_exit_zero": false,
+    "devtools_import": false,
+    "simulator_compile": false,
+    "real_device_preview": false
+  },
+  "external_stages": {
+    "upload": "not_started",
+    "review": "not_started",
+    "publish": "not_started",
+    "rollback": "not_started"
+  },
+  "authority": {
+    "may_invoke_devtools": false,
+    "may_submit_platform": false,
+    "may_publish": false
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "actions": [
+    "rotate_node",
+    "swap_adjacent",
+    "request_hint"
+  ],
+  "golden_cases": [
+    "single_path_win",
+    "short_circuit_not_win",
+    "zero_moves_loss",
+    "same_seed_same_board",
+    "content_swap_same_result"
+  ],
+  "kernel_id": "circuit-untangle",
+  "lose_condition": "moves_left_zero_and_not_won",
+  "score_rule": "base_plus_moves_left_minus_hints",
+  "seed_policy": "explicit_integer_seed",
+  "state_fields": [
+    "grid",
+    "power_sources",
+    "targets",
+    "moves_left",
+    "seed"
+  ],
+  "tunable_parameters": {
+    "grid_size": {
+      "max": 8,
+      "min": 3
+    },
+    "moves": {
+      "max": 80,
+      "min": 5
+    },
+    "target_count": {
+      "max": 12,
+      "min": 1
+    }
+  },
+  "version": "0.1.0",
+  "win_condition": "all_required_targets_connected_and_no_short_circuit"
+}

@@ -1,0 +1,120 @@
+{
+  "authority": {
+    "creator_runtime_verified": false,
+    "may_build_platform": false,
+    "may_invoke_devtools": false,
+    "may_publish": false
+  },
+  "closure_state": "creator_import_pending",
+  "creator_version": "3.8.0",
+  "files": [
+    {
+      "bytes": 29,
+      "path": ".gitignore",
+      "sha256": "f74d8d63af83fba2fda2bd7861766132897b27521bfd70703bfb68895b0c7e38"
+    },
+    {
+      "bytes": 422,
+      "path": "README.md",
+      "sha256": "5e6bd2a41b28b9c3c2d10169344525c549a70449443460945ca872b7a73fb026"
+    },
+    {
+      "bytes": 1800,
+      "path": "assets/game-factory/GameBootstrap.ts",
+      "sha256": "a2fbf703c811f7545860a5503fb0add4724ba0871536aaf06f1bde73dea95c0a"
+    },
+    {
+      "bytes": 267,
+      "path": "assets/game-factory/GameBootstrap.ts.meta",
+      "sha256": "890730937ad4eb66ff5b9bb9b5455cd91a20b8c1b4c3e47c19344330902a29cf"
+    },
+    {
+      "bytes": 2929,
+      "path": "assets/game-factory/core/content-pack.ts",
+      "sha256": "f95b439fdc312337d3bf54df5cdec54f49b4e0eb98922f5dd982de37d20938f7"
+    },
+    {
+      "bytes": 6735,
+      "path": "assets/game-factory/core/gameplay-kernel.ts",
+      "sha256": "c5d34a893b7533662556185de7b7e0756fa1b022aaafbd5c1bd592d1d84b2ffe"
+    },
+    {
+      "bytes": 1376,
+      "path": "assets/game-factory/core/local-platform-stub.ts",
+      "sha256": "1b82219135ea5fba075a3bb795ad675aa187cdfce3c9708ddadd87590898a21a"
+    },
+    {
+      "bytes": 933,
+      "path": "assets/game-factory/core/platform-port.ts",
+      "sha256": "8a96b1ec95b183bcc8392fb3c19b1c2b1faa3552b329f7b137e740d5603d3eae"
+    },
+    {
+      "bytes": 2465,
+      "path": "assets/scenes/main.scene",
+      "sha256": "1187385c87c36f4e35568c5ad3f12dfcc7d143bbd8464fb630ce745b7875377c"
+    },
+    {
+      "bytes": 181,
+      "path": "assets/scenes/main.scene.meta",
+      "sha256": "bf0370e1c6fd6128d5880b9d6316a4dd5e3001dfc51d524cdc505d0f19525ccc"
+    },
+    {
+      "bytes": 278,
+      "path": "build-intents/bytedance-mini-game.json",
+      "sha256": "eaee33f7e00dcfc6d3c725b0e36c613927ef51e2eafaf4cea11c63b538f739e9"
+    },
+    {
+      "bytes": 269,
+      "path": "build-intents/wechatgame.json",
+      "sha256": "637d6b1081950660b981311ddb874eaa090c86d63752836a172ec25d7550de9d"
+    },
+    {
+      "bytes": 171,
+      "path": "package.json",
+      "sha256": "2dd7e2604a023f725ce503bc6db4e3a5606da23bf5982cf0acbeaf824b3e1fa5"
+    },
+    {
+      "bytes": 426,
+      "path": "source/content-pack.json",
+      "sha256": "2033bcafbb56862b4fa1cd668a00864f8e55fd4de3b9bd98d5979bf83833829b"
+    },
+    {
+      "bytes": 821,
+      "path": "source/gameplay-kernel.json",
+      "sha256": "9f5b731218baa6fbf5a3b863b8e0e72605c4270e6639bd4c2a204189fb81281f"
+    },
+    {
+      "bytes": 420,
+      "path": "tsconfig.json",
+      "sha256": "a4011fd311173dde5f8846de0a2143d4a12f3628d34d593e7f1808bf7834bd40"
+    },
+    {
+      "bytes": 143,
+      "path": "typecheck/README.md",
+      "sha256": "85540adc58c56cfcac6e9aa89da248f95dc626083ee754b98d51b53b14f65a1d"
+    },
+    {
+      "bytes": 355,
+      "path": "typecheck/cc.d.ts",
+      "sha256": "b679ff46a13d5dae91dbe75f6a9c1c15ec6fd13ac183f380ac07f983d08f0e19"
+    }
+  ],
+  "platform_targets": {
+    "douyin": "bytedance-mini-game",
+    "wechat": "wechatgame"
+  },
+  "project_digest": "54198717068524d21f2935fca3d7a4ac0efafa3097dfce2f7d79abd77d95e268",
+  "project_uuid": "3e365b28-7d73-5744-9c9e-182b70c92448",
+  "scene_uuid": "a287c542-25f5-51d7-9c12-3868278f70cf",
+  "schema_version": 1,
+  "script_type": "141a0pIHV1Sa5LtMJqnhJZi",
+  "script_uuid": "141a0a48-1d5d-526b-92ed-309aa7849662",
+  "serialization_source": {
+    "commit": "5acd26218d3915169679a288ebf65b9ca1f96027",
+    "creator_version": "3.8.0",
+    "project": "physics-3d",
+    "repository": "https://github.com/cocos/cocos-example-projects"
+  },
+  "source_candidate_manifest_digest": "f265dbe7e92e5e9f799ad0be2baafd6635c4b9bdd04e8c156dfa75aba7a1e301",
+  "source_compile_digest": "5cf24b21beab6258d18b07291406c3c5ff04d00ad83e4fd0666bf6ff890eb6e0"
+}
