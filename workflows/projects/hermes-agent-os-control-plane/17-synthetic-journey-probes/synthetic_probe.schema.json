@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hermes-synthetic-probe-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "probe_id", "enabled", "mode", "steps"],
+  "properties": {
+    "schema": {"const": "hermes_synthetic_probe_v1"},
+    "probe_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,79}$"},
+    "enabled": {"const": false},
+    "mode": {"const": "local_read_only"},
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "adapter", "target", "assertions"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"},
+          "adapter": {"const": "json_readback"},
+          "target": {"type": "string", "minLength": 1, "maxLength": 240},
+          "assertions": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 32
+          }
+        }
+      }
+    }
+  }
+}

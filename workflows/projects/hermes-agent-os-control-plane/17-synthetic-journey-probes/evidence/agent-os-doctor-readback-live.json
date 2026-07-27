@@ -1,0 +1,53 @@
+{
+  "completed_at": "2026-07-27T09:29:23.250229Z",
+  "exclude_from_learning": true,
+  "exclude_from_user_analytics": true,
+  "executed": true,
+  "findings": [],
+  "global_certification_claimed": false,
+  "journey_target_read_attempts": 1,
+  "journey_target_reads_succeeded": 1,
+  "mode": "local_read_only",
+  "negative_assertion_basis": "closed_adapter_set_plus_static_source_test",
+  "negative_assertions": {
+    "no_arbitrary_command_execution": true,
+    "no_external_dispatch": true,
+    "no_lifecycle_write": true,
+    "no_memory_or_learning_ingestion": true,
+    "no_model_call": true,
+    "no_scheduler_or_worker_write": true,
+    "no_secret_export": true
+  },
+  "ok": true,
+  "probe_contract_sha256": "50ef63da5f780070cef1f36956b324d58ca1d198bcb1bf06141efde8541be323",
+  "probe_id": "agent-os.doctor-readback",
+  "runner_sha256": "d317c562b82d0b4b99d542f5d1ec65f2d6beafa9d9a4018a118c4105ef8c9cb3",
+  "schema": "hermes_synthetic_probe_receipt_v1",
+  "side_effects_observed": [
+    "local_read"
+  ],
+  "started_at": "2026-07-27T09:29:23.249575Z",
+  "status": "pass",
+  "steps": [
+    {
+      "adapter": "json_readback",
+      "assertions": [
+        {
+          "passed": true,
+          "path": "ok"
+        },
+        {
+          "passed": true,
+          "path": "findings"
+        }
+      ],
+      "findings": [],
+      "id": "doctor-current",
+      "status": "pass",
+      "target": "06-projection/doctor_report.json",
+      "target_sha256": "b6de5f63025f91970cceaea679404336908fa5791e4013502534165f50344c36"
+    }
+  ],
+  "synthetic": true,
+  "would_execute": true
+}

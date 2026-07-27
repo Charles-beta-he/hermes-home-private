@@ -1,0 +1,17 @@
+{
+  "schema": "hermes_synthetic_probe_v1",
+  "probe_id": "agent-os.doctor-readback",
+  "enabled": false,
+  "mode": "local_read_only",
+  "steps": [
+    {
+      "id": "doctor-current",
+      "adapter": "json_readback",
+      "target": "06-projection/doctor_report.json",
+      "assertions": {
+        "ok": true,
+        "findings": []
+      }
+    }
+  ]
+}
