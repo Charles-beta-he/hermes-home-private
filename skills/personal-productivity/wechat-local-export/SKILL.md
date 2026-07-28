@@ -1,7 +1,7 @@
 ---
 name: wechat-local-export
 "description": "Use when the user asks Hermes to assess, prepare, export, decrypt, refresh, or query their own macOS WeChat contacts or chat history. Starts with a zero-data-access doctor and enforces separate human gates for app re-signing, process-memory access, decryption, plaintext queries, and MCP exposure. Do not use for third-party data, remote accounts, WeChat media, or bypassing access controls."
-version: 1.0.0
+version: 1.0.1
 author: Hermes Agent
 license: MIT
 platforms: [macos]
@@ -44,6 +44,19 @@ Counter-triggers:
 - Generic macOS permissions → use an Apple/macOS workflow.
 - Remote access or data belonging to others → refuse the access path.
 
+## Independent-Review Hardening
+
+**Scope:** every route through this user-local skill that inspects readiness or may later prepare privileged local-data access.
+
+**Applicability:** apply when a requested workflow could inspect process state, derive secrets, decrypt protected local data, create plaintext, or register a persistent query surface.
+
+**Anti-conditions:** this section does not grant access to any application, process, key, database, account, plaintext output, or MCP configuration; it does not apply to ordinary user-provided plaintext files already inside an explicitly authorized read scope.
+
+- Doctor mode must not call `pgrep`, inspect login state, enumerate account/data roots, or read any key/database path.
+- Never read, hash, print, summarize, paste, upload, or place keys or process-memory bytes into model context. A key hash is derived secret material and is also forbidden.
+- A future privileged phase must not execute mutable code from a user-writable or network-download directory. It requires a separately reviewed installation boundary plus fresh digest, owner, and mode readback.
+- A future MCP surface must be project/session-local stdio, separately authorized, and bounded; user/global registration remains forbidden.
+
 ## Mandatory Phase Gates
 
 Authorization for one phase never opens the next.
@@ -57,7 +70,7 @@ Authorization for one phase never opens the next.
 | Source database read | Closed | Exact local root and read-only scope |
 | Plaintext export | Closed | Exact output root, permissions, retention, and rollback |
 | Plaintext query | Closed | Exact purpose/scope; redact unrelated content |
-| MCP registration | Closed | Separate authorization; local user scope only |
+| MCP registration | Closed | Separate authorization; project/session-local stdio only, never user/global scope |
 | External delivery | Closed | Separate exact target and payload gate |
 
 ## Default Doctor

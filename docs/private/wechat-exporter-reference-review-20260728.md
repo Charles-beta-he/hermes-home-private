@@ -4,7 +4,7 @@
 - Pinned commit: `c491e4648ddd36bb6fd1d13b78207d08d033c493`
 - Pinned tree: `b64966b591f8c4de2e9b8baece9f8a595c034363`
 - Review date: 2026-07-28
-- Status: doctor_capability_installed_export_blocked
+- Status: doctor_capability_installed_upstream_independently_rejected_export_blocked
 
 ## Spec Gate
 
@@ -68,6 +68,8 @@ Give Hermes a local, user-controlled macOS capability to assess readiness and, o
 
 ## Risk Classification
 
+Severity semantics: the three `P0` rows below are **capability/acceptance blockers** for the requested real-export claim, not evidence of malicious code. The independent source auditor found no proven active exfiltration, backdoor, or immediately exploitable security P0 in the pinned two-file repository; it classified the concrete security/privacy defects as P1 and returned an overall **REJECT** for direct adoption/execution.
+
 | Severity | Finding | Consequence | Decision |
 |---|---|---|---|
 | P0 | Exact local WeChat 4.1.11 key extraction is explicitly unsupported by the pinned available implementation | Re-signing/scanning cannot produce a verified export and can damage app identity/login permissions | Do not execute |
@@ -79,6 +81,16 @@ Give Hermes a local, user-controlled macOS capability to assess readiness and, o
 | P1 | MCP tools return contact identifiers and message content broadly | Private data can be pulled into arbitrary model turns | Require allowlists, limits, local-only scope, and separate authorization |
 | P2 | Recipe tree lacks the `LICENSE` file linked from README | Copying has incomplete license evidence | Reimplement guarded contract; do not copy |
 | P2 | Local system Python is 3.9.6 while pinned query server requires 3.10+ | Installer/runtime mismatch | Dependency preparation remains closed |
+
+## Independent Review
+
+- Verdict on copying or executing the upstream recipe: **REJECT**.
+- Bound source: commit `c491e4648ddd36bb6fd1d13b78207d08d033c493`, tree `b64966b591f8c4de2e9b8baece9f8a595c034363`.
+- File digests: `README.md=4a81e97c9e00200f57f7a3c0a554b47694280e8a29a8fa079cad00c176bbc221`; `SKILL.md=1475823d7965d8c85c310c04e289dab310d5183041f41d9293e82104d401fe85`.
+- Independent P1 classes: unpinned network-to-root supply chain; destructive app re-signing without restoration; persistent key/plaintext exposure; global MCP/model-context exposure; fixed-path overwrite/symlink risk; irreproducible version drift; incomplete license closure.
+- No independent claim was made that the code is actively malicious. The reject verdict is based on reproducibility, authority, privacy, integrity, and licensing boundaries.
+- Full independent evidence: `/Users/charles/.hermes/cache/delegation/subagent-summary-0-20260728_194605_670658.txt`.
+- Independent safe-adaptation design agreed with the implemented default: readiness only, no real-data enumeration, no privileged execution, no key visibility, no MCP registration, and no network during sensitive phases. It proposed additional offline supply-chain/gate/receipt utilities for a future implementation slice; these are intentionally deferred while no compatible legal export implementation exists.
 
 ## Objective / Model / Path
 
@@ -106,7 +118,8 @@ Create one user-local Hermes skill with an owned readiness script and explicit p
 |---|---|---|
 | Upstream source accessible and pinned | Git HEAD/tree readback above | PASS |
 | Local prerequisites identified without reading chats | app/version/tool readback | PASS |
-| Upstream security/data-flow audited | source-line inventory above; independent review pending | MAIN_REVIEW_PASS |
+| Upstream security/data-flow audited | source-line inventory plus independent pinned-source review | MAIN_REVIEW_PASS_UPSTREAM_REJECT |
+| Independent direct-adoption verdict | pinned source auditor | REJECT_UPSTREAM |
 | Guarded Hermes skill installed | `wechat-local-export` skill readback | PASS |
 | Doctor performs zero real-data reads | 5 focused tests + live JSON smoke; `data_access_attempted=false` | PASS |
 | Real export works on WeChat 4.1.11 | requires later human gates and real-data acceptance | NOT_CLAIMED |
