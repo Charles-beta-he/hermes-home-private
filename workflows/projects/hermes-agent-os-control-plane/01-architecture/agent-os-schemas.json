@@ -1,0 +1,136 @@
+{
+  "schema_version": "agent_os_canonical_contracts_v1",
+  "project": "hermes-agent-os-control-plane",
+  "source_refs": {
+    "domain_model": "hermes-agent/docs/private/autonomous-runtime-governance/04-core-domain-model.md",
+    "authority": "hermes-agent/docs/private/autonomous-runtime-governance/07-authority-and-side-effect-governance.md"
+  },
+  "side_effect_levels": {
+    "S0": "no side effect / advisory",
+    "S1": "local read",
+    "S2": "local reversible path-scoped write with readback",
+    "S3": "external read within privacy, rate, and authentication boundaries",
+    "S4": "external write requiring exact target, payload, AuthorityGrant, receipt, and readback",
+    "S5": "publish, deploy, or push requiring exact target, rollback, and post-action readback",
+    "S6": "destructive action requiring exact resource, backup or restore path, and human gate",
+    "S7": "physical, payment, or credential boundary; secret and payment entry remain human-only"
+  },
+  "default_off_side_effects": [
+    "S4",
+    "S5",
+    "S6",
+    "S7"
+  ],
+  "intent_record_required": [
+    "id",
+    "source",
+    "source_ref",
+    "objective",
+    "expected_effect",
+    "risk_class",
+    "side_effect_expectation",
+    "authority_scope",
+    "ttl",
+    "idempotency_key",
+    "desired_terminal_states",
+    "context_refs"
+  ],
+  "capability_node_required": [
+    "id",
+    "kind",
+    "responsibility",
+    "consumes",
+    "produces",
+    "preconditions",
+    "depends_on",
+    "subnodes",
+    "side_effects",
+    "evidence_requirements",
+    "gates",
+    "closure_states",
+    "cannot_prove"
+  ],
+  "agent_wrapper_required": [
+    "id",
+    "wraps",
+    "role",
+    "authority",
+    "policy",
+    "cannot_do",
+    "produces"
+  ],
+  "authority_grant_required": [
+    "id",
+    "intent_id",
+    "granted_by",
+    "scope",
+    "allowed_side_effects",
+    "exact_target",
+    "payload_hash",
+    "rollback_or_escape",
+    "expires_at",
+    "status"
+  ],
+  "execution_lease_required": [
+    "id",
+    "intent_id",
+    "capability_node_id",
+    "executor",
+    "lease_scope",
+    "started_at",
+    "heartbeat_at",
+    "ttl_seconds",
+    "status"
+  ],
+  "evidence_node_required": [
+    "id",
+    "kind",
+    "supports_claims",
+    "source_ref",
+    "trust_level",
+    "observed_at",
+    "expires_at",
+    "verification_status",
+    "sensitivity"
+  ],
+  "gate_decision_required": [
+    "id",
+    "intent_id",
+    "gate_type",
+    "inputs",
+    "required_evidence",
+    "result",
+    "reason",
+    "reviewer_votes",
+    "created_at",
+    "expires_at"
+  ],
+  "projection_record_required": [
+    "id",
+    "intent_id",
+    "target_surface",
+    "projected_state",
+    "receipt",
+    "readback_status"
+  ],
+  "compensation_record_required": [
+    "id",
+    "intent_id",
+    "reason",
+    "action",
+    "idempotency_key",
+    "max_attempts",
+    "attempt",
+    "result",
+    "receipt"
+  ],
+  "closure_record_required": [
+    "intent_id",
+    "status",
+    "claims",
+    "evidence_refs",
+    "projection_refs",
+    "residual_risks",
+    "next_boundary"
+  ]
+}
