@@ -1,0 +1,153 @@
+{
+  "authority": {
+    "core_mutation": false,
+    "credential_entry": false,
+    "external_dispatch": false,
+    "publish_deploy_push": false,
+    "runtime_mutation": false,
+    "scheduler_write": false,
+    "taskpool_write": false
+  },
+  "claims": [
+    {
+      "decision": "accepted",
+      "evidence": [
+        {
+          "file": "backend/app/services/orchestrator.py",
+          "line_range": [
+            640,
+            769
+          ],
+          "quote_sha256": "dcf3cf7628ff1e940c565cd95fca5ca8c6ebbffdeeb103f826bad50aad4b8716",
+          "supports": true
+        }
+      ],
+      "id": "C-001",
+      "source_boundary": "pinned source bytes only",
+      "text": "Scope delivery runs deterministic tests, QA, Review, bounded revision, one PR and knowledge write-back."
+    },
+    {
+      "decision": "accepted",
+      "evidence": [
+        {
+          "file": "backend/app/services/agent_backends/base.py",
+          "line_range": [
+            1,
+            31
+          ],
+          "quote_sha256": "1be720f4019763fb40a03a15efbb8a461643c9d783c8c80ff5d21da7f9be9a6f",
+          "supports": true
+        }
+      ],
+      "id": "C-002",
+      "source_boundary": "pinned source bytes only",
+      "text": "Agent backends share one result contract and preserve unavailable usage as unknown."
+    },
+    {
+      "decision": "accepted",
+      "evidence": [
+        {
+          "file": "backend/app/services/knowledge/pipeline.py",
+          "line_range": [
+            1,
+            108
+          ],
+          "quote_sha256": "13ec3738c9e357a9ef25ba05c6c7169aea8b819bb51da044e189f54692bbf158",
+          "supports": true
+        }
+      ],
+      "id": "C-003",
+      "source_boundary": "pinned source bytes only",
+      "text": "Repository knowledge keeps JSON truth, TF-IDF fallback, commit-bound symbol map and preserved delivery lessons."
+    },
+    {
+      "decision": "accepted",
+      "evidence": [
+        {
+          "file": "backend/app/services/orchestrator.py",
+          "line_range": [
+            640,
+            656
+          ],
+          "quote_sha256": "171e5b84d70e0ae45d6817ec58ba7af006042b463b708b7999bc27c2e6741451",
+          "supports": true
+        }
+      ],
+      "id": "C-004",
+      "source_boundary": "pinned source bytes only",
+      "text": "Pre-existing test failures are baselined so only new failures are regressions."
+    },
+    {
+      "decision": "source_risk",
+      "evidence": [
+        {
+          "file": "backend/app/services/orchestrator.py",
+          "line_range": [
+            681,
+            756
+          ],
+          "quote_sha256": "91c9a94f14cbc054f18a82bb635f1a5c21c7cf19d0c89dc0c27b500d184ab60a",
+          "supports": true
+        }
+      ],
+      "id": "C-005",
+      "source_boundary": "pinned source bytes only",
+      "text": "Only explicit QA FAIL or Review CHANGES REQUESTED triggers repair; inconclusive/error text can fall through to PR."
+    },
+    {
+      "decision": "source_risk",
+      "evidence": [
+        {
+          "file": "backend/app/services/git_ops.py",
+          "line_range": [
+            41,
+            62
+          ],
+          "quote_sha256": "dda00e66f234322d43fd46f3ca40752764ae494b27daadf3773bb68013658212",
+          "supports": true
+        }
+      ],
+      "id": "C-006",
+      "source_boundary": "pinned source bytes only",
+      "text": "A tokenized push URL is passed in argv while generic command errors join argv into exception text."
+    },
+    {
+      "decision": "source_risk",
+      "evidence": [
+        {
+          "file": "backend/app/services/git_ops.py",
+          "line_range": [
+            375,
+            402
+          ],
+          "quote_sha256": "d6f812b6fd0577e964900d68fa84a8af4aaede029b4a37e9a6c9d2ad428a2cf9",
+          "supports": true
+        }
+      ],
+      "id": "C-007",
+      "source_boundary": "pinned source bytes only",
+      "text": "The push path directly passes the tokenized URL and force-pushes the branch."
+    }
+  ],
+  "local_verification": {
+    "boundary": "descriptive upstream verification; not Hermes production certification",
+    "same_commit_prior_isolated_run": {
+      "coverage_total_percent": 41,
+      "pytest": "159 passed",
+      "python": "3.12.13",
+      "ruff": "All checks passed"
+    }
+  },
+  "review_id": "autodev-studio-20260729",
+  "schema": "hermes_reference_evidence_v1",
+  "source": {
+    "commit": "6cef552bc69fba7876fe9813ab96fc001ab66970",
+    "default_branch": "main",
+    "license": "MIT",
+    "license_sha256": "7d3f34d6e8d5998bf40a0390aae6c8d432eeb990cf3f00c23cf749a0407ca9b7",
+    "local_checkout": "/Users/charles/.hermes/runs/autodev-studio-reference-review-20260729/source",
+    "remote": "https://github.com/krishagarwal314/autodev-studio.git",
+    "repo": "https://github.com/krishagarwal314/autodev-studio",
+    "tree": "f8379d001cc20ef2eacaa4c3b82ca684b0a384cb"
+  }
+}

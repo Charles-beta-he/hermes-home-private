@@ -1,0 +1,439 @@
+{
+  "agent_wrappers": [
+    {
+      "authority": "read_only",
+      "cannot_do": [
+        "install",
+        "runtime import",
+        "external write"
+      ],
+      "id": "reference_reviewer",
+      "policy": [
+        "read_only",
+        "claim-linked"
+      ],
+      "produces": [
+        "claim_map"
+      ],
+      "role": "reviewer",
+      "wraps": [
+        "source_reference_intake"
+      ]
+    },
+    {
+      "authority": "local_write",
+      "cannot_do": [
+        "global promotion",
+        "runtime routing"
+      ],
+      "id": "knowledge_capsule_builder",
+      "policy": [
+        "project-scoped",
+        "freshness-bound"
+      ],
+      "produces": [
+        "knowledge_capsule",
+        "candidate_lesson"
+      ],
+      "role": "creator",
+      "wraps": [
+        "repo_knowledge_capsule",
+        "delivery_evidence_writeback"
+      ]
+    },
+    {
+      "authority": "local_write",
+      "cannot_do": [
+        "push",
+        "deploy",
+        "close on inconclusive"
+      ],
+      "id": "delivery_orchestrator",
+      "policy": [
+        "candidate-only",
+        "bounded context"
+      ],
+      "produces": [
+        "candidate receipt"
+      ],
+      "role": "orchestrator",
+      "wraps": [
+        "symbol_grounded_context_slice",
+        "provider_adapter_contract"
+      ]
+    },
+    {
+      "authority": "read_only",
+      "cannot_do": [
+        "execute effects",
+        "grant authority"
+      ],
+      "id": "independent_verifier",
+      "policy": [
+        "producer-independent",
+        "exact identity",
+        "fail-closed"
+      ],
+      "produces": [
+        "verdict receipt"
+      ],
+      "role": "verifier",
+      "wraps": [
+        "baseline_failure_differential",
+        "typed_fail_closed_delivery_gate"
+      ]
+    }
+  ],
+  "authority_boundary": {
+    "allowed": [
+      "external_read",
+      "local_document_write",
+      "local_readonly_validation"
+    ],
+    "closed": true,
+    "prohibited": [
+      "install",
+      "import",
+      "runtime",
+      "core mutation",
+      "taskpool lifecycle",
+      "scheduler",
+      "external dispatch",
+      "publish deploy push",
+      "credential entry"
+    ]
+  },
+  "capability_nodes": [
+    {
+      "agent_wrappers": [
+        "reference_reviewer"
+      ],
+      "can_be_delegated_to_agent": true,
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": false,
+      "cannot_prove": [
+        "runtime safety"
+      ],
+      "closure_states": [
+        "verified",
+        "stale",
+        "blocked"
+      ],
+      "consumes": [
+        "repo_url"
+      ],
+      "depends_on": [],
+      "gates": [
+        "source_identity_gate"
+      ],
+      "id": "source_reference_intake",
+      "kind": "atomic_module",
+      "preconditions": [],
+      "produces": [
+        "source_evidence"
+      ],
+      "responsibility": "Pin source identity and claims",
+      "side_effects": "none",
+      "subnodes": []
+    },
+    {
+      "agent_wrappers": [
+        "knowledge_capsule_builder"
+      ],
+      "can_be_delegated_to_agent": true,
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": true,
+      "cannot_prove": [
+        "business correctness",
+        "execution authority"
+      ],
+      "closure_states": [
+        "current",
+        "stale",
+        "error"
+      ],
+      "consumes": [
+        "pinned_repo",
+        "delivery_evidence"
+      ],
+      "depends_on": [
+        "source_reference_intake"
+      ],
+      "gates": [
+        "knowledge_freshness_gate"
+      ],
+      "id": "repo_knowledge_capsule",
+      "kind": "composite_module",
+      "preconditions": [],
+      "produces": [
+        "knowledge_capsule",
+        "freshness_receipt"
+      ],
+      "responsibility": "Project static facts, symbols, freshness and delivery lessons",
+      "side_effects": "local_write",
+      "subnodes": [
+        "static_fact_analyzer",
+        "symbol_map_builder",
+        "retrieval_projection",
+        "delivery_writeback"
+      ]
+    },
+    {
+      "agent_wrappers": [
+        "delivery_orchestrator"
+      ],
+      "can_be_delegated_to_agent": true,
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": false,
+      "cannot_prove": [
+        "change correctness"
+      ],
+      "closure_states": [
+        "grounded",
+        "partial",
+        "blocked"
+      ],
+      "consumes": [
+        "task_spec",
+        "knowledge_capsule"
+      ],
+      "depends_on": [
+        "repo_knowledge_capsule"
+      ],
+      "gates": [
+        "artifact_identity_gate"
+      ],
+      "id": "symbol_grounded_context_slice",
+      "kind": "atomic_module",
+      "preconditions": [],
+      "produces": [
+        "bounded_context_slice"
+      ],
+      "responsibility": "Bind affected files/symbols to current bytes",
+      "side_effects": "none",
+      "subnodes": []
+    },
+    {
+      "agent_wrappers": [
+        "independent_verifier"
+      ],
+      "can_be_delegated_to_agent": true,
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": false,
+      "cannot_prove": [
+        "untested semantics"
+      ],
+      "closure_states": [
+        "pass",
+        "fail",
+        "inconclusive"
+      ],
+      "consumes": [
+        "baseline_test_receipt",
+        "candidate_test_receipt"
+      ],
+      "depends_on": [],
+      "gates": [
+        "baseline_diff_gate"
+      ],
+      "id": "baseline_failure_differential",
+      "kind": "atomic_module",
+      "preconditions": [],
+      "produces": [
+        "new_failure_set"
+      ],
+      "responsibility": "Compare baseline and candidate failure identities",
+      "side_effects": "none",
+      "subnodes": []
+    },
+    {
+      "agent_wrappers": [
+        "delivery_orchestrator"
+      ],
+      "can_be_delegated_to_agent": true,
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": false,
+      "cannot_prove": [
+        "provider authenticity"
+      ],
+      "closure_states": [
+        "complete",
+        "failed",
+        "unknown_usage"
+      ],
+      "consumes": [
+        "provider_result"
+      ],
+      "depends_on": [],
+      "gates": [
+        "provider_receipt_gate"
+      ],
+      "id": "provider_adapter_contract",
+      "kind": "adapter",
+      "preconditions": [],
+      "produces": [
+        "normalized_run_receipt"
+      ],
+      "responsibility": "Normalize provider result while preserving unknown usage",
+      "side_effects": "none",
+      "subnodes": []
+    },
+    {
+      "agent_wrappers": [
+        "independent_verifier"
+      ],
+      "can_be_delegated_to_agent": true,
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": false,
+      "cannot_prove": [
+        "authority",
+        "human acceptance"
+      ],
+      "closure_states": [
+        "pass",
+        "fail",
+        "blocked",
+        "no_verdict",
+        "stale"
+      ],
+      "consumes": [
+        "artifact_identity",
+        "test_verdict",
+        "qa_verdict",
+        "review_verdict",
+        "authority_grant"
+      ],
+      "depends_on": [
+        "baseline_failure_differential"
+      ],
+      "gates": [
+        "delivery_verdict_gate",
+        "side_effect_authority_gate"
+      ],
+      "id": "typed_fail_closed_delivery_gate",
+      "kind": "gate",
+      "preconditions": [],
+      "produces": [
+        "delivery_decision"
+      ],
+      "responsibility": "Permit readiness only on current-artifact explicit PASS",
+      "side_effects": "none",
+      "subnodes": []
+    },
+    {
+      "agent_wrappers": [
+        "knowledge_capsule_builder"
+      ],
+      "can_be_delegated_to_agent": true,
+      "can_be_used_as_module": true,
+      "can_be_used_as_workflow": false,
+      "cannot_prove": [
+        "global reusable procedure"
+      ],
+      "closure_states": [
+        "written",
+        "skipped",
+        "blocked"
+      ],
+      "consumes": [
+        "delivery_receipt",
+        "review_findings"
+      ],
+      "depends_on": [
+        "typed_fail_closed_delivery_gate"
+      ],
+      "gates": [
+        "writeback_provenance_gate"
+      ],
+      "id": "delivery_evidence_writeback",
+      "kind": "atomic_module",
+      "preconditions": [],
+      "produces": [
+        "candidate_lesson"
+      ],
+      "responsibility": "Persist evidence-bound lessons without promoting model prose",
+      "side_effects": "local_write",
+      "subnodes": []
+    }
+  ],
+  "evidence_refs": [
+    "evidence/source-evidence.json",
+    "evidence/timestamped-source-packet-20260729.md"
+  ],
+  "gates": [
+    {
+      "id": "source_identity_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    },
+    {
+      "id": "knowledge_freshness_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    },
+    {
+      "id": "artifact_identity_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    },
+    {
+      "id": "baseline_diff_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    },
+    {
+      "id": "provider_receipt_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    },
+    {
+      "id": "delivery_verdict_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    },
+    {
+      "id": "side_effect_authority_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    },
+    {
+      "id": "writeback_provenance_gate",
+      "outcomes": {
+        "blocked": "human_gate",
+        "fail": "retry_or_stop",
+        "pass": "continue",
+        "warn": "continue_with_warning"
+      }
+    }
+  ],
+  "id": "autodev-studio-to-hermes-20260729",
+  "schema": "workflow_capability_graph_v1"
+}

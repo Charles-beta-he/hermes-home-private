@@ -1,0 +1,41 @@
+{
+  "created": [
+    {
+      "anti_condition": "One-off grep-localized task or stale source identity.",
+      "applicability": "Repeated work on a non-trivial repository where localization dominates cost.",
+      "atom_id": "repo-knowledge-capsule-contract",
+      "evidence_claims": [
+        "C-003",
+        "C-004"
+      ],
+      "falsifier": "Offline replay shows equal/higher retries or worse acceptance.",
+      "status": "proposal_only"
+    },
+    {
+      "anti_condition": "Pure advisory report.",
+      "applicability": "Any automated ready/PR/done/publish projection.",
+      "atom_id": "fail-closed-typed-delivery-verdict",
+      "evidence_claims": [
+        "C-005"
+      ],
+      "falsifier": "All current consumers already reject error/inconclusive/missing/stale and bind PASS to current bytes.",
+      "status": "proposal_only"
+    },
+    {
+      "anti_condition": "Complete authenticated usage.",
+      "applicability": "Providers with partial usage metadata.",
+      "atom_id": "provider-usage-unknown-contract",
+      "evidence_claims": [
+        "C-002"
+      ],
+      "falsifier": "Consumer cannot distinguish unknown from zero.",
+      "status": "proposal_only"
+    }
+  ],
+  "promotion": {
+    "performed": false,
+    "reason": "Proposal only; measure existing Hermes overlap first."
+  },
+  "review_id": "autodev-studio-20260729",
+  "schema": "experience_ratchet_proposal_manifest_v1"
+}
