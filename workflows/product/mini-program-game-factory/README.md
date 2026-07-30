@@ -10,6 +10,8 @@
 - `source-registry.json`：平台榜单、试玩、官方案例和第三方数据源的采集频率与边界。
 - `hot-game-observation-schema.json`：市场快照及机制卡约束。
 - `model-routing.json`：低成本/标准/高推理路由及升级规则。
+- `gameplay-architecture-profiles.json`：共享应用壳与七类主玩法 simulation profile 的 canonical registry；用时间、空间、状态、结算和 authority topology 选型，明确视觉风格不是架构输入。
+- `07-build/gameplay_architecture_profiles.py`：对一个且仅一个 primary profile、canonical topology、辅助系统和 profile digest 执行 fail-closed 校验；caller 不能注入替代 registry。
 - `04-prd/game-product-contract.md`：GameplayKernel、ContentPack、平台和商业化分层契约。
 - `06-planning/research-development-flow.md`：从玩法假设到发布观察的研发流程。
 - `07-build/work_package_compiler.py`：确定性单候选编译器。
@@ -37,7 +39,7 @@
 
 ```bash
 cd /Users/charles/.hermes/workflows/product/mini-program-game-factory/07-build
-python3 -m unittest -v test_batch_compile.py test_work_package_compiler.py
+python3 -m unittest -v test_gameplay_architecture_profiles.py test_batch_compile.py test_work_package_compiler.py
 python3 -m unittest -v test_direct_capture_intake.py test_hot_game_observatory.py test_market_loop_gate.py
 python3 direct_capture_intake.py \
   ../evidence/direct-capture-draft.json \
@@ -102,4 +104,6 @@ python3 batch_compile.py \
 
 低成本模型输出始终是 candidate。通过相同的 schema、protected-surface、参数边界、rights、golden、运行时与人工门禁之前，不获得合并、送审或发布权限。
 
-当前最高工程证据状态：`creator_project_candidate_materialized`，并行证明了 `official_platform_adapter_contract_tested`（仅 fake-SDK 本地契约，不是官方 SDK E2E）；两者均属于本地 mutable slice，尚未获得新 commit/tree 独立认证。当前最高市场状态：`recent_market_lead`，没有游戏满足 `verified_current_hot`。已证明摘要绑定的 Cocos 3.8 integration packet、Node GameplayKernel smoke、LocalPlatformStub、wx/tt adapter candidate 契约和包含 adapter source 的 19-file Creator import candidate；当前 preflight 以 exit 2、`command=null` 精确阻塞于 Creator CLI/version、AppID、editor-exported config 和 build authority。未证明 Creator 已导入/构建、官方平台 SDK E2E、开发者工具、真机、审核、留存、收入或玩法乐趣。
+视觉主题、像素/卡通/写实、美术资产、动画和文案属于 ContentPack/表现层，不能推导或覆盖主玩法架构。每个 GameplayKernel 必须显式绑定一个 canonical primary simulation profile；共享壳只拥有生命周期、输入抽象、音频、存储、平台生命周期、遥测、验收与交付适配，不拥有主时钟、玩法状态转移或胜负结算。辅助系统可以引用其他 canonical profile，但不能形成第二个 primary clock。
+
+当前最高工程证据状态：`creator_project_candidate_materialized`，并行证明了 `official_platform_adapter_contract_tested`（仅 fake-SDK 本地契约，不是官方 SDK E2E）；这些状态只属于本地 candidate slice，仍须以精确 commit/tree 独立审查作为该 slice 的认证门禁。当前最高市场状态：`recent_market_lead`，没有游戏满足 `verified_current_hot`。已证明摘要绑定的 Cocos 3.8 integration packet、Node GameplayKernel smoke、LocalPlatformStub、wx/tt adapter candidate 契约和包含 adapter source 的 19-file Creator import candidate；当前 preflight 以 exit 2、`command=null` 精确阻塞于 Creator CLI/version、AppID、editor-exported config 和 build authority。未证明 Creator 已导入/构建、官方平台 SDK E2E、开发者工具、真机、审核、留存、收入或玩法乐趣。

@@ -34,15 +34,20 @@
 
 ### Business rules
 1. GameplayKernel 只定义状态、动作、转移、胜负、评分和随机种子；不得包含题材文案或平台 SDK。
-2. ContentPack 只提供主题、美术引用、文案、关卡参数和本地化；不得改写状态转移或商业化规则。
-3. PlatformAdapter 负责生命周期、存储、分享、广告和合规 API；不得改变玩法结果。
-4. MonetizationPolicy 单独版本化；广告只能位于明确的可选触点，不得由内容包暗中插入。
-5. 每个生成产物必须记录 source_spec、model_route、prompt/template 版本、输入摘要和门禁结果。
-6. 低成本模型只处理 allowlist 中的任务；任何 protected_surface 变更必须升级。
-7. 不通过门禁的批次隔离到 rejected，不得自动修饰为 PASS。
+2. 每个 GameplayKernel 必须显式绑定一个 canonical primary gameplay architecture profile；该 profile 由时间、空间、状态、结算和 authority topology 决定，而不是由像素/卡通/写实等视觉风格决定。
+3. 共享应用壳只拥有生命周期、输入抽象、音频、存储、平台生命周期、遥测、验收和交付适配；不得拥有 primary simulation clock、玩法状态转移或胜负/评分结算。
+4. ContentPack 只提供主题、美术引用、文案、关卡参数和本地化；不得改写 architecture_profile、状态转移或商业化规则。
+5. 一款游戏只能有一个 primary profile/clock；辅助系统只能引用 canonical profile，不能重复主 profile、声明第二主时钟或改变主 topology。
+6. PlatformAdapter 负责生命周期、存储、分享、广告和合规 API；不得改变玩法结果。
+7. MonetizationPolicy 单独版本化；广告只能位于明确的可选触点，不得由内容包暗中插入。
+8. 每个生成产物必须记录 source_spec、model_route、prompt/template 版本、输入摘要、architecture registry/profile 摘要和门禁结果。
+9. 低成本模型只处理 allowlist 中的任务；任何 protected_surface 变更必须升级。
+10. 不通过门禁的批次隔离到 rejected，不得自动修饰为 PASS。
 
 ### Invariants
 - 相同 kernel 版本、关卡参数与随机种子产生相同结果。
+- 相同 canonical architecture registry、profile version 与 topology 产生相同 profile digest；unknown/missing/extra 字段、profile mismatch 或 caller-supplied alternate registry 均 fail closed。
+- 更换 visual style、theme、copy、assets、animation 或 shader 不改变 architecture profile digest。
 - 更换 ContentPack 不改变胜负、评分、概率和广告频率。
 - 更换平台适配器不改变核心玩法结果。
 - 所有候选变体都能追溯到冻结的玩法规格。

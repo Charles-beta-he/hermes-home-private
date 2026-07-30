@@ -4,6 +4,18 @@
     "swap_adjacent",
     "request_hint"
   ],
+  "architecture_profile": {
+    "auxiliary_systems": [],
+    "profile_id": "grid-turn",
+    "profile_version": 1,
+    "topology": {
+      "authority_model": "local_only",
+      "resolution_model": "reducer_state_machine",
+      "space_model": "grid",
+      "state_model": "entity_grid",
+      "time_model": "turn_based"
+    }
+  },
   "golden_cases": [
     "single_path_win",
     "short_circuit_not_win",

@@ -6,6 +6,28 @@
         "model_self_report_is_evidence": false,
         "same_gates_for_all_models": true
       },
+      "architecture_profile": {
+        "auxiliary_systems": [],
+        "primary_clock_count": 1,
+        "primary_profile_id": "grid-turn",
+        "profile_digest": "c73d84456319ab82545527cf187ec5a097f5e3ee25e7ba1ae5b21e7d1845a7f9",
+        "profile_version": 1,
+        "registry_digest": "52c35b35efc54d54ee445be7703010b4583f4152defefe9dc08e0f537f9ed1aa",
+        "registry_id": "mini-game-gameplay-architecture-profiles",
+        "registry_schema_version": 1,
+        "topology": {
+          "authority_model": "local_only",
+          "resolution_model": "reducer_state_machine",
+          "space_model": "grid",
+          "state_model": "entity_grid",
+          "time_model": "turn_based"
+        },
+        "verification_gates": [
+          "legal_moves",
+          "state_transition_cases",
+          "deterministic_replay"
+        ]
+      },
       "authority": {
         "may_enter_credentials": false,
         "may_pay": false,
@@ -13,7 +35,7 @@
         "may_submit_platform": false
       },
       "closure_state": "work_package_compiled",
-      "compile_digest": "5cf24b21beab6258d18b07291406c3c5ff04d00ad83e4fd0666bf6ff890eb6e0",
+      "compile_digest": "30ca771eeb8bfcc06af7e94568e75d1bc91a2396a8e841b3a0682155622b70bb",
       "content": {
         "assets": [
           {
@@ -48,6 +70,18 @@
           "swap_adjacent",
           "request_hint"
         ],
+        "architecture_profile": {
+          "auxiliary_systems": [],
+          "profile_id": "grid-turn",
+          "profile_version": 1,
+          "topology": {
+            "authority_model": "local_only",
+            "resolution_model": "reducer_state_machine",
+            "space_model": "grid",
+            "state_model": "entity_grid",
+            "time_model": "turn_based"
+          }
+        },
         "golden_cases": [
           "single_path_win",
           "short_circuit_not_win",
@@ -83,7 +117,7 @@
         "version": "0.1.0",
         "win_condition": "all_required_targets_connected_and_no_short_circuit"
       },
-      "kernel_digest": "734752fe58dd25ef3c66a0749cfd51d118f36b6e53fb2a76c1093a6316213363",
+      "kernel_digest": "b66f991fa515a879455c2f199e825a4d28f2899b9ae4761af86c147be8b6a410",
       "model_route": "low_cost",
       "required_gates": [
         "schema",
@@ -93,7 +127,7 @@
         "dedupe",
         "deterministic_compile"
       ],
-      "schema_version": 1,
+      "schema_version": 2,
       "work_package_id": "circuit-untangle@0.1.0::data-center-repair-zh-cn"
     },
     {
@@ -102,6 +136,28 @@
         "model_self_report_is_evidence": false,
         "same_gates_for_all_models": true
       },
+      "architecture_profile": {
+        "auxiliary_systems": [],
+        "primary_clock_count": 1,
+        "primary_profile_id": "grid-turn",
+        "profile_digest": "c73d84456319ab82545527cf187ec5a097f5e3ee25e7ba1ae5b21e7d1845a7f9",
+        "profile_version": 1,
+        "registry_digest": "52c35b35efc54d54ee445be7703010b4583f4152defefe9dc08e0f537f9ed1aa",
+        "registry_id": "mini-game-gameplay-architecture-profiles",
+        "registry_schema_version": 1,
+        "topology": {
+          "authority_model": "local_only",
+          "resolution_model": "reducer_state_machine",
+          "space_model": "grid",
+          "state_model": "entity_grid",
+          "time_model": "turn_based"
+        },
+        "verification_gates": [
+          "legal_moves",
+          "state_transition_cases",
+          "deterministic_replay"
+        ]
+      },
       "authority": {
         "may_enter_credentials": false,
         "may_pay": false,
@@ -109,7 +165,7 @@
         "may_submit_platform": false
       },
       "closure_state": "work_package_compiled",
-      "compile_digest": "a28d64571ccc5376cb8f7c6a21edaf775db41c135f6e7f95dc68a1375fbda9ef",
+      "compile_digest": "0168b6ec62a72b2763f6b35f81f20c64aadd0cf46193c9506a4dd07b559df742",
       "content": {
         "assets": [
           {
@@ -144,6 +200,18 @@
           "swap_adjacent",
           "request_hint"
         ],
+        "architecture_profile": {
+          "auxiliary_systems": [],
+          "profile_id": "grid-turn",
+          "profile_version": 1,
+          "topology": {
+            "authority_model": "local_only",
+            "resolution_model": "reducer_state_machine",
+            "space_model": "grid",
+            "state_model": "entity_grid",
+            "time_model": "turn_based"
+          }
+        },
         "golden_cases": [
           "single_path_win",
           "short_circuit_not_win",
@@ -179,7 +247,7 @@
         "version": "0.1.0",
         "win_condition": "all_required_targets_connected_and_no_short_circuit"
       },
-      "kernel_digest": "734752fe58dd25ef3c66a0749cfd51d118f36b6e53fb2a76c1093a6316213363",
+      "kernel_digest": "b66f991fa515a879455c2f199e825a4d28f2899b9ae4761af86c147be8b6a410",
       "model_route": "low_cost",
       "required_gates": [
         "schema",
@@ -189,7 +257,7 @@
         "dedupe",
         "deterministic_compile"
       ],
-      "schema_version": 1,
+      "schema_version": 2,
       "work_package_id": "circuit-untangle@0.1.0::space-station-repair-zh-cn"
     }
   ],
@@ -197,7 +265,7 @@
     "may_publish": false,
     "may_submit_platform": false
   },
-  "batch_digest": "c482efd446d3422c33bc22ebbb2869add9eeb4365e7d78a4eda1d63841bd5e64",
+  "batch_digest": "d5e75a8bfdb97adcad4d3c9fd09afd1fd14488c569f703208a7d108898ff2c33",
   "rejected": [
     {
       "candidate_id": "invalid-oversized-grid",

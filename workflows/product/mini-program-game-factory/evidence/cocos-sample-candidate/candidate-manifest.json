@@ -16,20 +16,20 @@
       "sha256": "2033bcafbb56862b4fa1cd668a00864f8e55fd4de3b9bd98d5979bf83833829b"
     },
     "generated/gameplay-kernel.json": {
-      "bytes": 821,
-      "sha256": "9f5b731218baa6fbf5a3b863b8e0e72605c4270e6639bd4c2a204189fb81281f"
+      "bytes": 1152,
+      "sha256": "58b85163c0067d10f8097df888f296ffe3bfb9497a7524363dadd25b738f8713"
     },
     "input/work-package.json": {
-      "bytes": 2398,
-      "sha256": "f4f45e6dc3fce69aa0a48efaf78aa70f9e1b3f6a07b8750996419cd14e2979d7"
+      "bytes": 3517,
+      "sha256": "86ad1bf45c7b9e2682c2e2fc8140847842d8c43e5284bae04f0a175cbce0a486"
     },
     "integration-packet.json": {
       "bytes": 1974,
-      "sha256": "ed4eb47fe941f7e05a451e1b3f87ad6ec0da3b9675aa5509c285bd7576dfd54a"
+      "sha256": "393af138f44ca26617472e1f47b933bbd9ebd2a464a5bc84aaf2ec78d984fd76"
     }
   },
-  "integration_digest": "beddfa7f5f1375c80f808cafb2a6cb9b4dacc8d25dd04b29ba80087b550e214a",
-  "manifest_digest": "f265dbe7e92e5e9f799ad0be2baafd6635c4b9bdd04e8c156dfa75aba7a1e301",
+  "integration_digest": "2e7b301bdd418d13e4426973b3b118b0800aae92f127403cfe6dbd6cc61ef04d",
+  "manifest_digest": "d9cdf50ad416c878a1faaea5b32e19332e07430e2b540defe3d2c728d8aaaf63",
   "schema_version": 1,
-  "source_compile_digest": "5cf24b21beab6258d18b07291406c3c5ff04d00ad83e4fd0666bf6ff890eb6e0"
+  "source_compile_digest": "30ca771eeb8bfcc06af7e94568e75d1bc91a2396a8e841b3a0682155622b70bb"
 }

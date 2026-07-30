@@ -14,6 +14,7 @@
     "market_to_kernel_gate_evaluated",
     "kernel_hypothesis",
     "seed",
+    "architecture_profile_bound",
     "kernel_draft",
     "kernel_verified",
     "content_candidate",
@@ -144,6 +145,7 @@
       "cannot_satisfy": [
         "verified-current-hot",
         "market-to-kernel-gate",
+        "architecture-profile-selection",
         "kernel-freeze",
         "work-package-compilation",
         "cocos-build",
@@ -175,17 +177,42 @@
       ]
     },
     {
+      "id": "architecture-profile-selection",
+      "kind": "gate",
+      "responsibility": "bind exactly one canonical primary gameplay simulation profile from time, space, state, resolution and authority topology; visual presentation cannot select or override it",
+      "consumes": [
+        "gameplay_hypothesis",
+        "gameplay_architecture_profile_registry"
+      ],
+      "produces": [
+        "gameplay_architecture_binding"
+      ],
+      "depends_on": [
+        "idea-intake"
+      ],
+      "side_effects": "none",
+      "gates": [
+        "canonical-registry",
+        "exact-profile-schema",
+        "single-primary-clock",
+        "topology-match",
+        "presentation-separation",
+        "profile-verification-gates"
+      ]
+    },
+    {
       "id": "kernel-design",
       "kind": "workflow",
-      "responsibility": "define deterministic rules independent of theme and platform",
+      "responsibility": "define deterministic rules against an explicit canonical gameplay architecture profile, independent of theme and platform",
       "consumes": [
-        "gameplay_hypothesis"
+        "gameplay_hypothesis",
+        "gameplay_architecture_binding"
       ],
       "produces": [
         "gameplay_kernel"
       ],
       "depends_on": [
-        "idea-intake"
+        "architecture-profile-selection"
       ],
       "subnodes": [
         "state-model",
@@ -195,6 +222,7 @@
       ],
       "side_effects": "local_write",
       "gates": [
+        "architecture-profile-binding",
         "kernel-schema",
         "determinism",
         "golden-cases"
@@ -233,9 +261,11 @@
     {
       "id": "work-package-compiler",
       "kind": "adapter",
-      "responsibility": "compile frozen kernel plus approved content into deterministic implementation packets",
+      "responsibility": "compile a frozen kernel with a canonical gameplay architecture binding plus approved content into deterministic implementation packets",
       "consumes": [
         "gameplay_kernel",
+        "gameplay_architecture_profile_registry",
+        "gameplay_architecture_binding",
         "content_pack",
         "model_route"
       ],
@@ -243,11 +273,13 @@
         "work_package"
       ],
       "depends_on": [
+        "architecture-profile-selection",
         "kernel-design",
         "content-factory"
       ],
       "side_effects": "local_write",
       "gates": [
+        "architecture-profile-digest",
         "canonical-model-routing",
         "deterministic-compile",
         "candidate-only-until-promotion-receipt",

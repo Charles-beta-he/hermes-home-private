@@ -4,6 +4,7 @@
   "default_route": "escalate",
   "protected_surfaces": [
     "state_fields",
+    "architecture_profile",
     "actions",
     "win_condition",
     "lose_condition",

@@ -52,6 +52,13 @@ highest_evidenced_state: creator_project_candidate_materialized
   artifact: 04-prd/game-product-contract.md
   evidence: capability-graph.json
 
+- stage: gameplay-architecture-profile
+  status: local_contract_candidate
+  artifact: gameplay-architecture-profiles.json, 07-build/gameplay_architecture_profiles.py
+  closure: architecture_profile_bound
+  boundary: one canonical primary simulation profile selected by time/space/state/resolution/authority topology; shared shell and presentation fields cannot own or override gameplay semantics; registry does not implement seven runtimes or prove fun/production readiness
+  verification: RED missing-module failure followed by 52/52 focused profile/compiler/batch/adapter tests; full local regression 169 Python + 17 runtime-core + 15 stack-path-runner PASS; producer exact/approved field inventories, nested scalar/object/list and finite-number semantics, WorkPackage and integration-packet canonical replay, symlink-ancestor rejection, and hostile-input negatives PASS; deterministic generated artifact byte parity PASS; exact commit/tree independent review remains the certification gate for this local candidate slice
+
 - stage: risk
   status: accepted
   artifact: 05-risk/risk-register.md
@@ -64,10 +71,10 @@ highest_evidenced_state: creator_project_candidate_materialized
 
 - stage: build
   status: local_runtime_project_and_platform_adapter_candidates_verified_build_preflight_blocked
-  artifact: 07-build/cocos_work_package_adapter.py, 07-build/cocos_project_generator.py, 07-build/cocos_delivery_gate.py, runtime/cocos/runtime-core/
+  artifact: 07-build/gameplay_architecture_profiles.py, 07-build/work_package_compiler.py, 07-build/cocos_work_package_adapter.py, 07-build/cocos_project_generator.py, 07-build/cocos_delivery_gate.py, runtime/cocos/runtime-core/
   evidence: evidence/cocos-sample-candidate/candidate-manifest.json, evidence/cocos-node-runtime-smoke.json, evidence/cocos-creator-project-candidate/project-manifest.json, evidence/cocos-build-preflight-blocked.json, evidence/cocos-creator-cli-source.json
   closure: creator_project_candidate_materialized + official_platform_adapter_contract_tested
-  certification: current mutable slice; prior local-contract certificate does not cover these files
+  certification: local candidate slice; prior local-contract certificate does not cover these files and cannot be inherited by the architecture-profile changes
   node runtime: fixed-seed GameplayKernel smoke passed; LocalPlatformStub reports official_sdk=false and grants no reward
   platform adapters: wx/tt adapters are local contract-tested with fake SDKs, strict runtime SDK shape checks, one-time login-code semantics and reward completion checks; official SDK E2E not executed
   Creator project: deterministic 19-file import candidate verified, including the official adapter candidate source; Creator import/build not executed

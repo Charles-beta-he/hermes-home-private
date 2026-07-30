@@ -18,7 +18,7 @@
     "source_repository": "https://github.com/cocos/cocos-engine",
     "version_line": "3.8"
   },
-  "integration_digest": "beddfa7f5f1375c80f808cafb2a6cb9b4dacc8d25dd04b29ba80087b550e214a",
+  "integration_digest": "2e7b301bdd418d13e4426973b3b118b0800aae92f127403cfe6dbd6cc61ef04d",
   "integration_id": "circuit-untangle@0.1.0::data-center-repair-zh-cn::cocos-creator-3.8",
   "materialization_contract": {
     "cocos_project_mutation": false,
@@ -58,5 +58,5 @@
     "real_device_preview_receipt"
   ],
   "schema_version": 1,
-  "source_compile_digest": "5cf24b21beab6258d18b07291406c3c5ff04d00ad83e4fd0666bf6ff890eb6e0"
+  "source_compile_digest": "30ca771eeb8bfcc06af7e94568e75d1bc91a2396a8e841b3a0682155622b70bb"
 }

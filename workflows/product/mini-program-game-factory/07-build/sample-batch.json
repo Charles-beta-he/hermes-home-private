@@ -3,6 +3,18 @@
     "kernel": {
       "kernel_id": "circuit-untangle",
       "version": "0.1.0",
+      "architecture_profile": {
+        "profile_id": "grid-turn",
+        "profile_version": 1,
+        "topology": {
+          "time_model": "turn_based",
+          "space_model": "grid",
+          "state_model": "entity_grid",
+          "resolution_model": "reducer_state_machine",
+          "authority_model": "local_only"
+        },
+        "auxiliary_systems": []
+      },
       "state_fields": [
         "grid",
         "power_sources",
@@ -65,7 +77,6 @@
     },
     "generation": {
       "task_type": "generate_theme_variants",
-      "model_tier": "low_cost",
       "confidence": 0.92,
       "template_version": "content-pack-v1"
     }
@@ -74,6 +85,18 @@
     "kernel": {
       "kernel_id": "circuit-untangle",
       "version": "0.1.0",
+      "architecture_profile": {
+        "profile_id": "grid-turn",
+        "profile_version": 1,
+        "topology": {
+          "time_model": "turn_based",
+          "space_model": "grid",
+          "state_model": "entity_grid",
+          "resolution_model": "reducer_state_machine",
+          "authority_model": "local_only"
+        },
+        "auxiliary_systems": []
+      },
       "state_fields": [
         "grid",
         "power_sources",
@@ -136,7 +159,6 @@
     },
     "generation": {
       "task_type": "generate_theme_variants",
-      "model_tier": "low_cost",
       "confidence": 0.92,
       "template_version": "content-pack-v1"
     }
@@ -145,6 +167,18 @@
     "kernel": {
       "kernel_id": "circuit-untangle",
       "version": "0.1.0",
+      "architecture_profile": {
+        "profile_id": "grid-turn",
+        "profile_version": 1,
+        "topology": {
+          "time_model": "turn_based",
+          "space_model": "grid",
+          "state_model": "entity_grid",
+          "resolution_model": "reducer_state_machine",
+          "authority_model": "local_only"
+        },
+        "auxiliary_systems": []
+      },
       "state_fields": [
         "grid",
         "power_sources",
@@ -207,7 +241,6 @@
     },
     "generation": {
       "task_type": "generate_theme_variants",
-      "model_tier": "low_cost",
       "confidence": 0.92,
       "template_version": "content-pack-v1"
     }

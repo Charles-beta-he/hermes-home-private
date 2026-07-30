@@ -4,9 +4,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Set
+
+from gameplay_architecture_profiles import (
+    ArchitectureProfileError,
+    validate_kernel_architecture,
+)
 
 
 class CompileError(ValueError):
@@ -73,6 +79,93 @@ def _require(mapping: Mapping[str, Any], fields: Iterable[str], section: str) ->
         raise CompileError(f"{section} missing required fields: {', '.join(missing)}")
 
 
+def _require_exact(mapping: Mapping[str, Any], fields: Iterable[str], section: str) -> None:
+    expected = set(fields)
+    if set(mapping) != expected:
+        raise CompileError(f"{section} must use the exact field inventory {sorted(expected)}")
+
+
+def _require_approved(
+    mapping: Mapping[str, Any], required: Iterable[str], optional: Iterable[str], section: str
+) -> None:
+    required_fields = set(required)
+    approved_fields = required_fields | set(optional)
+    if not required_fields.issubset(mapping) or not set(mapping).issubset(approved_fields):
+        raise CompileError(f"{section} must use the exact field inventory from {sorted(approved_fields)}")
+
+
+def _require_nonempty_str(value: Any, name: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise CompileError(f"{name} must be a nonempty string")
+    return value
+
+
+def _require_unique_nonempty_strings(value: Any, name: str) -> list[str]:
+    if not isinstance(value, list) or not value:
+        raise CompileError(f"{name} must be a nonempty list")
+    if any(not isinstance(item, str) or not item for item in value):
+        raise CompileError(f"{name} must contain only nonempty strings")
+    if len(value) != len(set(value)):
+        raise CompileError(f"{name} must not contain duplicates")
+    return value
+
+
+def _validate_kernel_values(kernel: Mapping[str, Any]) -> None:
+    for field in ["kernel_id", "version", "win_condition", "lose_condition", "score_rule", "seed_policy"]:
+        _require_nonempty_str(kernel[field], f"kernel.{field}")
+    for field in ["state_fields", "actions", "golden_cases"]:
+        _require_unique_nonempty_strings(kernel[field], f"kernel.{field}")
+    tunables = kernel["tunable_parameters"]
+    if not isinstance(tunables, Mapping) or not tunables:
+        raise CompileError("kernel.tunable_parameters must be a nonempty object")
+    for name, bounds in tunables.items():
+        _require_nonempty_str(name, "kernel.tunable_parameters key")
+        if not isinstance(bounds, Mapping) or set(bounds) != {"min", "max"}:
+            raise CompileError(f"kernel tunable {name} must contain exactly min and max")
+        low, high = bounds["min"], bounds["max"]
+        if any(
+            not isinstance(value, (int, float))
+            or isinstance(value, bool)
+            or not math.isfinite(value)
+            for value in [low, high]
+        ):
+            raise CompileError(f"kernel tunable {name} bounds must be finite numbers")
+        if low > high:
+            raise CompileError(f"kernel tunable {name} min must not exceed max")
+
+
+def _validate_content_values(kernel: Mapping[str, Any], content: Mapping[str, Any]) -> None:
+    for field in ["content_id", "kernel_id", "theme", "locale"]:
+        _require_nonempty_str(content[field], f"content.{field}")
+    if "visual_style" in content:
+        _require_nonempty_str(content["visual_style"], "content.visual_style")
+    copy_fields = content["copy"]
+    if not isinstance(copy_fields, Mapping) or not copy_fields:
+        raise CompileError("content.copy must be a nonempty object")
+    for key, value in copy_fields.items():
+        _require_nonempty_str(key, "content.copy key")
+        _require_nonempty_str(value, f"content.copy.{key}")
+    parameters = content["level_parameters"]
+    tunables = kernel["tunable_parameters"]
+    if not isinstance(parameters, Mapping) or set(parameters) != set(tunables):
+        raise CompileError("content.level_parameters must exactly match kernel tunable parameters")
+    for name, value in parameters.items():
+        if (
+            not isinstance(value, (int, float))
+            or isinstance(value, bool)
+            or not math.isfinite(value)
+        ):
+            raise CompileError(f"content level parameter {name} must be a finite number")
+    assets = content["assets"]
+    if not isinstance(assets, list):
+        raise CompileError("content.assets must be a list")
+    for index, asset in enumerate(assets):
+        if not isinstance(asset, Mapping) or set(asset) != {"ref", "license"}:
+            raise CompileError(f"content.assets[{index}] must contain exactly ref and license")
+        _require_nonempty_str(asset["ref"], f"content.assets[{index}].ref")
+        _require_nonempty_str(asset["license"], f"content.assets[{index}].license")
+
+
 def _validate_content(kernel: Mapping[str, Any], content: Mapping[str, Any], routing: Mapping[str, Any]) -> None:
     protected = set(routing["protected_surfaces"])
     illegal = sorted(protected & set(content))
@@ -105,36 +198,71 @@ def _validate_content(kernel: Mapping[str, Any], content: Mapping[str, Any], rou
 
 
 def compile_work_package(seed: Mapping[str, Any], routing: Mapping[str, Any]) -> Dict[str, Any]:
-    _require(seed, ["kernel", "content", "generation"], "seed")
+    _require_exact(seed, ["kernel", "content", "generation"], "seed")
     kernel = seed["kernel"]
     content = seed["content"]
     generation = seed["generation"]
-    _require(
-        kernel,
-        [
-            "kernel_id",
-            "version",
-            "state_fields",
-            "actions",
-            "win_condition",
-            "lose_condition",
-            "score_rule",
-            "seed_policy",
-            "tunable_parameters",
-            "golden_cases",
-        ],
-        "kernel",
-    )
-    _require(
-        content,
-        ["content_id", "kernel_id", "theme", "locale", "copy", "level_parameters", "assets"],
-        "content",
-    )
-    _require(generation, ["task_type", "confidence", "template_version"], "generation")
+    if not isinstance(kernel, Mapping) or not isinstance(content, Mapping) or not isinstance(generation, Mapping):
+        raise CompileError("seed kernel, content, and generation must be objects")
+    kernel_fields = [
+        "kernel_id",
+        "version",
+        "architecture_profile",
+        "state_fields",
+        "actions",
+        "win_condition",
+        "lose_condition",
+        "score_rule",
+        "seed_policy",
+        "tunable_parameters",
+        "golden_cases",
+    ]
+    _require(kernel, kernel_fields, "kernel")
+    # Exactly-one primary (defense in depth; validator will also enforce)
+    forbidden_arch_fields = {
+        "secondary_architecture_profile",
+        "primary_clock_count",
+        "secondary_primary_clock",
+        "architecture_profiles",
+        "secondary_profiles",
+    }
+    for bad in forbidden_arch_fields:
+        if bad in kernel:
+            raise CompileError(f"kernel must not declare secondary or additional primary architecture fields: {bad}")
+    _require_exact(kernel, kernel_fields, "kernel")
+    content_fields = [
+        "content_id",
+        "kernel_id",
+        "theme",
+        "locale",
+        "copy",
+        "level_parameters",
+        "assets",
+    ]
+    _require(content, content_fields, "content")
+    generation_fields = ["task_type", "confidence", "template_version"]
+    _require_exact(generation, generation_fields, "generation")
+    _require_nonempty_str(generation["task_type"], "generation.task_type")
+    _require_nonempty_str(generation["template_version"], "generation.template_version")
+    _validate_kernel_values(kernel)
+    _validate_content_values(kernel, content)
+    confidence = generation["confidence"]
+    if (
+        not isinstance(confidence, (int, float))
+        or isinstance(confidence, bool)
+        or not 0 <= confidence <= 1
+    ):
+        raise CompileError("generation.confidence must be numeric in [0, 1]")
     if not kernel["golden_cases"]:
         raise CompileError("kernel requires golden cases")
 
+    try:
+        architecture_profile = validate_kernel_architecture(kernel)
+    except ArchitectureProfileError as exc:
+        raise CompileError(f"architecture_profile is invalid: {exc}") from exc
+
     _validate_content(kernel, content, routing)
+    _require_approved(content, content_fields, ["visual_style"], "content")
     route = route_task(
         routing,
         task_type=generation["task_type"],
@@ -149,12 +277,13 @@ def compile_work_package(seed: Mapping[str, Any], routing: Mapping[str, Any]) ->
     kernel_digest = digest(kernel)
     content_digest = digest(content)
     package: Dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "work_package_id": f"{kernel['kernel_id']}@{kernel['version']}::{content['content_id']}",
         "closure_state": "work_package_compiled",
         "model_route": route,
         "kernel_digest": kernel_digest,
         "content_digest": content_digest,
+        "architecture_profile": architecture_profile,
         "kernel": kernel,
         "content": content,
         "generation": {

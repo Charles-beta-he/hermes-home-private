@@ -106,6 +106,73 @@ class WorkPackageCompilerTests(unittest.TestCase):
         self.assertEqual(result["model_route"], "standard")
         self.assertTrue(result["accuracy_contract"]["candidate_only"])
 
+    def test_rejects_secondary_architecture_declarations(self):
+        for bad_key in ["secondary_architecture_profile", "primary_clock_count", "secondary_primary_clock"]:
+            bad = copy.deepcopy(self.seed)
+            bad["kernel"][bad_key] = 2 if "count" in bad_key else "evil"
+            with self.assertRaisesRegex(CompileError, "secondary|additional primary|architecture"):
+                compile_work_package(bad, self.routing)
+
+    def test_rejects_unreviewed_seed_kernel_content_and_generation_fields(self):
+        for section in ["seed", "kernel", "content", "generation"]:
+            bad = copy.deepcopy(self.seed)
+            target = bad if section == "seed" else bad[section]
+            target["unreviewed_extra"] = False
+            with self.subTest(section=section), self.assertRaisesRegex(CompileError, "exact field inventory"):
+                compile_work_package(bad, self.routing)
+
+    def test_rejects_hostile_generation_semantics(self):
+        for field, value in [
+            ("task_type", False),
+            ("confidence", True),
+            ("confidence", -0.1),
+            ("confidence", 1.1),
+            ("template_version", 1),
+        ]:
+            bad = copy.deepcopy(self.seed)
+            bad["generation"][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(CompileError):
+                compile_work_package(bad, self.routing)
+
+    def test_rejects_hostile_kernel_and_content_nested_types(self):
+        mutations = [
+            ("kernel", "kernel_id", False),
+            ("kernel", "version", 1),
+            ("kernel", "state_fields", "grid"),
+            ("kernel", "actions", ["rotate_node", 1]),
+            ("kernel", "win_condition", []),
+            ("kernel", "seed_policy", {}),
+            ("kernel", "golden_cases", [""]),
+            ("content", "content_id", False),
+            ("content", "theme", []),
+            ("content", "locale", {}),
+            ("content", "copy", []),
+            ("content", "level_parameters", []),
+            ("content", "assets", {}),
+        ]
+        for section, field, value in mutations:
+            bad = copy.deepcopy(self.seed)
+            bad[section][field] = value
+            with self.subTest(section=section, field=field), self.assertRaises(CompileError):
+                compile_work_package(bad, self.routing)
+
+        for mutation in [
+            lambda seed: seed["kernel"]["tunable_parameters"]["grid_size"].update(min=True),
+            lambda seed: seed["kernel"]["tunable_parameters"]["grid_size"].update(min=float("nan")),
+            lambda seed: seed["kernel"]["tunable_parameters"]["grid_size"].update(max=float("inf")),
+            lambda seed: seed["content"]["copy"].update(title=False),
+            lambda seed: seed["content"]["level_parameters"].update(grid_size=True),
+            lambda seed: seed["content"]["level_parameters"].update(grid_size=float("nan")),
+            lambda seed: seed["content"]["level_parameters"].update(grid_size=float("inf")),
+            lambda seed: seed["content"]["assets"][0].update(extra="x"),
+            lambda seed: seed["content"]["assets"][0].update(ref=False),
+            lambda seed: seed["content"]["level_parameters"].pop("moves"),
+        ]:
+            bad = copy.deepcopy(self.seed)
+            mutation(bad)
+            with self.assertRaises(CompileError):
+                compile_work_package(bad, self.routing)
+
 
 if __name__ == "__main__":
     unittest.main()
