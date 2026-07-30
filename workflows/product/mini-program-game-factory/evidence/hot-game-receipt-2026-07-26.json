@@ -1,0 +1,69 @@
+{
+  "as_of": "2026-07-26T12:00:00+08:00",
+  "authority_boundary": "market evidence may nominate hypotheses; it cannot freeze kernels or publish",
+  "digest": "607435cc60584e6cf84396a83926e2a1a8634e5594ca34d94fab6d55788d1668",
+  "may_freeze_kernel": false,
+  "observations": [
+    {
+      "blockers": [
+        "no_direct_rank_readback_within_7_days",
+        "fewer_than_2_independent_signal_lineages",
+        "no_direct_gameplay_capture"
+      ],
+      "direct_gameplay": false,
+      "fresh_direct_rank": false,
+      "game_name": "轻松拿捏了",
+      "independent_signal_lineages": 0,
+      "mechanic_evidence_count": 1,
+      "observation_id": "lightly-handled-douyin-2026-06",
+      "platform": "douyin",
+      "popularity_signal_count": 0,
+      "rank_signal_count": 2,
+      "status": "recent_market_lead"
+    },
+    {
+      "blockers": [
+        "no_direct_rank_readback_within_7_days",
+        "fewer_than_2_independent_signal_lineages",
+        "no_direct_gameplay_capture"
+      ],
+      "direct_gameplay": false,
+      "fresh_direct_rank": false,
+      "game_name": "疯狂买买买",
+      "independent_signal_lineages": 0,
+      "mechanic_evidence_count": 1,
+      "observation_id": "crazy-buy-douyin-2026-05",
+      "platform": "douyin",
+      "popularity_signal_count": 1,
+      "rank_signal_count": 2,
+      "status": "recent_market_lead"
+    },
+    {
+      "blockers": [
+        "no_direct_rank_readback_within_7_days",
+        "fewer_than_2_independent_signal_lineages",
+        "no_direct_gameplay_capture"
+      ],
+      "direct_gameplay": false,
+      "fresh_direct_rank": false,
+      "game_name": "狙击外星人",
+      "independent_signal_lineages": 0,
+      "mechanic_evidence_count": 1,
+      "observation_id": "sniper-alien-douyin-2025",
+      "platform": "douyin",
+      "popularity_signal_count": 2,
+      "rank_signal_count": 1,
+      "status": "stale_lead"
+    }
+  ],
+  "schema_version": 1,
+  "snapshot_digest": "4d145d8148ce1054bffa1e9395fffc92db3b464078c760cc711f4d4f1aa75b1f",
+  "snapshot_id": "douyin-market-leads-2026-07-26",
+  "source_count": 3,
+  "summary": {
+    "recent_market_lead": 2,
+    "stale_lead": 1,
+    "unranked_lead": 0,
+    "verified_current_hot": 0
+  }
+}

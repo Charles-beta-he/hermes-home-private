@@ -1,0 +1,64 @@
+{
+  "authority": {
+    "candidate_only": true,
+    "may_claim_verified_current_hot": false,
+    "may_compile_work_package": false,
+    "may_freeze_factory_kernel": false,
+    "may_publish": false,
+    "may_submit_platform": false
+  },
+  "boundary": "user-supplied reference-ad evidence permits a local clean-room browser experiment only; it proves no market rank, no popularity, no Cocos or platform runtime, and opens no freeze/build/submission/publish authority",
+  "cannot_satisfy_gates": [
+    "verified-current-hot",
+    "market-to-kernel-gate",
+    "kernel-freeze",
+    "work-package-compilation",
+    "cocos-build",
+    "platform-submission",
+    "publish"
+  ],
+  "clean_room_boundary": {
+    "non_copyable_expression": [
+      "creator account and advertising copy",
+      "specific yellow maze course",
+      "green and cyan character presentation",
+      "pink ring art",
+      "exact camera, level geometry, colors, typography and values",
+      "video frames, audio and source media in shipped content"
+    ],
+    "reusable_mechanics": [
+      "collect stackable traversal resources",
+      "visible stack height as resource feedback",
+      "automatic resource spend while bridging",
+      "short setup followed by a high-risk traversal payoff",
+      "difficulty escalation through route length, split pickups and resource pressure"
+    ]
+  },
+  "closure_state": "reference_ad_experiment_candidate",
+  "digest": "93b6c6867dc13c4abdb6c467cfd629597679ecc3d97e0a63960da099b9924cd3",
+  "levels": [
+    {
+      "difficulty": "easy",
+      "id": "warm-up"
+    },
+    {
+      "difficulty": "skill_gate",
+      "id": "skill-gate"
+    }
+  ],
+  "market_status": {
+    "rank_claimed": false,
+    "verified_current_hot": false
+  },
+  "mechanic_card_digest": "4bdb231df62a6f6a324f5822ccf5c99f0c64f690dc092019eb184a9413f7f4e5",
+  "mechanic_id": "stack-path-runner",
+  "observation_digest": "1237619f9ddb903149e82668576eb1f1ce11f495b7c30665798f0cf5524886a7",
+  "observation_id": "douyin-7665976730670091561-2026-07-30",
+  "schema_version": 1,
+  "source": {
+    "local_media_path": "/Users/charles/Desktop/folder/mini-program-game-factory-ad-20260730/workflows/product/mini-program-game-factory/evidence/ad-tests/2026-07-30-douyin-7665976730670091561/source/ad.mp4",
+    "media_size_bytes": 5748302,
+    "sha256": "0e4c03d6049f29b559e57acf544220803b52ccf15b146b424201cf9f5e64a44d",
+    "source_type": "user_supplied_reference_ad"
+  }
+}

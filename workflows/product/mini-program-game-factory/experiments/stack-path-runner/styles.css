@@ -1,0 +1,238 @@
+/* 叠桥冲刺 — original visual system: deep navy field, teal runner, amber planks. */
+
+:root {
+  --navy-900: #081627;
+  --navy-800: #0b1f33;
+  --navy-700: #12304c;
+  --teal-500: #19b6a6;
+  --teal-300: #5fd9cc;
+  --amber-500: #ffb340;
+  --amber-300: #ffd28a;
+  --ink: #eef6fb;
+  --ink-dim: #9db4c8;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--navy-900);
+  color: var(--ink);
+  font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.stage {
+  position: relative;
+  width: min(100vw, calc(100dvh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  max-height: 100dvh;
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--navy-800), var(--navy-700));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  touch-action: none;
+  user-select: none;
+}
+
+#scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* HUD */
+
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 8px;
+  pointer-events: none;
+}
+
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(8, 22, 39, 0.72);
+  border: 1px solid rgba(95, 217, 204, 0.35);
+  color: var(--teal-300);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.stack-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(8, 22, 39, 0.72);
+  border: 1px solid rgba(255, 179, 64, 0.45);
+  color: var(--amber-300);
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stack-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--amber-300), var(--amber-500));
+  box-shadow: 0 -3px 0 -1px rgba(255, 210, 138, 0.8);
+}
+
+.ghost-btn {
+  pointer-events: auto;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(157, 180, 200, 0.4);
+  background: rgba(8, 22, 39, 0.72);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ghost-btn:active { transform: scale(0.97); }
+
+.progress {
+  position: absolute;
+  top: calc(56px + env(safe-area-inset-top));
+  left: 14px;
+  right: 14px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(8, 22, 39, 0.7);
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal-500), var(--teal-300));
+  transition: width 120ms linear;
+}
+
+/* Overlay (start + result) */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(8, 22, 39, 0.82);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 200ms ease;
+}
+
+.overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.overlay-card {
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  padding: 28px 22px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(18, 48, 76, 0.95), rgba(11, 31, 51, 0.95));
+  border: 1px solid rgba(95, 217, 204, 0.25);
+}
+
+.overlay-kicker {
+  margin: 0 0 8px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--teal-300);
+}
+
+.overlay-title {
+  margin: 0 0 12px;
+  font-size: 40px;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  text-shadow: 0 4px 18px rgba(25, 182, 166, 0.35);
+}
+
+.overlay-copy {
+  margin: 0 0 22px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--ink-dim);
+}
+
+.overlay-copy strong { color: var(--amber-300); }
+
+.primary-btn {
+  min-height: 52px;
+  width: 100%;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--amber-300), var(--amber-500));
+  color: #3a2404;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(255, 179, 64, 0.3);
+}
+
+.primary-btn:active { transform: translateY(1px) scale(0.99); }
+
+.overlay-hint {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+button:focus-visible {
+  outline: 3px solid var(--teal-300);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .progress-fill { transition: none; }
+  .primary-btn:active, .ghost-btn:active { transform: none; }
+}

@@ -1,0 +1,35 @@
+{
+  "authority": {
+    "may_build_cocos": false,
+    "may_enter_credentials": false,
+    "may_invoke_devtools": false,
+    "may_pay": false,
+    "may_preview_device": false,
+    "may_publish": false,
+    "may_submit_platform": false
+  },
+  "candidate_only": true,
+  "closure_state": "cocos_candidate_materialized",
+  "files": {
+    "generated/content-pack.json": {
+      "bytes": 426,
+      "sha256": "2033bcafbb56862b4fa1cd668a00864f8e55fd4de3b9bd98d5979bf83833829b"
+    },
+    "generated/gameplay-kernel.json": {
+      "bytes": 1152,
+      "sha256": "58b85163c0067d10f8097df888f296ffe3bfb9497a7524363dadd25b738f8713"
+    },
+    "input/work-package.json": {
+      "bytes": 3517,
+      "sha256": "86ad1bf45c7b9e2682c2e2fc8140847842d8c43e5284bae04f0a175cbce0a486"
+    },
+    "integration-packet.json": {
+      "bytes": 1974,
+      "sha256": "393af138f44ca26617472e1f47b933bbd9ebd2a464a5bc84aaf2ec78d984fd76"
+    }
+  },
+  "integration_digest": "2e7b301bdd418d13e4426973b3b118b0800aae92f127403cfe6dbd6cc61ef04d",
+  "manifest_digest": "d9cdf50ad416c878a1faaea5b32e19332e07430e2b540defe3d2c728d8aaaf63",
+  "schema_version": 1,
+  "source_compile_digest": "30ca771eeb8bfcc06af7e94568e75d1bc91a2396a8e841b3a0682155622b70bb"
+}

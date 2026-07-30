@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "required_snapshot_fields": [
+    "schema_version",
+    "snapshot_id",
+    "observed_at",
+    "sources",
+    "observations"
+  ],
+  "source_types": [
+    "direct_app_rank_capture",
+    "direct_gameplay_capture",
+    "official_platform_case",
+    "first_party_creator_report",
+    "third_party_rank_report",
+    "search_or_social_lead"
+  ],
+  "required_source_fields": [
+    "source_id",
+    "source_type",
+    "registry_source_key",
+    "publisher",
+    "independence_key",
+    "published_at",
+    "accessed_at",
+    "evidence_level"
+  ],
+  "source_locator_requirements": {
+    "direct": "https url or absolute local_media_path",
+    "non_direct": "https url"
+  },
+  "direct_evidence_requirements": {
+    "source_types": ["direct_app_rank_capture", "direct_gameplay_capture"],
+    "evidence_level": "direct and must agree with source_type",
+    "evidence_digest": "lowercase_sha256",
+    "local_media_path": "absolute path when https url is absent; digest and optional size are read back when present",
+    "current_hot_readback": "current-hot promotion requires readable local media whose stable file identity, byte size and SHA-256 match during readback",
+    "human_content_review": "current-hot promotion requires a digest-bound human review from the last 7 days whose classification matches app_rank_capture or gameplay_capture",
+    "distinct_role_media": "a rank capture digest cannot also satisfy the gameplay capture requirement for the same observation",
+    "gameplay_capture_time": "direct mechanic evidence must declare captured_at within the current-hot window",
+    "independence_lineage": "independence_key collapses the same original lineage; any equal declared evidence_digest also collapses claims across direct/indirect keys"
+  },
+  "subject_binding_requirements": {
+    "all_signal_sources": ["platform", "game_name"],
+    "rank_signal_sources": ["chart"]
+  },
+  "evidence_levels": [
+    "direct",
+    "official",
+    "first_party_claim",
+    "third_party_claim",
+    "lead_only"
+  ],
+  "platforms": ["douyin", "wechat", "kuaishou", "multi_platform"],
+  "status_rules": {
+    "verified_current_hot": {
+      "rank_max_age_days": 7,
+      "source_published_and_accessed_max_age_days": 7,
+      "requires_direct_rank_readback": true,
+      "minimum_independent_sources": 2,
+      "independent_source_types": [
+        "direct_app_rank_capture",
+        "official_platform_case",
+        "first_party_creator_report",
+        "third_party_rank_report"
+      ],
+      "excludes_discovery_only_sources_from_quorum": true,
+      "requires_direct_gameplay": true,
+      "direct_gameplay_max_age_days": 7
+    },
+    "recent_market_lead": {
+      "signal_max_age_days": 60
+    }
+  },
+  "required_mechanic_fields": [
+    "core_action",
+    "state_transition",
+    "session_loop",
+    "goal_or_exit",
+    "failure_pressure",
+    "randomness",
+    "spectator_hook",
+    "social_hook",
+    "content_burden",
+    "reusable_mechanics",
+    "non_copyable_expression"
+  ],
+  "receipt_binding": {
+    "market_receipt": ["snapshot_digest", "digest"],
+    "market_loop_receipt": ["market_receipt_digest", "hypotheses_digest", "routing_digest", "digest"]
+  }
+}

@@ -1,0 +1,49 @@
+[
+  {
+    "hypothesis_id": "progressive-reveal-risk-loop-v1",
+    "source_observation_ids": [
+      "lightly-handled-douyin-2026-06",
+      "crazy-buy-douyin-2026-05"
+    ],
+    "abstract_mechanics": [
+      "progressive reveal",
+      "risk escalation",
+      "voluntary cash-out",
+      "short-session value reversal"
+    ],
+    "proposed_changes": [
+      "replace collectible valuation with an original repair diagnosis decision"
+    ],
+    "differentiation": "Replace collectible valuation with an original equipment-diagnosis loop where each inspection consumes limited time and changes repair options.",
+    "non_copyable_exclusions": [
+      "game names",
+      "jade and raw-stone art",
+      "source UI and copy",
+      "source levels",
+      "source probability and economy values"
+    ]
+  },
+  {
+    "hypothesis_id": "search-and-counterplay-loop-v1",
+    "source_observation_ids": [
+      "sniper-alien-douyin-2025"
+    ],
+    "abstract_mechanics": [
+      "visual anomaly search",
+      "single-action confirmation feedback",
+      "asymmetric hide-and-detect counterplay",
+      "friend challenge"
+    ],
+    "proposed_changes": [
+      "replace target theme and feedback framing with original content"
+    ],
+    "differentiation": "Use original signal-tracing and decoy placement rather than characters, weapons, source scenes, or copied level layouts.",
+    "non_copyable_exclusions": [
+      "game and character names",
+      "alien characters",
+      "weapons and hit effects",
+      "source scenes and levels",
+      "source social copy and topics"
+    ]
+  }
+]

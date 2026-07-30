@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "observation_id": "douyin-7665976730670091561-2026-07-30",
+  "observed_at": "2026-07-30T13:43:24+08:00",
+  "source": {
+    "platform": "douyin",
+    "share_url": "https://v.douyin.com/7yWAUI9FBl8/",
+    "canonical_video_url": "https://www.douyin.com/video/7665976730670091561",
+    "aweme_id": "7665976730670091561",
+    "source_type": "user_supplied_reference_ad",
+    "local_media_path": "source/ad.mp4",
+    "sha256": "0e4c03d6049f29b559e57acf544220803b52ccf15b146b424201cf9f5e64a44d",
+    "duration_seconds": 56.935011,
+    "dimensions": [576, 1024]
+  },
+  "market_status": {
+    "verified_current_hot": false,
+    "rank_claimed": false,
+    "boundary": "The clip is user-supplied reference-ad test data. It proves visible creative/gameplay content only; it does not prove chart rank, installs, retention, revenue, or current popularity."
+  },
+  "frame_evidence": {
+    "contact_sheet": "frames/contact-sheet-2s.jpg",
+    "sample_interval_seconds": 2,
+    "ordered_left_to_right_top_to_bottom": true,
+    "individual_frames": "frames/frame-*.jpg"
+  },
+  "visible_observations": [
+    {
+      "time_range_seconds": [0, 30],
+      "certainty": "high",
+      "facts": [
+        "A green humanoid moves over a raised yellow course containing dark maze-like path cells.",
+        "Dark path material forms a tall vertical stack associated with the moving character.",
+        "The character traverses curved and straight course segments while the stack height visibly changes.",
+        "The scene is fully digital 3D imagery."
+      ]
+    },
+    {
+      "time_range_seconds": [30, 56.935011],
+      "certainty": "high",
+      "facts": [
+        "A cyan humanoid moves among bright pink ring-like pieces on grey platforms.",
+        "Collected rings form a vertical stack under or beside the character.",
+        "The stack is spent to form a continuous route over a long curved white guide/path between separated platforms.",
+        "The game assets are digitally composited over a real outdoor camera background."
+      ]
+    }
+  ],
+  "inferences": [
+    {
+      "claim": "The reusable loop is collect stackable path material, choose/maintain a route, then consume the stack to bridge hazards or gaps.",
+      "confidence": 0.9
+    },
+    {
+      "claim": "The visible creative likely juxtaposes two renderings of the same collect-and-spend traversal mechanism rather than proving two numbered production levels.",
+      "confidence": 0.7
+    }
+  ],
+  "unknowns": [
+    "Exact touch controls are not visible.",
+    "Exact collision, scoring, failure, restart, ad, retention and economy rules are not proven.",
+    "The clip does not prove that its first and second visual sections are literal Level 1 and Level 2.",
+    "No direct platform mini-game runtime, package, AppID, DevTools or device evidence is present."
+  ],
+  "clean_room_boundary": {
+    "reusable_mechanics": [
+      "collect stackable traversal resources",
+      "visible stack height as resource feedback",
+      "automatic resource spend while bridging",
+      "short setup followed by a high-risk traversal payoff",
+      "difficulty escalation through route length, split pickups and resource pressure"
+    ],
+    "non_copyable_expression": [
+      "creator account and advertising copy",
+      "specific yellow maze course",
+      "green and cyan character presentation",
+      "pink ring art",
+      "exact camera, level geometry, colors, typography and values",
+      "video frames, audio and source media in shipped content"
+    ]
+  }
+}

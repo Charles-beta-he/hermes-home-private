@@ -1,0 +1,130 @@
+{
+  "accuracy_contract": {
+    "candidate_only": true,
+    "model_self_report_is_evidence": false,
+    "same_gates_for_all_models": true
+  },
+  "architecture_profile": {
+    "auxiliary_systems": [],
+    "primary_clock_count": 1,
+    "primary_profile_id": "grid-turn",
+    "profile_digest": "c73d84456319ab82545527cf187ec5a097f5e3ee25e7ba1ae5b21e7d1845a7f9",
+    "profile_version": 1,
+    "registry_digest": "52c35b35efc54d54ee445be7703010b4583f4152defefe9dc08e0f537f9ed1aa",
+    "registry_id": "mini-game-gameplay-architecture-profiles",
+    "registry_schema_version": 1,
+    "topology": {
+      "authority_model": "local_only",
+      "resolution_model": "reducer_state_machine",
+      "space_model": "grid",
+      "state_model": "entity_grid",
+      "time_model": "turn_based"
+    },
+    "verification_gates": [
+      "legal_moves",
+      "state_transition_cases",
+      "deterministic_replay"
+    ]
+  },
+  "authority": {
+    "may_enter_credentials": false,
+    "may_pay": false,
+    "may_publish": false,
+    "may_submit_platform": false
+  },
+  "closure_state": "work_package_compiled",
+  "compile_digest": "30ca771eeb8bfcc06af7e94568e75d1bc91a2396a8e841b3a0682155622b70bb",
+  "content": {
+    "assets": [
+      {
+        "license": "original-required",
+        "ref": "brief://rack-node"
+      }
+    ],
+    "content_id": "data-center-repair-zh-cn",
+    "copy": {
+      "lose": "抢修超时",
+      "title": "链路抢修",
+      "win": "供电恢复"
+    },
+    "kernel_id": "circuit-untangle",
+    "level_parameters": {
+      "grid_size": 5,
+      "moves": 28,
+      "target_count": 4
+    },
+    "locale": "zh-CN",
+    "theme": "数据中心抢修"
+  },
+  "content_digest": "7a95ed03a6b01ab77d4838b1746506cdd1284a61fe9b8dee9c3d22cc442569b6",
+  "generation": {
+    "confidence": 0.92,
+    "task_type": "generate_theme_variants",
+    "template_version": "content-pack-v1"
+  },
+  "kernel": {
+    "actions": [
+      "rotate_node",
+      "swap_adjacent",
+      "request_hint"
+    ],
+    "architecture_profile": {
+      "auxiliary_systems": [],
+      "profile_id": "grid-turn",
+      "profile_version": 1,
+      "topology": {
+        "authority_model": "local_only",
+        "resolution_model": "reducer_state_machine",
+        "space_model": "grid",
+        "state_model": "entity_grid",
+        "time_model": "turn_based"
+      }
+    },
+    "golden_cases": [
+      "single_path_win",
+      "short_circuit_not_win",
+      "zero_moves_loss",
+      "same_seed_same_board",
+      "content_swap_same_result"
+    ],
+    "kernel_id": "circuit-untangle",
+    "lose_condition": "moves_left_zero_and_not_won",
+    "score_rule": "base_plus_moves_left_minus_hints",
+    "seed_policy": "explicit_integer_seed",
+    "state_fields": [
+      "grid",
+      "power_sources",
+      "targets",
+      "moves_left",
+      "seed"
+    ],
+    "tunable_parameters": {
+      "grid_size": {
+        "max": 8,
+        "min": 3
+      },
+      "moves": {
+        "max": 80,
+        "min": 5
+      },
+      "target_count": {
+        "max": 12,
+        "min": 1
+      }
+    },
+    "version": "0.1.0",
+    "win_condition": "all_required_targets_connected_and_no_short_circuit"
+  },
+  "kernel_digest": "b66f991fa515a879455c2f199e825a4d28f2899b9ae4761af86c147be8b6a410",
+  "model_route": "low_cost",
+  "required_gates": [
+    "schema",
+    "protected_surface",
+    "parameter_bounds",
+    "rights_metadata",
+    "dedupe",
+    "deterministic_compile"
+  ],
+  "schema_version": 2,
+  "work_package_id": "circuit-untangle@0.1.0::data-center-repair-zh-cn"
+}

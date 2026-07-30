@@ -1,0 +1,168 @@
+{
+  "schema": "product_workflow_evidence_bundle_v1",
+  "generated_at": "2026-07-26T17:47:50Z",
+  "workflow_slug": "mini-program-game-factory",
+  "sources": [
+    {
+      "id": "src-user-001",
+      "source_type": "user_statement",
+      "source_ref": "current conversation",
+      "retrieved_at": "2026-07-26T12:50:01Z",
+      "freshness": "current",
+      "access_status": "ok",
+      "notes": "用户认可方向，并要求整理工作流、分离玩法与内容、抽象研发流程、支持低成本模型批量推进且不影响准确率。"
+    },
+    {
+      "id": "src-transcript-001",
+      "source_type": "transcript",
+      "source_ref": "https://www.qianwen.com/record#share?share_id=b3b7c9981b6f44f4928211e41ffeb1a8",
+      "retrieved_at": "2026-07-26T12:30:00Z",
+      "freshness": "recording dated 2026-07-26",
+      "access_status": "ok",
+      "notes": "浏览器直接读取标题、时长及原文；约 44:00–1:10:00 涉及小游戏技术与商业化陈述。"
+    },
+    {
+      "id": "src-local-tests-001",
+      "source_type": "log",
+      "source_ref": "python3 -m unittest -v test_batch_compile.py test_work_package_compiler.py",
+      "retrieved_at": "2026-07-26T12:50:01Z",
+      "freshness": "current run",
+      "access_status": "ok",
+      "notes": "12 tests passed before final CLI/evidence refresh."
+    },
+    {
+      "id": "src-market-jade-001",
+      "source_type": "third_party_rank_report",
+      "source_ref": "https://36kr.com/p/3863826372646147",
+      "retrieved_at": "2026-07-26T13:20:00Z",
+      "freshness": "article 2026-06-22; cited ranks 2026-05-30 to 2026-06-15",
+      "access_status": "ok",
+      "notes": "DataEye via 36Kr; supports recent jade-opening mechanic and historical rank leads, not real-time platform rank."
+    },
+    {
+      "id": "src-market-sniper-001",
+      "source_type": "first_party_creator_report",
+      "source_ref": "https://news.qq.com/rain/a/20251225A07HDZ00",
+      "retrieved_at": "2026-07-26T13:25:00Z",
+      "freshness": "historical 2025 developer conference report",
+      "access_status": "ok",
+      "notes": "GameLook/Tencent transcript of creator claims; supports historical mechanic study, not current popularity."
+    },
+    {
+      "id": "src-market-growth-001",
+      "source_type": "third_party_report",
+      "source_ref": "https://m.163.com/dy/article/KSM4N3SM05466ZM9.html",
+      "retrieved_at": "2026-07-26T13:30:00Z",
+      "freshness": "published 2026-05-11",
+      "access_status": "ok",
+      "notes": "Supports multi-signal acquisition/content methodology; not a direct per-game chart readback."
+    },
+    {
+      "id": "src-market-tests-001",
+      "source_type": "log",
+      "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/hot-game-receipt-2026-07-26.json",
+      "retrieved_at": "2026-07-26T17:47:50Z",
+      "freshness": "current run",
+      "access_status": "ok",
+      "notes": "68 full-suite tests passed, including 35 observatory adversarial/contract tests and 7 local-media intake tests; direct media hash/size readback rejects unstable or symlink paths, empty mechanic evidence, rank/gameplay role reuse, stale gameplay timestamps, missing or mismatched digest-bound human classification, and prefilled review at intake; all source types bind exact evidence levels and canonical registry entries; lineages and declared media digests are deduplicated; receipt reports verified 0, recent 2, stale 1 and binds the complete snapshot digest. Reviewed commit 0747403e / tree 7dd6e9a6 received two independent APPROVE verdicts with no material findings."
+    },
+    {
+      "id": "src-market-loop-gate-001",
+      "source_type": "log_and_receipt",
+      "source_ref": "python3 -m unittest discover -v -s . -p 'test_*.py' + evidence/market-loop-receipt-2026-07-26.json",
+      "retrieved_at": "2026-07-26T17:47:50Z",
+      "freshness": "current run",
+      "access_status": "ok",
+      "notes": "12 market-loop tests passed inside the 68-test suite; noncanonical routing is rejected; proposed_changes is mandatory and protected-surface matching scans proposed changes, abstract mechanics and differentiation after case, whitespace, repeated separator, ASCII/Unicode hyphen and NFKC normalization; receipt binds market, hypothesis and canonical routing digests; real snapshot accepted 0 and rejected 2; kernel freeze, work-package compilation and all external authorities remain false. Reviewed commit 0747403e / tree 7dd6e9a6 received two independent APPROVE verdicts with no material findings."
+    },
+    {
+      "id": "src-market-source-packet-001",
+      "source_type": "local_source_and_time_binding",
+      "source_ref": "evidence/source-packet.json + evidence/timestamped-source.json",
+      "retrieved_at": "2026-07-26T15:54:39Z",
+      "freshness": "packet created from the 2026-07-26 snapshot and receipts",
+      "access_status": "ok",
+      "notes": "Binds the three actual source URLs and their published/accessed timestamps to the snapshot and receipt digests. Explicitly preserves verified_current_hot=0 and does not upgrade indirect evidence into direct client evidence."
+    },
+    {
+      "id": "src-h4-independent-review-001",
+      "source_type": "independent_verification_certificate",
+      "source_ref": "evidence/h4-local-verification-certificate.json + evidence/review-0747403e-evidence-state.md + evidence/review-0747403e-routing-contract.md",
+      "retrieved_at": "2026-07-26T17:47:50Z",
+      "freshness": "exact commit/tree review",
+      "access_status": "ok",
+      "notes": "Two read-only immutable-tree reviews bind commit 0747403e84e6bf98b4683f2b8901c166ee804357 and tree 7dd6e9a6ea82b538f084d7d6a56fb51ac23b6f02; both APPROVE with no material findings. Scope is local contracts only and explicitly excludes market truth and release readiness."
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-user-goal",
+      "claim": "用户希望将小游戏方向形成可批量推进的低成本研发工作流。",
+      "source_ids": ["src-user-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "user_preference"
+    },
+    {
+      "id": "claim-course-content",
+      "claim": "录音讨论了 PixiJS/Phaser/Cocos、微信/抖音小游戏和激励视频等方向。",
+      "source_ids": ["src-transcript-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "fact"
+    },
+    {
+      "id": "claim-commercial-outcome",
+      "claim": "批量制作小游戏可快速获得收入。",
+      "source_ids": ["src-transcript-001"],
+      "confidence": "low",
+      "verification_status": "assumption",
+      "interpretation_boundary": "model_interpretation"
+    },
+    {
+      "id": "claim-local-contract",
+      "claim": "本地编译器可以隔离越权/越界候选，并对相同输入生成确定性摘要。",
+      "source_ids": ["src-local-tests-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "fact"
+    },
+    {
+      "id": "claim-market-observatory-boundary",
+      "claim": "当前首批样本只有两个近期市场线索和一个历史线索，没有任何游戏达到当前热门已验证状态。",
+      "source_ids": ["src-market-jade-001", "src-market-sniper-001", "src-market-tests-001", "src-market-source-packet-001"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "status is as-of 2026-07-26 and expires with time"
+    },
+    {
+      "id": "claim-market-input-method",
+      "claim": "可靠识别当前热门玩法需要把客户端榜单、直接试玩和独立传播/投放信号绑定到同一时间窗口。",
+      "source_ids": ["src-market-jade-001", "src-market-growth-001", "src-market-tests-001"],
+      "confidence": "high",
+      "verification_status": "verified_method_contract",
+      "interpretation_boundary": "does not prove any individual game is currently hot"
+    },
+    {
+      "id": "claim-market-loop-fail-closed",
+      "claim": "当前未验证市场线索不能进入 kernel_hypothesis；即使未来满足 verified_current_hot，市场门禁也不授予内核冻结、工作包编译、送审或发布权限。",
+      "source_ids": ["src-market-tests-001", "src-market-loop-gate-001", "src-h4-independent-review-001"],
+      "confidence": "high",
+      "verification_status": "certified_local_contract",
+      "interpretation_boundary": "local deterministic gate only; does not prove external market truth"
+    }
+  ],
+  "open_questions": [
+    "2026-07-26 前后 7 天内抖音小游戏热门榜/畅销榜的客户端直接读回",
+    "候选热门游戏的直接试玩录屏与核心规则复核",
+    "抖音和微信小游戏当前个人主体、广告与送审要求",
+    "线路整理玩法的真实可理解性、乐趣与复玩意愿",
+    "Cocos 当前稳定版本和平台构建兼容矩阵"
+  ],
+  "blocked_evidence": [
+    "实时平台榜单截图/录屏和第二独立来源",
+    "候选游戏直接试玩证据",
+    "真实平台 SDK/审核/广告回调",
+    "真实用户留存与商业指标"
+  ]
+}

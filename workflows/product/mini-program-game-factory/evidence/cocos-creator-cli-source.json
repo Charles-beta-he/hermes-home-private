@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-07-27T04:13:04Z",
+  "source_type": "official_documentation_readback",
+  "source_url": "https://docs.cocos.com/creator/3.8/manual/en/editor/publish/publish-in-command-line.html",
+  "documentation_version_line": "3.8",
+  "engine_reference": {
+    "repository": "https://github.com/cocos/cocos-engine",
+    "commit": "68818ea662aba96cf4d2353007e5b5d797a059f8",
+    "package_version": "3.8.8",
+    "claim_boundary": "engine repository identity; not evidence of an installed Creator editor"
+  },
+  "creator_editor_cli": {
+    "is_distinct_from_engine_repository": true,
+    "success_exit_code": 36,
+    "invalid_build_parameters_exit_code": 32,
+    "unexpected_build_error_exit_code": 34,
+    "build_targets": {
+      "wechat": "wechatgame",
+      "douyin": "bytedance-mini-game"
+    },
+    "config_source": "Creator Build panel exported JSON is required for this workflow"
+  },
+  "local_execution": {
+    "creator_installed": false,
+    "creator_build_executed": false,
+    "devtools_executed": false,
+    "device_preview_executed": false
+  },
+  "authority": {
+    "may_build_cocos": false,
+    "may_invoke_devtools": false,
+    "may_enter_credentials": false,
+    "may_preview_device": false,
+    "may_submit_platform": false,
+    "may_publish": false,
+    "may_pay": false
+  }
+}

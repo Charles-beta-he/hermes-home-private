@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "objective": "minimize model cost while preserving identical evidence gates",
+  "default_route": "escalate",
+  "protected_surfaces": [
+    "state_fields",
+    "architecture_profile",
+    "actions",
+    "win_condition",
+    "lose_condition",
+    "score_rule",
+    "seed_policy",
+    "difficulty_formula",
+    "monetization_policy",
+    "platform_api",
+    "privacy_contract",
+    "release_decision",
+    "content_review"
+  ],
+  "routes": {
+    "low_cost": {
+      "allowed_tasks": [
+        "classify_idea",
+        "normalize_copy",
+        "generate_theme_variants",
+        "generate_localization_draft",
+        "generate_asset_brief",
+        "generate_level_parameters_within_bounds",
+        "expand_test_fixtures",
+        "summarize_gate_failures"
+      ],
+      "required_gates": [
+        "schema",
+        "protected_surface",
+        "parameter_bounds",
+        "rights_metadata",
+        "dedupe",
+        "deterministic_compile"
+      ],
+      "may_merge_without_gate": false
+    },
+    "standard": {
+      "allowed_tasks": [
+        "implement_frozen_spec",
+        "repair_gate_failure",
+        "write_rule_simulator",
+        "write_contract_tests",
+        "platform_doc_extraction"
+      ],
+      "required_gates": [
+        "tests",
+        "golden_cases",
+        "contract_readback"
+      ]
+    },
+    "high_reasoning": {
+      "allowed_tasks": [
+        "design_new_gameplay_kernel",
+        "change_protected_surface",
+        "economy_design",
+        "architecture_review",
+        "release_arbitration"
+      ],
+      "required_gates": [
+        "independent_review",
+        "objective_evidence",
+        "human_acceptance_when_applicable"
+      ]
+    }
+  },
+  "escalation_rules": {
+    "touches_protected_surface": "high_reasoning",
+    "confidence_below": 0.85,
+    "unknown_platform_contract": "blocked",
+    "any_gate_failure": "standard",
+    "repeated_gate_failure_count": 2,
+    "repeated_gate_failure_route": "high_reasoning",
+    "conflicting_evidence": "high_reasoning"
+  },
+  "accuracy_policy": {
+    "same_gates_for_all_models": true,
+    "model_self_report_is_evidence": false,
+    "fail_closed_on_unknown": true,
+    "golden_baseline_required_for_kernel": true,
+    "cheap_output_state": "candidate_only"
+  },
+  "side_effects": {
+    "external_publish": false,
+    "platform_submission": false,
+    "credential_entry": false,
+    "payment": false
+  }
+}

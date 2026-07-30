@@ -1,0 +1,49 @@
+{
+  "accepted": [],
+  "as_of": "2026-07-26T12:00:00+08:00",
+  "authority": {
+    "may_compile_work_package": false,
+    "may_enter_credentials": false,
+    "may_freeze_kernel": false,
+    "may_pay": false,
+    "may_publish": false,
+    "may_submit_platform": false
+  },
+  "authority_boundary": "verified market evidence may nominate an abstract kernel hypothesis only; spec, simulation, golden cases, human playtest, platform, and release gates remain closed",
+  "closure_state": "market_to_kernel_gate_evaluated",
+  "digest": "e6343a8a808cb014478cbecdd759ab429dd74833259ce585c0b3f3cd277cecfd",
+  "hypotheses_digest": "52cf6cbc4849cab07b1c2ad136b1b95a2bf144d8b15caf92017e7290a23896e3",
+  "market_receipt_digest": "607435cc60584e6cf84396a83926e2a1a8634e5594ca34d94fab6d55788d1668",
+  "market_summary": {
+    "recent_market_lead": 2,
+    "stale_lead": 1,
+    "unranked_lead": 0,
+    "verified_current_hot": 0
+  },
+  "rejected": [
+    {
+      "details": [
+        "crazy-buy-douyin-2026-05",
+        "lightly-handled-douyin-2026-06"
+      ],
+      "hypothesis_id": "progressive-reveal-risk-loop-v1",
+      "reason": "source_observation_not_verified_current_hot",
+      "state": "rejected"
+    },
+    {
+      "details": [
+        "sniper-alien-douyin-2025"
+      ],
+      "hypothesis_id": "search-and-counterplay-loop-v1",
+      "reason": "source_observation_not_verified_current_hot",
+      "state": "rejected"
+    }
+  ],
+  "routing_digest": "518b9f693b308766227babd7c5b7bcd566b125d4481ca458b25d1fed08ed6db1",
+  "schema_version": 1,
+  "summary": {
+    "accepted": 0,
+    "rejected": 2,
+    "total": 2
+  }
+}

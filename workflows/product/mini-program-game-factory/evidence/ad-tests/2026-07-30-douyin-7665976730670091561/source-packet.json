@@ -1,0 +1,41 @@
+{
+  "schema": "source_packet_v1",
+  "packet_id": "douyin-reference-ad-7665976730670091561-2026-07-30",
+  "created_at": "2026-07-30T07:04:23Z",
+  "observed_at": "2026-07-30T13:43:24+08:00",
+  "source": {
+    "platform": "douyin",
+    "share_url": "https://v.douyin.com/7yWAUI9FBl8/",
+    "canonical_video_url": "https://www.douyin.com/video/7665976730670091561",
+    "aweme_id": "7665976730670091561",
+    "source_type": "user_supplied_reference_ad",
+    "local_media_path": "source/ad.mp4",
+    "local_media_sha256": "0e4c03d6049f29b559e57acf544220803b52ccf15b146b424201cf9f5e64a44d",
+    "duration_seconds": 56.935011,
+    "dimensions": [576, 1024]
+  },
+  "artifacts": {
+    "observation_path": "reference-ad-observation.json",
+    "observation_file_sha256": "608725496f353879f274acbd565400e6a2a10c2ce311decfb348ec00578dae5e",
+    "mechanic_card_path": "mechanic-card.json",
+    "mechanic_card_file_sha256": "0a1701342b122613dcee9cd6c87b89e1683eeb2671b5d65bca7dd8d6d4a3d9f6",
+    "receipt_path": "reference-ad-experiment-receipt.json",
+    "receipt_file_sha256": "90ab3af44e7a87663149f692e8f736d9797a25c7b6f3c3cb2b13251c35dc7d76",
+    "receipt_digest": "93b6c6867dc13c4abdb6c467cfd629597679ecc3d97e0a63960da099b9924cd3"
+  },
+  "market_status": {
+    "verified_current_hot": false,
+    "rank_claimed": false,
+    "boundary": "This user-supplied reference ad proves only locally observed creative/gameplay facts. It does not prove chart rank, installs, retention, revenue, or current popularity."
+  },
+  "authority": {
+    "candidate_only": true,
+    "may_claim_verified_current_hot": false,
+    "may_compile_work_package": false,
+    "may_freeze_factory_kernel": false,
+    "may_submit_platform": false,
+    "may_publish": false
+  },
+  "truth_status": "reference_ad_experiment_candidate_only",
+  "runtime_execution": false
+}

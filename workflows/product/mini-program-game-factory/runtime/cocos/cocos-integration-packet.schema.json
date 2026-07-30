@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.hermes.invalid/mini-program-game-factory/cocos-integration-packet.schema.json",
+  "title": "CocosIntegrationPacket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "integration_id",
+    "closure_state",
+    "candidate_only",
+    "source_compile_digest",
+    "engine",
+    "platforms",
+    "materialization_contract",
+    "required_next_receipts",
+    "authority",
+    "integration_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "integration_id": {"type": "string", "minLength": 1},
+    "closure_state": {"const": "cocos_integration_planned"},
+    "candidate_only": {"const": true},
+    "source_compile_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "version_line", "source_repository", "source_commit", "source_license", "creator_cli_state"],
+      "properties": {
+        "family": {"const": "cocos-creator"},
+        "version_line": {"const": "3.8"},
+        "source_repository": {"type": "string", "minLength": 1},
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_license": {"type": "string", "minLength": 1},
+        "creator_cli_state": {"const": "unavailable"}
+      }
+    },
+    "platforms": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform_id", "runtime_api_namespace", "engine_source_state", "official_contract_state", "build_target_id", "build_state"],
+        "properties": {
+          "platform_id": {"enum": ["douyin", "wechat"]},
+          "runtime_api_namespace": {"type": "string", "minLength": 1},
+          "engine_source_state": {"const": "observed_at_pinned_commit"},
+          "official_contract_state": {"const": "contract_pending"},
+          "build_target_id": {"const": null},
+          "build_state": {"const": "build_pending"}
+        }
+      }
+    },
+    "materialization_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["writes_local_candidate_only", "cocos_project_mutation", "generated_files"],
+      "properties": {
+        "writes_local_candidate_only": {"const": true},
+        "cocos_project_mutation": {"const": false},
+        "generated_files": {
+          "const": [
+            "input/work-package.json",
+            "generated/gameplay-kernel.json",
+            "generated/content-pack.json",
+            "integration-packet.json"
+          ]
+        }
+      }
+    },
+    "required_next_receipts": {
+      "const": [
+        "creator_installation_readback",
+        "exact_creator_version",
+        "official_platform_contract",
+        "exact_build_target",
+        "creator_build_receipt",
+        "devtools_import_receipt",
+        "real_device_preview_receipt"
+      ]
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "may_build_cocos",
+        "may_invoke_devtools",
+        "may_enter_credentials",
+        "may_preview_device",
+        "may_submit_platform",
+        "may_publish",
+        "may_pay"
+      ],
+      "properties": {
+        "may_build_cocos": {"const": false},
+        "may_invoke_devtools": {"const": false},
+        "may_enter_credentials": {"const": false},
+        "may_preview_device": {"const": false},
+        "may_submit_platform": {"const": false},
+        "may_publish": {"const": false},
+        "may_pay": {"const": false}
+      }
+    },
+    "integration_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
