@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
@@ -14,7 +15,6 @@ from cocos_project_generator import verify_generated_project
 
 TARGETS = {"wechat": "wechatgame", "douyin": "bytedance-mini-game"}
 KNOWN_CREATOR_PATHS = (
-    Path("/Applications/CocosCreator/Creator/3.8.0/CocosCreator.app/Contents/MacOS/CocosCreator"),
     Path("/Applications/CocosCreator.app/Contents/MacOS/CocosCreator"),
 )
 
@@ -24,8 +24,14 @@ class DeliveryGateError(ValueError):
 
 
 HANDOFF_KEYS = {
-    "schema_version", "status", "platform", "project_digest", "creator_version",
-    "creator_build_target", "artifact", "readbacks", "external_stages", "authority",
+    "schema_version", "status", "platform", "project_digest",
+    "serialization_creator_version", "creator_editor_version_readback",
+    "creator_build_target", "build_binding", "artifact", "readbacks",
+    "external_stages", "authority",
+}
+BUILD_BINDING_KEYS = {
+    "creator_executable_path", "creator_executable_sha256",
+    "build_config_path", "build_config_sha256", "creator_editor_version_readback",
 }
 HANDOFF_AUTHORITY_KEYS = {"may_invoke_devtools", "may_submit_platform", "may_publish"}
 EXTERNAL_STAGE_KEYS = {"upload", "review", "publish", "rollback"}
@@ -47,6 +53,33 @@ def _creator_executable(explicit: Optional[Path]) -> Optional[Path]:
         if candidate.is_file() and os.access(candidate, os.X_OK):
             return candidate.resolve()
     return None
+
+
+def _is_creator_38_patch(version: Any) -> bool:
+    return isinstance(version, str) and re.fullmatch(r"3\.8\.\d+", version) is not None
+
+
+def _verify_bound_file(
+    path_value: Any,
+    expected_sha256: Any,
+    label: str,
+    *,
+    executable: bool = False,
+) -> Path:
+    if not isinstance(path_value, str) or not path_value:
+        raise DeliveryGateError(f"handoff {label} path is missing")
+    path = Path(path_value)
+    if not path.is_absolute():
+        raise DeliveryGateError(f"handoff {label} path must be absolute")
+    if path.is_symlink():
+        raise DeliveryGateError(f"handoff {label} symlink is rejected")
+    if not path.is_file():
+        raise DeliveryGateError(f"handoff {label} does not exist")
+    if executable and not os.access(path, os.X_OK):
+        raise DeliveryGateError(f"handoff {label} is not executable")
+    if not isinstance(expected_sha256, str) or _sha256(path) != expected_sha256:
+        raise DeliveryGateError(f"handoff {label} digest mismatch")
+    return path.resolve()
 
 
 def _verify_build_config(path: Optional[Path], target: str, app_id: Optional[str]) -> tuple[Optional[Path], Optional[str]]:
@@ -72,7 +105,7 @@ def build_preflight(
     platform: str,
     *,
     creator_executable: Optional[Path] = None,
-    creator_version_readback: Optional[str] = None,
+    creator_editor_version_readback: Optional[str] = None,
     build_config: Optional[Path] = None,
     app_id: Optional[str] = None,
     authority_granted: bool = False,
@@ -86,8 +119,8 @@ def build_preflight(
     blockers: list[str] = []
     if executable is None:
         blockers.append("creator_cli_unavailable")
-    if creator_version_readback != manifest.get("creator_version"):
-        blockers.append("creator_version_unverified")
+    if not _is_creator_38_patch(creator_editor_version_readback):
+        blockers.append("creator_editor_version_unverified")
     if not app_id:
         blockers.append("appid_required")
     config_path, config_error = _verify_build_config(build_config, target, app_id)
@@ -109,11 +142,14 @@ def build_preflight(
         "schema_version": 1,
         "closure_state": "ready_to_build" if ready else "build_preflight_blocked",
         "project_digest": manifest["project_digest"],
+        "serialization_creator_version": manifest["creator_version"],
         "platform": platform,
         "creator_build_target": target,
         "creator_executable": str(executable) if executable else None,
-        "creator_version_readback": creator_version_readback,
+        "creator_executable_sha256": _sha256(executable) if executable else None,
+        "creator_editor_version_readback": creator_editor_version_readback,
         "build_config": str(config_path) if config_path else None,
+        "build_config_sha256": _sha256(config_path) if config_path else None,
         "appid_present": bool(app_id),
         "blocking_reasons": blockers,
         "command": command,
@@ -134,22 +170,41 @@ def verify_devtools_handoff(receipt: Mapping[str, Any], project_root: Path) -> M
         raise DeliveryGateError("handoff status must be human_verified")
     if receipt.get("project_digest") != manifest["project_digest"]:
         raise DeliveryGateError("handoff project_digest mismatch")
-    if receipt.get("creator_version") != manifest["creator_version"]:
-        raise DeliveryGateError("handoff creator_version mismatch")
+    if receipt.get("serialization_creator_version") != manifest["creator_version"]:
+        raise DeliveryGateError("handoff serialization_creator_version mismatch")
+    editor_version = receipt.get("creator_editor_version_readback")
+    if not _is_creator_38_patch(editor_version):
+        raise DeliveryGateError("handoff creator_editor_version_readback must be an exact 3.8.x patch readback")
+    build_binding = receipt.get("build_binding")
+    if not isinstance(build_binding, Mapping) or set(build_binding) != BUILD_BINDING_KEYS:
+        raise DeliveryGateError("handoff build_binding fields are incomplete or unknown")
+    if build_binding.get("creator_editor_version_readback") != editor_version:
+        raise DeliveryGateError("handoff editor version binding mismatch")
+    creator_executable_path = _verify_bound_file(
+        build_binding.get("creator_executable_path"),
+        build_binding.get("creator_executable_sha256"),
+        "creator executable",
+        executable=True,
+    )
+    build_config_path = _verify_bound_file(
+        build_binding.get("build_config_path"),
+        build_binding.get("build_config_sha256"),
+        "build config",
+    )
     if receipt.get("creator_build_target") != TARGETS[platform]:
         raise DeliveryGateError("handoff creator_build_target mismatch")
-    required_readbacks = (
-        "creator_build_exit_zero",
-        "devtools_import",
-        "simulator_compile",
-        "real_device_preview",
-    )
+    required_readbacks = {
+        "creator_build_exit_code": 36,
+        "devtools_import": True,
+        "simulator_compile": True,
+        "real_device_preview": True,
+    }
     readbacks = receipt.get("readbacks", {})
     if not isinstance(readbacks, Mapping) or set(readbacks) != set(required_readbacks):
         raise DeliveryGateError("handoff readback fields are incomplete or unknown")
-    for name in required_readbacks:
-        if readbacks.get(name) is not True:
-            raise DeliveryGateError(f"handoff readback missing or false: {name}")
+    for name, expected in required_readbacks.items():
+        if readbacks.get(name) != expected:
+            raise DeliveryGateError(f"handoff readback mismatch: {name} must be {expected!r}")
     artifact = receipt.get("artifact", {})
     if not isinstance(artifact, Mapping) or set(artifact) != {"path", "sha256", "bytes"}:
         raise DeliveryGateError("handoff artifact fields are incomplete or unknown")
@@ -182,11 +237,19 @@ def verify_devtools_handoff(receipt: Mapping[str, Any], project_root: Path) -> M
         "closure_state": "devtools_handoff_receipt_integrity_verified",
         "claim_boundary": "verifies receipt structure, bindings, artifact integrity, and supplied human readbacks; does not independently observe Creator, DevTools, simulator, or device execution",
         "project_digest": manifest["project_digest"],
+        "serialization_creator_version": manifest["creator_version"],
+        "creator_editor_version_readback": editor_version,
         "platform": platform,
-        "creator_version": receipt["creator_version"],
         "creator_build_target": receipt["creator_build_target"],
+        "build_binding": {
+            "creator_executable_path": str(creator_executable_path),
+            "creator_executable_sha256": build_binding["creator_executable_sha256"],
+            "build_config_path": str(build_config_path),
+            "build_config_sha256": build_binding["build_config_sha256"],
+            "creator_editor_version_readback": editor_version,
+        },
         "artifact": {"path": str(path.resolve()), "sha256": actual_sha, "bytes": actual_bytes},
-        "readbacks": {name: True for name in required_readbacks},
+        "readbacks": dict(required_readbacks),
         "authority": {"may_submit_platform": False, "may_publish": False},
     }
 
@@ -210,7 +273,7 @@ def main() -> int:
             args.project,
             args.platform,
             creator_executable=args.creator,
-            creator_version_readback=args.creator_version,
+            creator_editor_version_readback=args.creator_version,
             build_config=args.config,
             app_id=args.appid,
             authority_granted=False,

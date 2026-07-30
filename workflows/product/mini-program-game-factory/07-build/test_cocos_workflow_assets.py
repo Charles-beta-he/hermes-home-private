@@ -51,6 +51,11 @@ class CocosWorkflowAssetsTests(unittest.TestCase):
         self.assertIn("win_condition", contract["forbidden_ownership"])
         self.assertIn("publish", contract["forbidden_ownership"])
         self.assertFalse(contract["authority"]["may_invoke_platform_sdk"])
+        self.assertEqual(contract["implementations"]["wechat"]["namespace"], "wx")
+        self.assertEqual(contract["implementations"]["douyin"]["namespace"], "tt")
+        for implementation in contract["implementations"].values():
+            self.assertEqual(implementation["status"], "local_contract_tested")
+            self.assertFalse(implementation["official_sdk_e2e_verified"])
 
     def test_devtools_handoff_template_is_blocked_and_secret_free(self):
         handoff = json.loads(
@@ -61,9 +66,33 @@ class CocosWorkflowAssetsTests(unittest.TestCase):
         self.assertNotIn("app_id", handoff)
         self.assertFalse(handoff["authority"]["may_invoke_devtools"])
         self.assertFalse(handoff["authority"]["may_submit_platform"])
+        self.assertEqual(handoff["serialization_creator_version"], "3.8.0")
+        self.assertIsNone(handoff["creator_editor_version_readback"])
+        self.assertEqual(
+            set(handoff["build_binding"]),
+            {
+                "creator_executable_path", "creator_executable_sha256",
+                "build_config_path", "build_config_sha256",
+                "creator_editor_version_readback",
+            },
+        )
+        self.assertTrue(all(value is None for value in handoff["build_binding"].values()))
+        self.assertIsNone(handoff["readbacks"]["creator_build_exit_code"])
+        self.assertNotIn("creator_build_exit_zero", handoff["readbacks"])
         self.assertNotIn("secret", rendered)
         self.assertNotIn("token", rendered)
         self.assertNotIn("password", rendered)
+
+    def test_creator_cli_source_freezes_official_success_exit_code(self):
+        source = json.loads(
+            (PROJECT / "evidence" / "cocos-creator-cli-source.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(source["source_type"], "official_documentation_readback")
+        self.assertEqual(source["creator_editor_cli"]["success_exit_code"], 36)
+        self.assertEqual(source["creator_editor_cli"]["invalid_build_parameters_exit_code"], 32)
+        self.assertEqual(source["creator_editor_cli"]["unexpected_build_error_exit_code"], 34)
+        self.assertTrue(source["creator_editor_cli"]["is_distinct_from_engine_repository"])
+        self.assertFalse(source["local_execution"]["creator_build_executed"])
 
     def test_capability_graph_places_cocos_before_runtime_and_platform(self):
         graph = json.loads((PROJECT / "capability-graph.json").read_text(encoding="utf-8"))
@@ -79,7 +108,18 @@ class CocosWorkflowAssetsTests(unittest.TestCase):
         self.assertEqual(nodes["cocos-creator-build"]["side_effects"], "local_process_requires_exact_authority")
         self.assertEqual(nodes["cocos-creator-build"]["depends_on"], ["cocos-build-preflight"])
         self.assertEqual(nodes["devtools-handoff-verifier"]["depends_on"], ["cocos-creator-build"])
-        self.assertEqual(nodes["platform-adapter"]["depends_on"], ["devtools-handoff-verifier"])
+        self.assertEqual(
+            nodes["official-platform-adapter-candidate"]["depends_on"],
+            ["gameplay-runtime-core"],
+        )
+        self.assertEqual(
+            nodes["official-platform-adapter-candidate"]["side_effects"],
+            "none_until_explicit_runtime_instantiation",
+        )
+        self.assertEqual(
+            nodes["platform-adapter"]["depends_on"],
+            ["official-platform-adapter-candidate", "devtools-handoff-verifier"],
+        )
 
     def test_workflow_state_does_not_promote_runtime_or_shipping(self):
         state = (PROJECT / "workflow-state.yaml.md").read_text(encoding="utf-8")

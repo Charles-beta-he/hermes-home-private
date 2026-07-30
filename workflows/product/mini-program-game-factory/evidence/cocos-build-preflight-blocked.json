@@ -7,18 +7,21 @@
   },
   "blocking_reasons": [
     "creator_cli_unavailable",
-    "creator_version_unverified",
+    "creator_editor_version_unverified",
     "appid_required",
     "creator_build_config_export_required",
     "build_authority_closed"
   ],
   "build_config": null,
+  "build_config_sha256": null,
   "closure_state": "build_preflight_blocked",
   "command": null,
   "creator_build_target": "bytedance-mini-game",
+  "creator_editor_version_readback": null,
   "creator_executable": null,
-  "creator_version_readback": null,
+  "creator_executable_sha256": null,
   "platform": "douyin",
-  "project_digest": "54198717068524d21f2935fca3d7a4ac0efafa3097dfce2f7d79abd77d95e268",
-  "schema_version": 1
+  "project_digest": "85f89ef57b6d8431a4de3e4d686318dd441dcb8fdbeb456b796b7a82cb0179e8",
+  "schema_version": 1,
+  "serialization_creator_version": "3.8.0"
 }

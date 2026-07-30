@@ -44,9 +44,14 @@
       "sha256": "1b82219135ea5fba075a3bb795ad675aa187cdfce3c9708ddadd87590898a21a"
     },
     {
-      "bytes": 933,
+      "bytes": 5822,
+      "path": "assets/game-factory/core/official-platform-adapters.ts",
+      "sha256": "e91fff33a17e4d414249a0df4b0f3abcd10ae1d3b52b3b5c7b93410045d1a55d"
+    },
+    {
+      "bytes": 1138,
       "path": "assets/game-factory/core/platform-port.ts",
-      "sha256": "8a96b1ec95b183bcc8392fb3c19b1c2b1faa3552b329f7b137e740d5603d3eae"
+      "sha256": "ac94aa4675e21bd6f86f0c4d1691bce625d0adac2042b8999b3ca3ffae7f02c8"
     },
     {
       "bytes": 2465,
@@ -103,7 +108,7 @@
     "douyin": "bytedance-mini-game",
     "wechat": "wechatgame"
   },
-  "project_digest": "54198717068524d21f2935fca3d7a4ac0efafa3097dfce2f7d79abd77d95e268",
+  "project_digest": "85f89ef57b6d8431a4de3e4d686318dd441dcb8fdbeb456b796b7a82cb0179e8",
   "project_uuid": "3e365b28-7d73-5744-9c9e-182b70c92448",
   "scene_uuid": "a287c542-25f5-51d7-9c12-3868278f70cf",
   "schema_version": 1,

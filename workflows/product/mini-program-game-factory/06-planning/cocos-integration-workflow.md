@@ -14,10 +14,10 @@
 | C1 profile frozen | Cocos 源码调研、用户技术选择 | `cocos-integration-profile.json` | 3.8 系列、固定 commit、MIT、authority=false | completed_contract_only |
 | C2 integration planned | digest-valid WorkPackage + profile | `CocosIntegrationPacket` | 确定性摘要、candidate-only | implemented |
 | C3 candidate materialized | integration packet | 本地 candidate bundle | 文件 SHA-256、manifest readback | implemented |
-| C4 project candidate | verified candidate + Node-tested sources | 18-file Creator 3.8 import candidate | project manifest、deterministic regeneration、TypeScript compile | implemented_local_candidate；Creator import blocked |
-| C5 playable loop | kernel/content | Node 中的固定 seed 单关卡闭环 | 10/10 tests、runtime smoke、state SHA-256 | implemented_node_only；Creator runtime 与人工试玩 blocked |
-| C6 platform port | typed PlatformPort | LocalPlatformStub + future `tt`/`wx` adapters | stub 明示 official_sdk=false、无伪造登录/奖励 | local_stub_only；官方 SDK blocked |
-| C7 deterministic build | project candidate + exact Creator/config/AppID/authority | preflight receipt 或平台构建产物 | 非执行 preflight、命令绑定 configPath、exit 0、产物摘要 | preflight implemented and currently blocked；build not executed |
+| C4 project candidate | verified candidate + Node-tested sources | 19-file Creator 3.8 import candidate，含 official adapter source | project manifest、deterministic regeneration、TypeScript compile | implemented_local_candidate；Creator import blocked |
+| C5 playable loop | kernel/content | Node 中的固定 seed 单关卡闭环 | kernel/runtime tests、runtime smoke、state SHA-256 | implemented_node_only；Creator runtime 与人工试玩 blocked |
+| C6 platform port | typed PlatformPort | LocalPlatformStub + `tt`/`wx` adapter candidates | stub 明示 official_sdk=false；adapter fake-SDK contract tests 覆盖 namespace、shape、login code、typed error 与广告完成回执 | local_contract_tested；official SDK/Creator/device E2E blocked |
+| C7 deterministic build | project candidate + exact Creator/config/AppID/authority | preflight receipt 或平台构建产物 | 序列化参考与 editor patch 分离；executable/config SHA-256 绑定；非执行 preflight、命令绑定 configPath、官方 CLI success exit code `36`、产物摘要 | preflight implemented and currently blocked；build not executed |
 | C8 DevTools/device | 构建产物 | 导入/模拟器/真机 receipt | 开发者工具和真机读回 | blocked |
 | C9 upload/review | 人工授权、平台账号 | upload/review receipt | 精确外部授权、状态回读 | blocked |
 | C10 publish/rollback | 审核通过、发布授权 | 线上版本/回滚 receipt | 发布版本回读、回滚路径 | blocked |
@@ -76,6 +76,8 @@ assets/game-factory/
 
 - Cocos profile 不能打开任何构建、DevTools、凭据、真机、送审、发布或支付权限。
 - 未知 Creator CLI 和 target 保持 `null`/`pending`，不得凭经验硬编码。
+- Project candidate 的 `serialization_creator_version=3.8.0` 只表示固定序列化参考；真实 editor 必须读回 exact `3.8.x` patch，二者不得混写。
+- Preflight 必须记录 Creator executable 与 editor-exported config 的绝对路径和 SHA-256；handoff 必须将同一 editor patch 同时绑定到 build binding，并重新读回这些文件摘要。该 receipt 仍只是供应方声明完整性校验，不等于 verifier 独立观察了构建。
 - PlatformAdapter 不拥有胜负、评分、随机种子或奖励事实；广告奖励只能由平台完成回调触发且幂等。
 - 旧 `local_contract_verified` 证书不覆盖新增 Cocos 文件；新增切片必须独立测试和重新绑定精确 tree。
 - `ready_to_build` 仅代表非执行 preflight 前提齐全；不代表 Creator 构建已运行。DevTools handoff verifier 只接受严格字段、产物摘要、平台/target/project 绑定、模拟器和真机人工 readback，且 upload/review/publish/rollback 必须仍为 `not_started`。

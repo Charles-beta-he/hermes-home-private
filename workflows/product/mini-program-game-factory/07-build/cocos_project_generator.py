@@ -14,7 +14,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Mapping
 
-CREATOR_VERSION = "3.8.0"
+SERIALIZATION_CREATOR_VERSION = "3.8.0"
 SERIALIZATION_SOURCE = {
     "repository": "https://github.com/cocos/cocos-example-projects",
     "commit": "5acd26218d3915169679a288ebf65b9ca1f96027",
@@ -26,6 +26,7 @@ RUNTIME_SOURCES = (
     "gameplay-kernel.ts",
     "platform-port.ts",
     "local-platform-stub.ts",
+    "official-platform-adapters.ts",
 )
 
 
@@ -277,7 +278,7 @@ def generate_cocos_project(candidate_root: Path, runtime_core: Path, output_root
             "name": "hermes-circuit-untangle",
             "type": "2d",
             "uuid": project_uuid,
-            "creator": {"version": CREATOR_VERSION},
+            "creator": {"version": SERIALIZATION_CREATOR_VERSION},
             "version": "0.1.0",
         })
         _write_json(staging / "tsconfig.json", {
@@ -342,7 +343,7 @@ def generate_cocos_project(candidate_root: Path, runtime_core: Path, output_root
         payload = {
             "schema_version": 1,
             "closure_state": "creator_import_pending",
-            "creator_version": CREATOR_VERSION,
+            "creator_version": SERIALIZATION_CREATOR_VERSION,
             "source_candidate_manifest_digest": candidate["manifest_digest"],
             "source_compile_digest": source_compile_digest,
             "serialization_source": SERIALIZATION_SOURCE,

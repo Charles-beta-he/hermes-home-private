@@ -20,6 +20,7 @@
     "cocos_integration_planned",
     "cocos_candidate_materialized",
     "node_runtime_smoke_passed",
+    "official_platform_adapter_contract_tested",
     "creator_project_candidate_materialized",
     "build_preflight_blocked",
     "ready_to_build",
@@ -296,12 +297,15 @@
     {
       "id": "cocos-build-preflight",
       "kind": "gate",
-      "responsibility": "produce a non-executing exact build plan only when project digest, non-symlink Creator executable, exact 3.8 readback, editor-exported config, AppID presence and explicit build authority converge",
+      "responsibility": "produce a non-executing exact build plan only when project digest, serialization reference, non-symlink Creator executable bytes, exact editor 3.8.x patch readback, editor-exported config bytes, AppID presence and explicit build authority converge",
       "consumes": [
         "project_manifest",
+        "serialization_creator_version",
         "creator_executable",
-        "creator_version_readback",
+        "creator_executable_sha256",
+        "creator_editor_version_readback",
         "editor_exported_build_config",
+        "build_config_sha256",
         "appid_presence",
         "build_authority"
       ],
@@ -315,9 +319,12 @@
       "side_effects": "none",
       "gates": [
         "project-digest",
+        "serialization-version-boundary",
         "creator-cli",
-        "exact-version",
+        "exact-editor-patch-readback",
+        "executable-digest",
         "config-target-appid-binding",
+        "config-digest",
         "no-secret-output",
         "exact-authority"
       ]
@@ -325,10 +332,14 @@
     {
       "id": "devtools-handoff-verifier",
       "kind": "gate",
-      "responsibility": "verify artifact digest and human Creator/DevTools/simulator/device readbacks without granting upload, review or publish authority",
+      "responsibility": "verify project serialization identity, exact editor patch/executable/config build binding, artifact digest and supplied human Creator/DevTools/simulator/device readbacks without granting upload, review or publish authority",
       "consumes": [
         "creator_build_artifact",
-        "human_handoff_receipt"
+        "human_handoff_receipt",
+        "serialization_creator_version",
+        "creator_editor_version_readback",
+        "creator_executable_sha256",
+        "build_config_sha256"
       ],
       "produces": [
         "devtools_handoff_receipt_integrity_verified"
@@ -339,6 +350,10 @@
       "side_effects": "read_only",
       "gates": [
         "strict-fields",
+        "serialization-editor-version-separation",
+        "exact-editor-patch-binding",
+        "creator-executable-sha256",
+        "build-config-sha256",
         "artifact-sha256",
         "platform-target-project-binding",
         "real-device-readback",
@@ -374,7 +389,10 @@
       "responsibility": "require an exact Creator installation, official build target and digest-bound build receipt before any platform artifact claim",
       "consumes": [
         "ready_to_build",
-        "exact_creator_version",
+        "serialization_creator_version",
+        "creator_editor_version_readback",
+        "creator_executable_sha256",
+        "build_config_sha256",
         "editor_exported_build_config"
       ],
       "produces": [
@@ -387,31 +405,67 @@
       "side_effects": "local_process_requires_exact_authority",
       "gates": [
         "creator-installation-readback",
-        "exact-version",
+        "serialization-editor-version-separation",
+        "exact-editor-patch-binding",
+        "executable-and-config-digests",
         "official-build-target",
-        "exit-zero",
+        "creator-cli-success-exit-36",
         "artifact-digest"
+      ]
+    },
+    {
+      "id": "official-platform-adapter-candidate",
+      "kind": "adapter",
+      "responsibility": "provide local contract-tested wx/tt PlatformPort implementations without claiming official SDK E2E or opening runtime authority",
+      "consumes": [
+        "platform_port_contract",
+        "wx_runtime_namespace_shape",
+        "tt_runtime_namespace_shape"
+      ],
+      "produces": [
+        "official_platform_adapter_contract_tested",
+        "wechat_adapter_candidate",
+        "douyin_adapter_candidate"
+      ],
+      "depends_on": [
+        "gameplay-runtime-core"
+      ],
+      "side_effects": "none_until_explicit_runtime_instantiation",
+      "gates": [
+        "exact-wx-tt-global-binding",
+        "runtime-sdk-shape-validation",
+        "typed-sdk-errors",
+        "one-time-login-code-not-identity",
+        "reward-only-after-isEnded-true",
+        "authority-closed"
       ]
     },
     {
       "id": "platform-adapter",
       "kind": "adapter",
-      "responsibility": "bind lifecycle, storage and ads to an official platform contract",
+      "responsibility": "activate a contract-tested adapter against a real official platform runtime only after build and DevTools/device evidence converge",
       "consumes": [
-        "runtime",
-        "official_platform_contract"
+        "official_platform_adapter_contract_tested",
+        "creator_build_artifact",
+        "official_platform_runtime",
+        "devtools_handoff_receipt_integrity_verified"
       ],
       "produces": [
+        "platform_runtime_receipt",
         "platform_build"
       ],
       "depends_on": [
+        "official-platform-adapter-candidate",
         "devtools-handoff-verifier"
       ],
-      "side_effects": "external_read",
+      "side_effects": "official_sdk_runtime_calls_require_external_evidence_and_exact_authority",
       "gates": [
         "official-contract",
+        "official-sdk-e2e",
         "typed-errors",
-        "reward-idempotency"
+        "reward-idempotency",
+        "real-device-readback",
+        "exact-authority"
       ]
     },
     {

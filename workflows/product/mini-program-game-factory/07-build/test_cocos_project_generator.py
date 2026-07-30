@@ -39,6 +39,9 @@ class CocosProjectGeneratorTests(unittest.TestCase):
             package = json.loads((first / "package.json").read_text())
             self.assertEqual(package["creator"]["version"], "3.8.0")
             self.assertEqual(package["type"], "2d")
+            self.assertTrue(
+                (first / "assets" / "game-factory" / "core" / "official-platform-adapters.ts").is_file()
+            )
             scene = json.loads((first / "assets" / "scenes" / "main.scene").read_text())
             script_meta = json.loads((first / "assets" / "game-factory" / "GameBootstrap.ts.meta").read_text())
             component_types = {item.get("__type__") for item in scene if isinstance(item, dict)}

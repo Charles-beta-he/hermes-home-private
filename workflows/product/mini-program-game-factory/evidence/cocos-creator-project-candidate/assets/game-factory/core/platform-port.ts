@@ -8,9 +8,15 @@ export interface PlatformCapabilities {
   share: boolean;
 }
 export type Unavailable = { ok: false; code: 'OFFICIAL_SDK_UNAVAILABLE'; platform: PlatformId };
-export type LoginResult = { ok: true; userId: string } | Unavailable;
-export type RewardedAdResult = { ok: true; rewardGranted: boolean } | (Unavailable & { rewardGranted: false });
-export type ShareResult = { ok: true } | Unavailable;
+export type PlatformSdkError = { ok: false; code: 'PLATFORM_SDK_ERROR'; platform: PlatformId };
+export type LoginResult =
+  | { ok: true; platformLoginCode: string; identityVerified: false }
+  | Unavailable
+  | PlatformSdkError;
+export type RewardedAdResult =
+  | { ok: true; rewardGranted: boolean }
+  | ((Unavailable | PlatformSdkError) & { rewardGranted: false });
+export type ShareResult = { ok: true } | Unavailable | PlatformSdkError;
 
 export interface PlatformPort {
   capabilities(): PlatformCapabilities;

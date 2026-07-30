@@ -27,10 +27,19 @@
     "rollback"
   ],
   "implementations": {
-    "douyin": {"namespace": "tt", "status": "contract_pending"},
-    "wechat": {"namespace": "wx", "status": "contract_pending"}
+    "douyin": {
+      "namespace": "tt",
+      "status": "local_contract_tested",
+      "official_sdk_e2e_verified": false
+    },
+    "wechat": {
+      "namespace": "wx",
+      "status": "local_contract_tested",
+      "official_sdk_e2e_verified": false
+    }
   },
   "authority": {
+    "meaning": "current execution authority; implementation availability does not open runtime SDK authority",
     "may_invoke_platform_sdk": false,
     "may_grant_reward": false,
     "may_submit_platform": false,

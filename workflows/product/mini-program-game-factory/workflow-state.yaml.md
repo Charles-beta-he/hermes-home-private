@@ -6,7 +6,7 @@ chain: full-lifecycle
 current_stage: discovery
 status: blocked
 created_at: 2026-07-26T12:44:35Z
-updated_at: 2026-07-27T03:41:55Z
+updated_at: 2026-07-27T04:30:15Z
 authority_boundary: local-artifacts-only
 highest_evidenced_state: creator_project_candidate_materialized
 ---
@@ -55,20 +55,21 @@ highest_evidenced_state: creator_project_candidate_materialized
   evidence: tasks/task-candidates.json
 
 - stage: build
-  status: local_runtime_and_project_candidate_verified_build_preflight_blocked
+  status: local_runtime_project_and_platform_adapter_candidates_verified_build_preflight_blocked
   artifact: 07-build/cocos_work_package_adapter.py, 07-build/cocos_project_generator.py, 07-build/cocos_delivery_gate.py, runtime/cocos/runtime-core/
-  evidence: evidence/cocos-sample-candidate/candidate-manifest.json, evidence/cocos-node-runtime-smoke.json, evidence/cocos-creator-project-candidate/project-manifest.json, evidence/cocos-build-preflight-blocked.json
-  closure: creator_project_candidate_materialized
+  evidence: evidence/cocos-sample-candidate/candidate-manifest.json, evidence/cocos-node-runtime-smoke.json, evidence/cocos-creator-project-candidate/project-manifest.json, evidence/cocos-build-preflight-blocked.json, evidence/cocos-creator-cli-source.json
+  closure: creator_project_candidate_materialized + official_platform_adapter_contract_tested
   certification: current mutable slice; prior local-contract certificate does not cover these files
   node runtime: fixed-seed GameplayKernel smoke passed; LocalPlatformStub reports official_sdk=false and grants no reward
-  Creator project: deterministic 18-file import candidate verified; Creator import/build not executed
+  platform adapters: wx/tt adapters are local contract-tested with fake SDKs, strict runtime SDK shape checks, one-time login-code semantics and reward completion checks; official SDK E2E not executed
+  Creator project: deterministic 19-file import candidate verified, including the official adapter candidate source; Creator import/build not executed
   build preflight: blocked with no command because Creator CLI/version, AppID, editor-exported config and build authority are absent
-  authority: local candidate materialization and verification only; build, DevTools, credentials, device preview, submission and publish remain false
+  authority: local candidate materialization and verification only; official SDK runtime, build, DevTools, credentials, device preview, submission and publish remain false
 
 - stage: shipping
   status: blocked_at_creator_devtools_device_and_external_authority
   artifact: 08-shipping/shipping-packet.md, 08-shipping/devtools-handoff-template.json
-  blocker: no Creator import/build receipt, no current official platform contract, no DevTools/device receipt, no human playtest
+  blocker: no Creator import/build receipt, no official platform SDK E2E/runtime receipt, no DevTools/device receipt, no human playtest
   authority: no platform submission or publish
 
 - stage: launch
