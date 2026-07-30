@@ -146,3 +146,13 @@ stop_conditions:
 ```
 
 非目标：不自动注册/登录 Cocos、抖音或微信；不输入 AppID/密钥；不上传、审核、发布、支付；不把本地 stub 冒充官方 SDK/Creator 运行时。
+
+## Reference-ad 实验通道（2026-07-30）
+
+用户提供的广告片段可以打开一条 candidate-only 的 clean-room 实验通道（`07-build/reference_ad_experiment.py` + `experiments/stack-path-runner/`）：
+
+- 输入必须是 `source_type=user_supplied_reference_ad`，本地媒体为常规文件并通过声明的 SHA-256 摘要读回；符号链接、缺失文件与摘要不匹配一律 fail closed。
+- 必须显式声明 `verified_current_hot=false`、`rank_claimed=false`；任何榜单/热度声明被拒绝。该通道的产物永远不能满足 `verified-current-hot` 的 market-to-kernel 门禁。
+- 观察必须区分可见事实、模型推断与未知，并给出 clean-room 可复用机制与不可复制表达清单；来源 MP4/帧只作证据，不进入任何交付资产。
+- 机制卡必须恰好包含 warm-up + skill-gate 两关，authority 保持 candidate-only：不冻结内核、不编译工作包、不构建 Cocos、不送审、不发布。
+- 产出是本地浏览器 vertical slice 与确定性 receipt；`creator_build_verified=false`、`platform_ready=false`、`published=false` 不变。

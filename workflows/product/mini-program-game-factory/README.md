@@ -30,6 +30,8 @@
 - `evidence/source-packet.json`：三条真实来源 URL、发布时间/访问时间与 snapshot/receipt 摘要的本地证据包。
 - `evidence/timestamped-source.json`：市场快照、评估时点和 receipt 的时间绑定；明确不将间接材料升级为客户端直接证据。
 - `evidence/direct-capture-intake-template.json`：用户提供榜单截图/录屏和试玩证据时的导入模板。
+- `07-build/reference_ad_experiment.py`：用户授权 reference-ad 的 candidate-only 实验通道校验器/receipt 构建器；绑定本地媒体 SHA-256（拒绝符号链接与摘要不匹配）、强制 `verified_current_hot=false` 与 `rank_claimed=false`、要求可见事实/推断/未知与 clean-room 可复用/不可复制边界、两关 warm-up + skill-gate；该通道永远不能满足 `verified-current-hot` market-to-kernel 门禁，不开放内核冻结、Cocos 构建、送审或发布。
+- `experiments/stack-path-runner/`：原创两关浏览器 vertical slice「叠桥冲刺」（依赖为零的 ESM 确定性内核 + Canvas UI）；仅为本地 candidate 实验，不含来源素材，不等于 Cocos/抖音运行时验证。
 
 ## 运行
 
@@ -68,6 +70,21 @@ export PATH="$HOME/.nvm/versions/node/v24.14.0/bin:$PATH"
 cd ../runtime/cocos/runtime-core
 npm test
 npm run smoke
+```
+
+Reference-ad 实验通道与原创浏览器 vertical slice：
+
+```bash
+cd 07-build
+python3 -m unittest -v test_reference_ad_experiment.py
+python3 reference_ad_experiment.py \
+  --observation ../evidence/ad-tests/2026-07-30-douyin-7665976730670091561/reference-ad-observation.json \
+  --mechanic-card ../evidence/ad-tests/2026-07-30-douyin-7665976730670091561/mechanic-card.json \
+  --output ../evidence/ad-tests/2026-07-30-douyin-7665976730670091561/reference-ad-experiment-receipt.json
+
+export PATH="$HOME/.nvm/versions/node/v24.14.0/bin:$PATH"
+cd ../experiments/stack-path-runner
+node --test
 ```
 
 Cocos 适配器的输出是本地候选 bundle。输出根目录必须尚不存在；它不会调用 Cocos Creator、平台 SDK 或开发者工具，也不会打开构建、真机、送审或发布权限。

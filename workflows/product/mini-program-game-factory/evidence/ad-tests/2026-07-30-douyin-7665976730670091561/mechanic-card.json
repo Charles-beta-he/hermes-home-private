@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "mechanic_id": "stack-path-runner",
+  "status": "experimental_candidate_only",
+  "source_observation": "douyin-7665976730670091561-2026-07-30",
+  "core_action": "Steer to collect route cells, then carry enough cells into gaps so traversal consumes them automatically.",
+  "state_transition": "running -> cell collected/stack grows -> hazard entered -> cells spent/bridge grows -> finish or insufficient-resource failure",
+  "session_loop": "scan lanes -> steer -> collect -> read stack pressure -> commit to bridge -> finish/retry",
+  "goal_or_exit": "Reach the finish platform with every required gap funded.",
+  "failure_pressure": "Missing a collection line or paying an obstacle penalty can leave too few cells for the next gap.",
+  "randomness": "None in the test slice; deterministic authored levels.",
+  "spectator_hook": "The stack visibly rises during setup and collapses one unit at a time across a risky gap.",
+  "social_hook": "Not included in the test slice.",
+  "content_burden": "Moderate: levels vary lane patterns, gap budgets, penalties and curved-path presentation while the kernel remains fixed.",
+  "controls": {
+    "mobile": "drag horizontally",
+    "desktop": "pointer drag or arrow keys",
+    "forward_motion": "automatic"
+  },
+  "test_levels": [
+    {
+      "id": "warm-up",
+      "promise": "第一关没问题",
+      "difficulty": "easy",
+      "design": "A centered pickup line overfunds one short bridge; staying near the center is sufficient."
+    },
+    {
+      "id": "skill-gate",
+      "promise": "过了第二关才算厉害",
+      "difficulty": "skill_gate",
+      "design": "Pickups split across left and right lanes, penalties punish late steering, and two bridge budgets require active collection."
+    }
+  ],
+  "negative_cases": [
+    "Do not claim the reference ad is a current hot-list winner.",
+    "Do not reuse source art, audio, layout, title or exact geometry.",
+    "Do not auto-win Level 2 when the player never steers.",
+    "Do not let bridge spending make the stack negative.",
+    "Do not claim Cocos Creator or Douyin DevTools verification from a browser preview."
+  ],
+  "authority": {
+    "candidate_only": true,
+    "may_claim_verified_current_hot": false,
+    "may_compile_work_package": false,
+    "may_freeze_factory_kernel": false,
+    "may_publish": false,
+    "may_submit_platform": false
+  }
+}

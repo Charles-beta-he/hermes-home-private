@@ -8,6 +8,7 @@
     "recent_market_lead",
     "stale_lead",
     "verified_current_hot",
+    "reference_ad_experiment_candidate",
     "mechanic_observed",
     "trend_clustered",
     "market_to_kernel_gate_evaluated",
@@ -114,6 +115,40 @@
         "protected-surface",
         "non-copyable-expression-exclusion",
         "deterministic-receipt"
+      ]
+    },
+    {
+      "id": "reference-ad-experiment",
+      "kind": "workflow",
+      "responsibility": "validate a user-supplied reference ad into a candidate-only clean-room browser experiment; it can never satisfy the verified-current-hot market-to-kernel gate or open freeze/build/submission/publish authority",
+      "consumes": [
+        "user_supplied_reference_ad",
+        "reference_ad_observation",
+        "mechanic_card"
+      ],
+      "produces": [
+        "reference_ad_experiment_receipt",
+        "browser_vertical_slice_candidate"
+      ],
+      "side_effects": "local_write",
+      "gates": [
+        "local-digest-readback",
+        "no-symlink-local-media",
+        "verified-current-hot-false",
+        "no-rank-claim",
+        "clean-room-boundary",
+        "two-level-warm-up-skill-gate",
+        "candidate-only",
+        "authority-closed"
+      ],
+      "cannot_satisfy": [
+        "verified-current-hot",
+        "market-to-kernel-gate",
+        "kernel-freeze",
+        "work-package-compilation",
+        "cocos-build",
+        "platform-submission",
+        "publish"
       ]
     },
     {

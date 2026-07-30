@@ -29,6 +29,14 @@ highest_evidenced_state: creator_project_candidate_materialized
   verification: reviewed commit 0747403e84e6bf98b4683f2b8901c166ee804357 / tree 7dd6e9a6ea82b538f084d7d6a56fb51ac23b6f02; immutable-archive 68/68 tests; two independent APPROVE reviews with no material findings; certificate evidence/h4-local-verification-certificate.json
   blocker: no 7-day locally digest-verified and human-classified direct rank/gameplay captures; no two current subject-bound independent lineages
 
+- stage: reference-ad-experiment
+  status: candidate_lane_local_only
+  artifact: 07-build/reference_ad_experiment.py, experiments/stack-path-runner/
+  evidence: evidence/ad-tests/2026-07-30-douyin-7665976730670091561/
+  closure: reference_ad_experiment_candidate
+  boundary: user-supplied reference ad with immutable local digest; verified_current_hot=false and rank_claimed=false enforced; outputs cannot satisfy the verified-current-hot market-to-kernel gate and open no kernel freeze, Cocos build, platform, submission or publish authority
+  verification: RED→GREEN unittest + Node kernel tests recorded in evidence/ad-tests/2026-07-30-douyin-7665976730670091561/red-green-evidence.md; browser slice is a local original candidate only, not Cocos/Douyin runtime evidence
+
 - stage: strategy
   status: accepted
   artifact: 02-strategy/strategy-canvas.md
