@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "registry_id": "mini-program-game-market-sources",
+  "sources": [
+    {
+      "source_key": "douyin-client-hot-chart",
+      "platform": "douyin",
+      "source_type": "direct_app_rank_capture",
+      "fetch_mode": "human_capture",
+      "cadence": "weekly",
+      "required_capture": ["榜单名称", "设备时间或录制时间", "Top 30 游戏名与排名", "连续滚动上下文"],
+      "strength": "primary_current_rank",
+      "limitations": ["助手不代登录客户端", "截图缺日期时不能证明新鲜度"]
+    },
+    {
+      "source_key": "douyin-direct-gameplay",
+      "platform": "douyin",
+      "source_type": "direct_gameplay_capture",
+      "fetch_mode": "human_capture_or_public_share_link",
+      "cadence": "for_each_shortlisted_game",
+      "required_capture": ["入口或分享卡", "开始到一次胜负/退出", "关键广告节点可跳过但需标注"],
+      "strength": "primary_mechanic",
+      "limitations": ["单局不能证明完整经济系统", "不记录账号或个人信息"]
+    },
+    {
+      "source_key": "douyin-open-platform-cases",
+      "platform": "douyin",
+      "source_type": "official_platform_case",
+      "fetch_mode": "public_web_read_only",
+      "cadence": "weekly",
+      "strength": "official_case_not_complete_chart",
+      "limitations": ["案例选择有平台偏差", "旧案例会失效"]
+    },
+    {
+      "source_key": "dataeye-adx",
+      "platform": "multi_platform",
+      "source_type": "third_party_rank_report",
+      "fetch_mode": "public_article_or_user_export",
+      "cadence": "weekly",
+      "strength": "cross_platform_rank_and_ad_signal",
+      "limitations": ["付费数据需用户合法导出", "不保存凭据", "转载不算独立来源"]
+    },
+    {
+      "source_key": "insightrackr-heat-engine",
+      "platform": "multi_platform",
+      "source_type": "third_party_rank_report",
+      "fetch_mode": "public_report_or_user_export",
+      "cadence": "monthly",
+      "strength": "acquisition_and_creative_signal",
+      "limitations": ["聚合方法需保留", "不能替代直接榜单或试玩"]
+    },
+    {
+      "source_key": "industry-media-and-creator-talks",
+      "platform": "multi_platform",
+      "source_type": "first_party_creator_report",
+      "fetch_mode": "public_web_read_only",
+      "cadence": "continuous_lead_discovery",
+      "strength": "mechanic_and_growth_context",
+      "limitations": ["开发者数据可能为自报", "文章发布时间不等于排名发生时间"]
+    },
+    {
+      "source_key": "search-and-social-leads",
+      "platform": "multi_platform",
+      "source_type": "search_or_social_lead",
+      "fetch_mode": "public_web_read_only",
+      "cadence": "continuous_lead_discovery",
+      "strength": "discovery_only",
+      "limitations": ["不能参与 current-hot quorum", "只能生成待复核线索"]
+    }
+  ],
+  "promotion_policy": {
+    "verified_current_hot": [
+      "7_days_local_digest_verified_direct_rank",
+      "digest_bound_human_content_review_matches_capture_role",
+      "2_current_subject_bound_independent_lineages",
+      "7_days_local_digest_verified_direct_gameplay",
+      "rank_and_gameplay_use_distinct_media_digests",
+      "discovery_only_sources_excluded_from_quorum"
+    ],
+    "credentials": "never_store",
+    "model_output": "candidate_only"
+  }
+}

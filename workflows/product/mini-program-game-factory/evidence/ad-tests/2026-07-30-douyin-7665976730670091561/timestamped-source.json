@@ -1,0 +1,18 @@
+{
+  "schema": "timestamped_source_v1",
+  "created_at": "2026-07-30T07:04:23Z",
+  "source_observed_at": "2026-07-30T13:43:24+08:00",
+  "source_packet_path": "source-packet.json",
+  "observation_id": "douyin-7665976730670091561-2026-07-30",
+  "source_type": "user_supplied_reference_ad",
+  "local_media_sha256": "0e4c03d6049f29b559e57acf544220803b52ccf15b146b424201cf9f5e64a44d",
+  "receipt_digest": "93b6c6867dc13c4abdb6c467cfd629597679ecc3d97e0a63960da099b9924cd3",
+  "time_readback": {
+    "observation_timestamp": "preserved from reference-ad-observation.json",
+    "packet_created_at_utc": "2026-07-30T07:04:23Z"
+  },
+  "status": "PASS_LOCAL_SOURCE_AND_TIME_BINDING",
+  "market_certification": false,
+  "current_hot_verified": false,
+  "boundary": "This artifact binds the local reference-ad source, observation time, media digest and experiment receipt. It opens no market-rank, kernel-freeze, work-package, platform-submission or publish authority."
+}

@@ -1,0 +1,10 @@
+{
+  "name": "stack-path-runner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Original candidate-only two-level browser vertical slice: collect stack units, spend them across gaps. No external dependencies.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

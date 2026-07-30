@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "profile_id": "cocos-creator-3.8-mini-game-contract",
+  "engine_family": "cocos-creator",
+  "version_line": "3.8",
+  "source_repository": "https://github.com/cocos/cocos-engine",
+  "source_commit": "68818ea662aba96cf4d2353007e5b5d797a059f8",
+  "source_license": "MIT",
+  "creator_cli_state": "unavailable",
+  "platforms": [
+    {
+      "platform_id": "douyin",
+      "runtime_api_namespace": "tt",
+      "engine_source_state": "observed_at_pinned_commit",
+      "official_contract_state": "contract_pending",
+      "build_target_id": null,
+      "build_state": "build_pending"
+    },
+    {
+      "platform_id": "wechat",
+      "runtime_api_namespace": "wx",
+      "engine_source_state": "observed_at_pinned_commit",
+      "official_contract_state": "contract_pending",
+      "build_target_id": null,
+      "build_state": "build_pending"
+    }
+  ],
+  "authority": {
+    "may_build_cocos": false,
+    "may_invoke_devtools": false,
+    "may_enter_credentials": false,
+    "may_preview_device": false,
+    "may_submit_platform": false,
+    "may_publish": false,
+    "may_pay": false
+  }
+}

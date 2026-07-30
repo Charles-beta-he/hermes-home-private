@@ -1,0 +1,125 @@
+{
+  "authority": {
+    "creator_runtime_verified": false,
+    "may_build_platform": false,
+    "may_invoke_devtools": false,
+    "may_publish": false
+  },
+  "closure_state": "creator_import_pending",
+  "creator_version": "3.8.0",
+  "files": [
+    {
+      "bytes": 29,
+      "path": ".gitignore",
+      "sha256": "f74d8d63af83fba2fda2bd7861766132897b27521bfd70703bfb68895b0c7e38"
+    },
+    {
+      "bytes": 422,
+      "path": "README.md",
+      "sha256": "5e6bd2a41b28b9c3c2d10169344525c549a70449443460945ca872b7a73fb026"
+    },
+    {
+      "bytes": 1800,
+      "path": "assets/game-factory/GameBootstrap.ts",
+      "sha256": "a2fbf703c811f7545860a5503fb0add4724ba0871536aaf06f1bde73dea95c0a"
+    },
+    {
+      "bytes": 267,
+      "path": "assets/game-factory/GameBootstrap.ts.meta",
+      "sha256": "bce94a91c7147162859170da1e00a1fecd9abf994cd17f8b7ad64ad049f05039"
+    },
+    {
+      "bytes": 2929,
+      "path": "assets/game-factory/core/content-pack.ts",
+      "sha256": "f95b439fdc312337d3bf54df5cdec54f49b4e0eb98922f5dd982de37d20938f7"
+    },
+    {
+      "bytes": 6735,
+      "path": "assets/game-factory/core/gameplay-kernel.ts",
+      "sha256": "c5d34a893b7533662556185de7b7e0756fa1b022aaafbd5c1bd592d1d84b2ffe"
+    },
+    {
+      "bytes": 1376,
+      "path": "assets/game-factory/core/local-platform-stub.ts",
+      "sha256": "1b82219135ea5fba075a3bb795ad675aa187cdfce3c9708ddadd87590898a21a"
+    },
+    {
+      "bytes": 5822,
+      "path": "assets/game-factory/core/official-platform-adapters.ts",
+      "sha256": "e91fff33a17e4d414249a0df4b0f3abcd10ae1d3b52b3b5c7b93410045d1a55d"
+    },
+    {
+      "bytes": 1138,
+      "path": "assets/game-factory/core/platform-port.ts",
+      "sha256": "ac94aa4675e21bd6f86f0c4d1691bce625d0adac2042b8999b3ca3ffae7f02c8"
+    },
+    {
+      "bytes": 2465,
+      "path": "assets/scenes/main.scene",
+      "sha256": "e9412b27b4ec5e6fa065897ec96e0f9423976dba3c7598862e5c24f98b01fec0"
+    },
+    {
+      "bytes": 181,
+      "path": "assets/scenes/main.scene.meta",
+      "sha256": "97f0ff4dfb3fb74c0be1144a7b634e81aa50f0c2e71e479ac3337d9eb02a8392"
+    },
+    {
+      "bytes": 278,
+      "path": "build-intents/bytedance-mini-game.json",
+      "sha256": "eaee33f7e00dcfc6d3c725b0e36c613927ef51e2eafaf4cea11c63b538f739e9"
+    },
+    {
+      "bytes": 269,
+      "path": "build-intents/wechatgame.json",
+      "sha256": "637d6b1081950660b981311ddb874eaa090c86d63752836a172ec25d7550de9d"
+    },
+    {
+      "bytes": 171,
+      "path": "package.json",
+      "sha256": "02958207da4cab364cadba3055a7ddb22214863444d8a35b0ca20049e9d66649"
+    },
+    {
+      "bytes": 426,
+      "path": "source/content-pack.json",
+      "sha256": "2033bcafbb56862b4fa1cd668a00864f8e55fd4de3b9bd98d5979bf83833829b"
+    },
+    {
+      "bytes": 1152,
+      "path": "source/gameplay-kernel.json",
+      "sha256": "58b85163c0067d10f8097df888f296ffe3bfb9497a7524363dadd25b738f8713"
+    },
+    {
+      "bytes": 420,
+      "path": "tsconfig.json",
+      "sha256": "a4011fd311173dde5f8846de0a2143d4a12f3628d34d593e7f1808bf7834bd40"
+    },
+    {
+      "bytes": 143,
+      "path": "typecheck/README.md",
+      "sha256": "85540adc58c56cfcac6e9aa89da248f95dc626083ee754b98d51b53b14f65a1d"
+    },
+    {
+      "bytes": 355,
+      "path": "typecheck/cc.d.ts",
+      "sha256": "b679ff46a13d5dae91dbe75f6a9c1c15ec6fd13ac183f380ac07f983d08f0e19"
+    }
+  ],
+  "platform_targets": {
+    "douyin": "bytedance-mini-game",
+    "wechat": "wechatgame"
+  },
+  "project_digest": "0fd82003d04968968a759854a72be92e511710adcb8132d3b15d6cb117401721",
+  "project_uuid": "7eee5c17-e35a-5765-9b58-0c45a7e5f8ab",
+  "scene_uuid": "0a245053-564f-5852-b8af-b12ca78d48da",
+  "schema_version": 1,
+  "script_type": "591e4JTmwtaRrgk223577gX",
+  "script_uuid": "591e4253-9b0b-5a46-b824-db6df9efb817",
+  "serialization_source": {
+    "commit": "5acd26218d3915169679a288ebf65b9ca1f96027",
+    "creator_version": "3.8.0",
+    "project": "physics-3d",
+    "repository": "https://github.com/cocos/cocos-example-projects"
+  },
+  "source_candidate_manifest_digest": "d9cdf50ad416c878a1faaea5b32e19332e07430e2b540defe3d2c728d8aaaf63",
+  "source_compile_digest": "30ca771eeb8bfcc06af7e94568e75d1bc91a2396a8e841b3a0682155622b70bb"
+}

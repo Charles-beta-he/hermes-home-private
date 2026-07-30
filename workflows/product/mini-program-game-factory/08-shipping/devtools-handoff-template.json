@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "status": "blocked",
+  "platform": null,
+  "project_digest": null,
+  "serialization_creator_version": "3.8.0",
+  "creator_editor_version_readback": null,
+  "creator_build_target": null,
+  "build_binding": {
+    "creator_executable_path": null,
+    "creator_executable_sha256": null,
+    "build_config_path": null,
+    "build_config_sha256": null,
+    "creator_editor_version_readback": null
+  },
+  "artifact": {
+    "path": null,
+    "sha256": null,
+    "bytes": null
+  },
+  "readbacks": {
+    "creator_build_exit_code": null,
+    "devtools_import": false,
+    "simulator_compile": false,
+    "real_device_preview": false
+  },
+  "external_stages": {
+    "upload": "not_started",
+    "review": "not_started",
+    "publish": "not_started",
+    "rollback": "not_started"
+  },
+  "authority": {
+    "may_invoke_devtools": false,
+    "may_submit_platform": false,
+    "may_publish": false
+  }
+}

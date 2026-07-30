@@ -1,0 +1,27 @@
+{
+  "appid_present": false,
+  "authority": {
+    "may_build": false,
+    "may_invoke_devtools": false,
+    "may_publish": false
+  },
+  "blocking_reasons": [
+    "creator_cli_unavailable",
+    "creator_editor_version_unverified",
+    "appid_required",
+    "creator_build_config_export_required",
+    "build_authority_closed"
+  ],
+  "build_config": null,
+  "build_config_sha256": null,
+  "closure_state": "build_preflight_blocked",
+  "command": null,
+  "creator_build_target": "bytedance-mini-game",
+  "creator_editor_version_readback": null,
+  "creator_executable": null,
+  "creator_executable_sha256": null,
+  "platform": "douyin",
+  "project_digest": "0fd82003d04968968a759854a72be92e511710adcb8132d3b15d6cb117401721",
+  "schema_version": 1,
+  "serialization_creator_version": "3.8.0"
+}

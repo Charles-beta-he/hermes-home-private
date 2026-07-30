@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "experimentalDecorators": true,
+    "lib": [
+      "ES2017",
+      "DOM"
+    ],
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "paths": {
+      "cc": [
+        "typecheck/cc.d.ts"
+      ]
+    },
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2017"
+  },
+  "include": [
+    "assets/**/*.ts",
+    "typecheck/**/*.d.ts"
+  ]
+}

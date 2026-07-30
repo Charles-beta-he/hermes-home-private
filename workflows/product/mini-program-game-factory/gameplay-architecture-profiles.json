@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "registry_id": "mini-game-gameplay-architecture-profiles",
+  "shared_shell": {
+    "capabilities": [
+      "lifecycle",
+      "input_abstraction",
+      "audio",
+      "save_adapter",
+      "platform_lifecycle",
+      "telemetry",
+      "verification_harness",
+      "delivery_adapter"
+    ],
+    "must_not_own": [
+      "primary_simulation_clock",
+      "gameplay_state_transitions",
+      "win_lose_resolution",
+      "score_resolution"
+    ]
+  },
+  "presentation_only_fields": [
+    "visual_style",
+    "theme",
+    "copy",
+    "assets",
+    "audio_style",
+    "animation_style",
+    "shaders"
+  ],
+  "dimensions": {
+    "time_model": [
+      "turn_based",
+      "fixed_tick_real_time",
+      "event_driven",
+      "offline_elapsed_time"
+    ],
+    "space_model": [
+      "grid",
+      "continuous_2d_3d",
+      "path_graph",
+      "board_slots",
+      "zones",
+      "no_spatial_model"
+    ],
+    "state_model": [
+      "entity_grid",
+      "board",
+      "wave_entities",
+      "many_entities",
+      "deck_zones",
+      "economy_network"
+    ],
+    "resolution_model": [
+      "reducer_state_machine",
+      "event_queue",
+      "rules_engine",
+      "ecs_systems",
+      "effect_stack"
+    ],
+    "authority_model": [
+      "local_only",
+      "cloud_save",
+      "server_authoritative"
+    ]
+  },
+  "profiles": [
+    {
+      "profile_id": "grid-turn",
+      "profile_version": 1,
+      "topology": {
+        "time_model": "turn_based",
+        "space_model": "grid",
+        "state_model": "entity_grid",
+        "resolution_model": "reducer_state_machine",
+        "authority_model": "local_only"
+      },
+      "verification_gates": [
+        "legal_moves",
+        "state_transition_cases",
+        "deterministic_replay"
+      ]
+    },
+    {
+      "profile_id": "board-resolver",
+      "profile_version": 1,
+      "topology": {
+        "time_model": "event_driven",
+        "space_model": "board_slots",
+        "state_model": "board",
+        "resolution_model": "rules_engine",
+        "authority_model": "local_only"
+      },
+      "verification_gates": [
+        "cascade_termination",
+        "seeded_rng",
+        "board_invariants"
+      ]
+    },
+    {
+      "profile_id": "wave-path",
+      "profile_version": 1,
+      "topology": {
+        "time_model": "fixed_tick_real_time",
+        "space_model": "path_graph",
+        "state_model": "wave_entities",
+        "resolution_model": "event_queue",
+        "authority_model": "local_only"
+      },
+      "verification_gates": [
+        "path_validity",
+        "wave_ordering",
+        "fixed_step_replay"
+      ]
+    },
+    {
+      "profile_id": "real-time-physics",
+      "profile_version": 1,
+      "topology": {
+        "time_model": "fixed_tick_real_time",
+        "space_model": "continuous_2d_3d",
+        "state_model": "many_entities",
+        "resolution_model": "ecs_systems",
+        "authority_model": "local_only"
+      },
+      "verification_gates": [
+        "fixed_step_determinism",
+        "collision_edges",
+        "input_buffering"
+      ]
+    },
+    {
+      "profile_id": "card-event-stack",
+      "profile_version": 1,
+      "topology": {
+        "time_model": "turn_based",
+        "space_model": "zones",
+        "state_model": "deck_zones",
+        "resolution_model": "effect_stack",
+        "authority_model": "local_only"
+      },
+      "verification_gates": [
+        "effect_ordering",
+        "trigger_recursion_bound",
+        "effect_idempotency"
+      ]
+    },
+    {
+      "profile_id": "economy-time-simulation",
+      "profile_version": 1,
+      "topology": {
+        "time_model": "offline_elapsed_time",
+        "space_model": "no_spatial_model",
+        "state_model": "economy_network",
+        "resolution_model": "event_queue",
+        "authority_model": "cloud_save"
+      },
+      "verification_gates": [
+        "clock_manipulation",
+        "offline_caps",
+        "numerical_stability"
+      ]
+    },
+    {
+      "profile_id": "authoritative-replication",
+      "profile_version": 1,
+      "topology": {
+        "time_model": "fixed_tick_real_time",
+        "space_model": "continuous_2d_3d",
+        "state_model": "many_entities",
+        "resolution_model": "ecs_systems",
+        "authority_model": "server_authoritative"
+      },
+      "verification_gates": [
+        "server_authority",
+        "client_reconciliation",
+        "rollback_replay",
+        "adversarial_client"
+      ]
+    }
+  ]
+}
