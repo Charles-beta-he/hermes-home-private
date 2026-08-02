@@ -1,0 +1,19 @@
+{
+  "schema": "hermes_dreaming_frozen_spec_manifest_v1",
+  "freeze_status": "APPROVED",
+  "approved_at_utc": "2026-08-01T05:19:32Z",
+  "approved_by": "user",
+  "source_report": "/Users/charles/.hermes/docs/private/dreaming-architecture-root-cause-and-long-term-placement-20260801.md",
+  "source_report_sha256": "b9c15c967494ef60391aec806d9df352f929ef947d2d9de3354826f684cd9d90",
+  "implementation_base_head": "9e22bade18f29f6699af5d240a4436c388f59e6a",
+  "fresh_fetched_origin_master": "52a83af9858b49de015164379a3bf59cbac68168",
+  "branch": "claude/dreaming-loop-20260801",
+  "authority": {
+    "local_reversible_implementation": true,
+    "active_skill_mutation": false,
+    "cron_cutover": false,
+    "external_side_effect": false,
+    "push": false,
+    "permission_repair": false
+  }
+}

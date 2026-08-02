@@ -86,7 +86,7 @@ def test_noagent_classification_requires_effective_progress_not_exit_zero():
     assert error["effective_audit"] is False
 
 
-def test_noagent_wrapper_emits_warn_and_ledger_when_no_effective_progress(tmp_path, monkeypatch, capsys):
+def test_noagent_wrapper_fails_closed_and_ledgers_when_receipt_absent(tmp_path, monkeypatch, capsys):
     class FakeCompleted:
         returncode = 0
         stdout = "confidence_db: /x (archived)\n= 无变化"
@@ -99,9 +99,12 @@ def test_noagent_wrapper_emits_warn_and_ledger_when_no_effective_progress(tmp_pa
     payload = json.loads(capsys.readouterr().out)
 
     assert rc == 2
-    assert payload["status"] == "WARN"
-    assert payload["effective_audit"] is True
+    assert payload["status"] == "ERROR"
+    assert payload["job_success"] is False
+    assert payload["effective_audit"] is False
+    assert payload["candidate_generated"] is False
     assert payload["state_advanced"] is False
+    assert payload["promoted"] is False
     assert Path(payload["dream_run_ledger"]).exists()
 
 

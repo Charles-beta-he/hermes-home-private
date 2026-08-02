@@ -1,329 +1,265 @@
 #!/usr/bin/env python3
 """
-Autonomous Evolution — Nightly Self-Audit
-无交互时的自我进化：skill审计、测试执行、文档补全
-每天凌晨 2:00 运行，无需人工参与
+Autonomous Evolution — Nightly Self-Audit (candidate-only, Loop A)
+
+Transitional main for docs/private/dreaming-v1-frozen-spec-20260801.md Loop A:
+selects one active skill via hermes_dreaming's deterministic selector state,
+runs the full orchestrated cycle (selection -> ownership preflight ->
+candidate-only generation -> evaluation), and writes a typed run receipt.
+
+This script never mutates an active ``skills/<name>/SKILL.md`` — every
+generated change lands as one flat V2 regular-file artifact under the
+pre-provisioned ``HERMES_HOME/state/dreaming/candidates/`` root
+(``candidate-v2--<run_id>--<skill>--<nonce>.json`` envelope), and
+``promoted``/``state_advanced`` stay False on every receipt: Loop A has no
+promotion gate.
 """
+from __future__ import annotations
 
-import os, json, datetime, shutil, re
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
 
+import hermes_dreaming as hd
 from hermes_evolution_store import default_store, resolved_to_dict
 
-SKILLS_DIR = os.path.expanduser("~/.hermes/skills")
-LOG_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/autonomous-evolution-log.jsonl")
+HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
+SKILLS_DIR = HERMES_HOME / "skills"
+LOG_PATH = HERMES_HOME / "state" / "dreaming" / "autonomous-evolution-log.jsonl"
+DEFAULT_RECEIPT_PATH = HERMES_HOME / "state" / "dreaming" / "last_run_receipt.json"
+
 STORE = default_store()
-DB_RESOLUTION = STORE.resolve_artifact(os.path.join("bayesian-agent", "confidence-db.json"), intent="write")
-RESULTS_RESOLUTION = STORE.resolve_artifact(os.path.join("darwin-skill", "results.tsv"), intent="write")
-DB_PATH = str(DB_RESOLUTION.path)
-RESULTS_PATH = str(RESULTS_RESOLUTION.path)
+DB_RESOLUTION = STORE.resolve_artifact(os.path.join("bayesian-agent", "confidence-db.json"), intent="read")
+RESULTS_RESOLUTION = STORE.resolve_artifact(os.path.join("darwin-skill", "results.tsv"), intent="read")
+DB_PATH = Path(DB_RESOLUTION.path)
+RESULTS_PATH = Path(RESULTS_RESOLUTION.path)
 DB_SOURCE = DB_RESOLUTION.source
 RESULTS_SOURCE = RESULTS_RESOLUTION.source
 
-def log_event(event_type, details):
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    with open(LOG_PATH, "a") as f:
-        f.write(json.dumps({
-            "timestamp": datetime.datetime.now().isoformat(),
-            "event": event_type,
-            "details": details
-        }) + "\n")
 
-def backup_skill(skill_dir):
-    """修改前备份"""
-    backup_dir = skill_dir + ".backup." + datetime.datetime.now().strftime("%Y%m%d")
-    if os.path.exists(backup_dir):
-        shutil.rmtree(backup_dir)
-    shutil.copytree(skill_dir, backup_dir, ignore=shutil.ignore_patterns("*.backup.*"))
-    return backup_dir
+def log_event(event_type: str, details: dict) -> None:
+    if hd.dreaming_write_boundary_preflight(HERMES_HOME, LOG_PATH) is not None:
+        return
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with LOG_PATH.open("a", encoding="utf-8") as f:
+        f.write(
+            json.dumps(
+                {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "event": event_type,
+                    "details": details,
+                },
+                ensure_ascii=False,
+            )
+            + "\n"
+        )
 
-def audit_skill_structure(skill_dir):
-    """检查 SKILL.md 结构完整性"""
-    issues = []
-    skill_md = os.path.join(skill_dir, "SKILL.md")
-    
-    if not os.path.exists(skill_md):
-        issues.append("missing SKILL.md")
-        return issues, 0
-    
-    with open(skill_md, "r") as f:
-        content = f.read()
-    
-    # 检查关键要素
-    checks = {
-        "YAML frontmatter": "---" in content[:50],
-        "Input 定义": any(k in content.lower() for k in ["input", "输入"]),
-        "Output 定义": any(k in content.lower() for k in ["output", "输出"]),
-        "边界条件": any(k in content.lower() for k in ["constraint", "边界", "限制"]),
-        "检查点": any(k in content.lower() for k in ["checkpoint", "检查点"]),
-        "示例": any(k in content.lower() for k in ["example", "示例"]),
-    }
-    
-    for name, ok in checks.items():
-        if not ok:
-            issues.append(f"missing {name}")
-    
-    return issues, sum(checks.values())
 
-def auto_fix_skill(skill_dir, skill_name):
-    """自动修复常见缺失"""
-    fixes = []
-    skill_md = os.path.join(skill_dir, "SKILL.md")
-    
-    if not os.path.exists(skill_md):
-        return fixes
-    
-    with open(skill_md, "r") as f:
-        content = f.read()
-    
-    # 如果缺少 Input/Output，在文件末尾追加
-    if not any(k in content.lower() for k in ["input", "输入"]):
-        content += "\n\n## 输入\n\n- 用户请求的具体参数\n"
-        fixes.append("added Input section")
-    
-    if not any(k in content.lower() for k in ["output", "输出"]):
-        content += "\n## 输出\n\n- 执行结果或交付物\n"
-        fixes.append("added Output section")
-    
-    if not any(k in content.lower() for k in ["constraint", "边界", "限制", "约束"]):
-        content += "\n## 约束\n\n- 遵循项目规范\n- 在 context budget 内完成\n"
-        fixes.append("added Constraints section")
-    
-    if not any(k in content.lower() for k in ["checkpoint", "检查点"]):
-        content += "\n## 检查点\n\n- [ ] 输入参数完整\n- [ ] 输出符合预期格式\n"
-        fixes.append("added Checkpoints section")
-    
-    if fixes:
-        with open(skill_md, "w") as f:
-            f.write(content)
-    
-    return fixes
+def build_candidates() -> list[dict]:
+    """Read-only candidate list for the selector: active skills the confidence
+    DB knows about, scored by its existing (possibly stale) darwin_score."""
+    if not DB_PATH.is_file():
+        log_event("autonomous_evolution_degraded", {"reason": "confidence_db_missing", "path": str(DB_PATH)})
+        return []
 
-def run_self_test(skill_dir, skill_name):
-    """运行 test-prompts.json 中的测试用例"""
-    test_path = os.path.join(skill_dir, "test-prompts.json")
-    if not os.path.exists(test_path):
-        return {"has_tests": False, "passed": 0, "total": 0}
-    
     try:
-        with open(test_path, "r") as f:
-            tests = json.load(f)
-        
-        test_cases = tests.get("test_cases", [])
-        # 无交互环境下无法真正执行，只能验证测试用例格式完整性
-        valid_cases = [t for t in test_cases if t.get("input") and t.get("expected_behavior")]
-        
-        return {
-            "has_tests": True,
-            "passed": len(valid_cases),
-            "total": len(test_cases),
-            "valid_ratio": len(valid_cases) / len(test_cases) if test_cases else 0
-        }
-    except:
-        return {"has_tests": True, "passed": 0, "total": 0, "error": "parse_failed"}
+        db = json.loads(DB_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        log_event("autonomous_evolution_degraded", {"reason": "confidence_db_unreadable", "path": str(DB_PATH)})
+        return []
 
-def recalculate_darwin_score(skill_dir):
-    """重新计算 Darwin 评分"""
-    score = 0
-    skill_md = os.path.join(skill_dir, "SKILL.md")
-    
-    if os.path.exists(skill_md):
-        with open(skill_md, "r") as f:
-            content = f.read().lower()
-        
-        if "input" in content or "输入" in content: score += 10
-        if "output" in content or "输出" in content: score += 10
-        if "constraint" in content or "边界" in content: score += 10
-        if "checkpoint" in content or "检查点" in content: score += 10
-        if "example" in content or "示例" in content: score += 10
-        if "---" in content[:50]: score += 10
-        
-        if len(content) > 2000: score += 15
-        elif len(content) > 1000: score += 10
-        elif len(content) > 500: score += 5
-        if "## " in content: score += 5
-        if "```" in content: score += 5
-    
-    if os.path.exists(os.path.join(skill_dir, "CHANGELOG.md")): score += 5
-    if os.path.exists(os.path.join(skill_dir, "test-prompts.json")): score += 5
-    refs_dir = os.path.join(skill_dir, "references")
-    if os.path.exists(refs_dir) and os.listdir(refs_dir): score += 5
-    
-    return min(score, 100)
-
-def select_skill_to_audit():
-    """选择一个待审计的 active skill（优先低分且无近期审计的）。"""
-    if not os.path.exists(DB_PATH):
-        print(f"⚠️ confidence DB missing: {DB_PATH}")
-        log_event("autonomous_evolution_degraded", {"reason": "confidence_db_missing", "path": DB_PATH})
-        return None
-
-    with open(DB_PATH, "r") as f:
-        db = json.load(f)
-    
     candidates = []
-    for name, data in db.get("skills", {}).items():
-        skill_dir = os.path.join(SKILLS_DIR, name)
-        if not os.path.exists(os.path.join(skill_dir, "SKILL.md")):
-            # The DB may be loaded from archived historical data; never mutate archived-only skills.
+    for name, data in (db.get("skills") or {}).items():
+        if not (SKILLS_DIR / name / "SKILL.md").is_file():
+            # DB may carry archived/historical entries; only active skills are candidates.
             continue
+        candidates.append(
+            {
+                "name": name,
+                "score": data.get("darwin_score", 0) or 0,
+                "last_audit": data.get("last_audit"),
+            }
+        )
 
-        score = data.get("darwin_score", 0) or 0
-        last_audit = data.get("last_audit", "")
-        
-        # 计算距离上次审计的天数
-        days_since_audit = 999
-        if last_audit:
-            try:
-                last = datetime.datetime.fromisoformat(last_audit)
-                days_since_audit = (datetime.datetime.now() - last).days
-            except:
-                pass
-        
-        # 优先选择：低分 + 长期未审计
-        priority = (100 - score) + days_since_audit
-        candidates.append((name, priority, score, days_since_audit))
-    
-    candidates.sort(key=lambda x: x[1], reverse=True)
     if not candidates:
-        log_event("autonomous_evolution_degraded", {
-            "reason": "no_active_skill_candidates",
-            "db_path": DB_PATH,
-            "db_source": DB_SOURCE,
-        })
-    return candidates[0] if candidates else None
+        log_event("autonomous_evolution_degraded", {"reason": "no_active_skill_candidates", "db_path": str(DB_PATH)})
+    return candidates
 
-def main():
+
+def receipt_output_path() -> Path:
+    override = os.environ.get("HERMES_DREAMING_RECEIPT_PATH")
+    return Path(override) if override else DEFAULT_RECEIPT_PATH
+
+
+def resolve_euid() -> int:
+    override = os.environ.get("HERMES_DREAMING_EUID_OVERRIDE")
+    if override is not None and override.strip():
+        return int(override)
+    return hd.current_euid()
+
+
+def _emit_failure_receipt(receipt_path: Path, run_id: str, ts: datetime, exc: Exception) -> None:
+    """Best-effort typed failure receipt for an unexpected top-level exception.
+
+    Only the exception's class name is recorded — never its message or
+    traceback — so a receipt can never leak internal state. The receipt
+    write itself is boundary-gated: a ``receipt_path`` that escapes the real
+    ``HERMES_HOME/state/dreaming`` tree is never written to, falling back to
+    the safe default location; if even that is unsafe, nothing is written
+    and ``main`` still returns a non-zero exit code either way.
+    """
+    receipt = hd.RunReceipt(run_id=run_id, ts=hd.format_ts(ts))
+    receipt.job_success = False
+    receipt.degraded = True
+    receipt.add_reason(hd.REASON_UNEXPECTED_EXCEPTION)
+    receipt.add_stage(
+        hd.StageReceipt(hd.STAGE_RUN, False, hd.REASON_UNEXPECTED_EXCEPTION, {"error_type": type(exc).__name__})
+    )
+    boundary_reason = hd.dreaming_write_boundary_preflight(HERMES_HOME, receipt_path)
+    if boundary_reason is not None:
+        receipt.add_reason(boundary_reason)
+        receipt_path = DEFAULT_RECEIPT_PATH
+        if hd.dreaming_write_boundary_preflight(HERMES_HOME, receipt_path) is not None:
+            return
+    try:
+        hd.atomic_write_text(
+            receipt_path, json.dumps(receipt.to_dict(), ensure_ascii=False, sort_keys=True, indent=2)
+        )
+    except OSError:
+        pass
+
+
+def main() -> int:
     print("=" * 60)
-    print("Autonomous Evolution — Nightly Self-Audit")
+    print("Autonomous Evolution — Nightly Self-Audit (candidate-only, Loop A)")
     print("=" * 60)
     print(f"confidence_db: {DB_PATH} ({DB_SOURCE})")
     print(f"darwin_results: {RESULTS_PATH} ({RESULTS_SOURCE})")
-    
-    # 选择一个 skill 审计
-    selected = select_skill_to_audit()
-    if not selected:
-        print("无 skill 需要审计")
-        STORE.append_dream_run({
-            "run_id": datetime.datetime.now(datetime.timezone.utc).strftime("nightly-%Y%m%dT%H%M%SZ"),
-            "status": "WARN",
-            "effective_audit": False,
-            "state_advanced": False,
-            "degraded": True,
-            "reason": "no_skill_selected",
-            "confidence_db": resolved_to_dict(DB_RESOLUTION),
-            "darwin_results": resolved_to_dict(RESULTS_RESOLUTION),
-        })
-        log_event("discussion_result", {
-            "skill_audited": None,
-            "run_type": "nightly_autonomous_evolution",
-            "status": "skipped",
-            "reason": "no_skill_selected"
-        })
-        return
-    
-    skill_name, priority, old_score, days = selected
-    skill_dir = os.path.join(SKILLS_DIR, skill_name)
-    
-    print(f"\n审计目标: {skill_name}")
-    print(f"当前评分: {old_score} (上次审计: {days} 天前)")
-    
-    # 1. 备份
-    backup = backup_skill(skill_dir)
-    
-    # 2. 结构审计
-    issues, checklist_score = audit_skill_structure(skill_dir)
-    if issues:
-        print(f"\n发现 {len(issues)} 个问题:")
-        for issue in issues:
-            print(f"  - {issue}")
-    
-    # 3. 自动修复
-    fixes = auto_fix_skill(skill_dir, skill_name)
-    if fixes:
-        print(f"\n自动修复:")
-        for fix in fixes:
-            print(f"  + {fix}")
-    
-    # 4. 自测试
-    test_result = run_self_test(skill_dir, skill_name)
-    print(f"\n测试用例: {test_result['passed']}/{test_result['total']} 有效")
-    
-    # 5. 重新评分
-    new_score = recalculate_darwin_score(skill_dir)
-    print(f"\n评分变化: {old_score} → {new_score}")
-    
-    # 6. 棘轮决策
-    if new_score > old_score:
-        # 保留改进
-        grade = "A" if new_score >= 85 else "B" if new_score >= 75 else "C" if new_score >= 60 else "D"
-        
-        with open(DB_PATH, "r") as f:
-            db = json.load(f)
-        
-        if skill_name in db["skills"]:
-            db["skills"][skill_name]["darwin_score"] = new_score
-            db["skills"][skill_name]["darwin_grade"] = grade
-            db["skills"][skill_name]["last_audit"] = datetime.datetime.now().isoformat()
-        
-        if DB_RESOLUTION.writable:
-            with open(DB_PATH, "w") as f:
-                json.dump(db, f, indent=2)
+
+    now = datetime.now(timezone.utc)
+    run_id = os.environ.get("HERMES_DREAMING_RUN_ID") or now.strftime("nightly-%Y%m%dT%H%M%SZ")
+
+    try:
+        return _run(now, run_id)
+    except Exception as exc:
+        _emit_failure_receipt(receipt_output_path(), run_id, now, exc)
+        return 1
+
+
+def _run(now: datetime, run_id: str) -> int:
+    # Root missing: entire Loop A fail-closed with zero state/dreaming writes.
+    if not hd.candidates_root_is_provisioned(HERMES_HOME):
+        print("ERROR candidate_root_unprovisioned")
+        print(
+            json.dumps(
+                {
+                    "status": "ERROR",
+                    "job_success": False,
+                    "candidate_generated": False,
+                    "state_advanced": False,
+                    "promoted": False,
+                    "write_blocked": True,
+                    "degraded": True,
+                    "reasons": [hd.REASON_CANDIDATE_ROOT_UNPROVISIONED],
+                    "candidate_artifact": None,
+                    "run_id": run_id,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+        )
+        return 2
+
+    candidates = build_candidates()
+    euid = resolve_euid()
+
+    receipt = hd.run_dreaming_cycle(HERMES_HOME, candidates, now, run_id=run_id, euid=euid)
+    original_write_blocked = receipt.write_blocked
+
+    # If the cycle still reports unprovisioned root, do not create sinks.
+    if hd.REASON_CANDIDATE_ROOT_UNPROVISIONED in receipt.reasons:
+        print("ERROR candidate_root_unprovisioned")
+        print(json.dumps(receipt.to_dict(), ensure_ascii=False, sort_keys=True))
+        return 2
+
+    receipt_path = receipt_output_path()
+    receipt_boundary_reason = hd.dreaming_write_boundary_preflight(HERMES_HOME, receipt_path)
+    if receipt_boundary_reason is not None:
+        receipt.write_blocked = True
+        receipt.degraded = True
+        receipt.job_success = False
+        receipt.add_reason(receipt_boundary_reason)
+        receipt_path = DEFAULT_RECEIPT_PATH
+        if hd.dreaming_write_boundary_preflight(HERMES_HOME, receipt_path) is None:
+            hd.atomic_write_text(
+                receipt_path, json.dumps(receipt.to_dict(), ensure_ascii=False, sort_keys=True, indent=2)
+            )
         else:
-            print("⚠️ confidence DB is not writable; effective state advancement blocked")
-            log_event("autonomous_evolution_degraded", {"reason": "confidence_db_unwritable", "db_path": DB_PATH})
-        
-        if RESULTS_RESOLUTION.writable:
-            with open(RESULTS_PATH, "a") as f:
-                f.write(f"{datetime.datetime.now().isoformat()}\tauto-audit\t{skill_name}\t{old_score}\t{new_score}\taccepted\t{','.join(fixes)}\tauto\n")
-        else:
-            print("⚠️ darwin results.tsv is not writable; effective state advancement blocked")
-            log_event("autonomous_evolution_degraded", {"reason": "darwin_results_unwritable", "results_path": RESULTS_PATH})
-        
-        # 清理备份
-        shutil.rmtree(backup)
-        
-        print(f"✓ 改进已保留 [{grade}]")
-        log_event("skill_improved", {
-            "skill": skill_name,
-            "old_score": old_score,
-            "new_score": new_score,
-            "fixes": fixes
-        })
-    
-    elif new_score < old_score:
-        # 回滚（棘轮机制）
-        shutil.rmtree(skill_dir)
-        shutil.move(backup, skill_dir)
-        print(f"✗ 评分下降，已回滚到备份")
-        log_event("skill_reverted", {
-            "skill": skill_name,
-            "old_score": old_score,
-            "new_score": new_score,
-            "reason": "score_decreased"
-        })
-    
+            receipt_path = None
     else:
-        # 无变化，清理备份
-        shutil.rmtree(backup)
-        print(f"= 无变化")
-        log_event("skill_unchanged", {
-            "skill": skill_name,
-            "score": old_score,
-            "fixes": fixes
-        })
-    
-    # 7. Emit closure event for usage-score self_evolution_closure component
-    log_event("discussion_result", {
-        "skill_audited": skill_name,
-        "old_score": old_score,
-        "new_score": new_score,
-        "issues_found": len(issues),
-        "fixes_applied": len(fixes),
-        "test_result": test_result,
-        "run_type": "nightly_autonomous_evolution"
-    })
+        hd.atomic_write_text(receipt_path, json.dumps(receipt.to_dict(), ensure_ascii=False, sort_keys=True, indent=2))
+
+    health = hd.classify_receipt(receipt.to_dict())
+    if hd.dreaming_write_boundary_preflight(HERMES_HOME, STORE.runs_path) is None:
+        STORE.append_dream_run(
+            {
+                "run_id": run_id,
+                "status": health["status"],
+                "job_success": health["job_success"],
+                "effective_audit": health["effective_audit"],
+                "candidate_generated": health["candidate_generated"],
+                "state_advanced": health["state_advanced"],
+                "promoted": health["promoted"],
+                "degraded": health["degraded"],
+                "write_blocked": health["write_blocked"],
+                "reasons": health["reasons"],
+                "target": receipt.target,
+                "candidate_artifact": health.get("candidate_artifact"),
+                "confidence_db": resolved_to_dict(DB_RESOLUTION),
+                "darwin_results": resolved_to_dict(RESULTS_RESOLUTION),
+            }
+        )
+
+    print(f"\n目标: {receipt.target}")
+    if receipt.target is None:
+        print("无 skill 需要审计")
+    elif original_write_blocked:
+        print(f"⚠️ ownership preflight 阻止候选生成 [{receipt.target}]: {', '.join(receipt.reasons)}")
+    elif receipt.candidate_generated:
+        old_score = next((c["score"] for c in candidates if c["name"] == receipt.target), 0)
+        generation = next(stage for stage in receipt.stages if stage.stage == hd.STAGE_GENERATION)
+        evaluation = next(stage for stage in receipt.stages if stage.stage == hd.STAGE_EVALUATION)
+        digest = generation.details["candidate_sha256"]
+        size = generation.details["candidate_size"]
+        applied = generation.details["applied_sections"]
+        print(f"✓ 候选已生成（未晋升 active）[{receipt.target}]")
+        print(f"  typed evidence: sha256={digest} size={size} applied_sections={','.join(applied)}")
+        print(
+            f"  evaluator: satisfied={evaluation.details['satisfied']} "
+            f"missing_after={','.join(evaluation.details['missing_after']) or '(none)'}"
+        )
+        print(f"  active confidence score（只读既有值，未重算/未写入）: {old_score}")
+    else:
+        print(f"= 无变化 [{receipt.target}]: {', '.join(receipt.reasons) or '(none)'}")
+    print(
+        f"effective_audit={receipt.effective_audit} candidate_generated={receipt.candidate_generated} "
+        f"state_advanced={receipt.state_advanced} promoted={receipt.promoted}"
+    )
+    print(f"receipt: {receipt_path}")
+
+    log_event(
+        "discussion_result",
+        {
+            "skill_audited": receipt.target,
+            "run_type": "nightly_autonomous_evolution_candidate_only",
+            "receipt": receipt.to_dict(),
+        },
+    )
 
     print("\n" + "=" * 60)
+    return 0 if receipt.job_success else 2
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
