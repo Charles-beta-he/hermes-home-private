@@ -1,0 +1,42 @@
+{
+  "schema": "loop-a-hostile-uid-v9-source-packet-v1",
+  "generated_at": "2026-08-03T14:39:44Z",
+  "scope": "certified local revision-9 root-broker/distinct-UID-worker candidate commit and exact branch push",
+  "authority": {
+    "source": "current Hermes conversation",
+    "user_grant": "全部允许允许",
+    "interpreted_exact_targets": [
+      "create one scoped commit containing the 82 frozen candidate entries, the freeze manifest, and this evidence packet",
+      "non-force push HEAD to origin refs/heads/claude/dreaming-loop-20260801",
+      "perform no system cutover until the documented production activation blockers have an executable exact target and rollback"
+    ]
+  },
+  "candidate": {
+    "entries": 82,
+    "candidate_digest": "1483f0f7512476f7734b626edfc17be1a8610407a99161d48646f13f6b12898a",
+    "manifest_digest": "469f08f167fefbd445ef0f2c6560b26d81360f0517fdea1137ecffe477a0e9b3",
+    "raw_manifest_sha256": "a8658409e6fb678a5f26aad658fa4f60dcadc304bde22fb0a361df205d9bdb69",
+    "freeze_manifest": "docs/private/dreaming-loop-a-hostile-uid-freeze-manifest-v9-candidate-20260803.json"
+  },
+  "verification": {
+    "full_suite": "345 passed in 124.51s",
+    "freeze_check": "passed with 82 entries and exact candidate/manifest identity",
+    "security_conformance_review": "APPROVE; P0=0; P1=0; opening and closing identity matched",
+    "mutation_adequacy_review": "APPROVE; P0=0; P1=0; focused baseline 83 passed and all requested semantic mutants killed"
+  },
+  "push_target": {
+    "remote": "origin",
+    "repository": "https://github.com/Charles-beta-he/hermes-home-private.git",
+    "ref": "refs/heads/claude/dreaming-loop-20260801",
+    "force": false
+  },
+  "rollback": {
+    "local_commit": "git revert <new-commit>",
+    "remote_branch": "push a new revert commit; do not force-update the branch",
+    "pre_commit_head": "c9963e58a8b5760363d1f1ed5351970134e688c6"
+  },
+  "cutover_boundary": {
+    "status": "not executed",
+    "reason": "the certified artifact is a candidate enforcement kernel; its own progress record still lists missing production launchd activation, root-layout denial matrix, inherited-FD scan, cold-start, crash/replay, and exact rollback/readback protocol"
+  }
+}
