@@ -8,6 +8,7 @@ import threading
 import pytest
 
 from loop_a_protected.broker_coordinator import CommittedCandidate, TransactionBinding
+from loop_a_protected.candidate_payload import canonical_candidate_payload
 from loop_a_protected.canonical import with_self_digest
 from loop_a_protected.darwin_launchd_transport import PROTECTED_ROLES
 
@@ -69,7 +70,7 @@ class Executor:
 
 
 def _binding():
-    return TransactionBinding(TX, "CANDIDATE_STAGED", SOURCE, MANIFEST, INVENTORY)
+    return TransactionBinding(TX, "CANDIDATE_STAGED", SOURCE, MANIFEST, INVENTORY, "demo-skill")
 
 
 def _descriptors(tmp_path):
@@ -123,6 +124,7 @@ def _run(monkeypatch, tmp_path, executor):
                 for role, fd in descriptors.items()
             },
             mutation_root_identities=frozenset(),
+            runtime_root_identity=None,
             binding=binding,
             gate=gate,
             transaction=transaction,
@@ -140,8 +142,14 @@ def test_full_broker_launchd_worker_session_commits_only_after_exact_receipt_and
     result, transaction, gate, worker_errors, thread = _run(monkeypatch, tmp_path, executor)
     assert not thread.is_alive()
     assert worker_errors == []
-    assert result == CommittedCandidate(len(CANDIDATE), hashlib.sha256(CANDIDATE).hexdigest())
-    assert transaction.commits == [(CANDIDATE, result.candidate_sha256)]
+    envelope = canonical_candidate_payload(
+        run_id=TX,
+        skill_name="demo-skill",
+        source_sha256=SOURCE,
+        candidate_bytes=CANDIDATE,
+    )
+    assert result == CommittedCandidate(len(envelope), hashlib.sha256(envelope).hexdigest())
+    assert transaction.commits == [(envelope, result.candidate_sha256)]
     assert gate.calls == 4
     assert executor.seen.transaction_uuid == TX
     assert executor.seen.broker_pid == os.getpid()

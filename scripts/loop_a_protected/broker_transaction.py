@@ -91,6 +91,7 @@ class JournalCandidateTransaction:
             source_digest=source_digest,
             runtime_manifest_digest=runtime_manifest_digest,
             runtime_inventory_digest=self.runtime_inventory_digest,
+            skill_name=self.skill_name,
         )
 
     @staticmethod

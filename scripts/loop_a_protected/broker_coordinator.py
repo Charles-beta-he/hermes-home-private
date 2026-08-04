@@ -17,6 +17,7 @@ class TransactionBinding:
     source_digest: str
     runtime_manifest_digest: str
     runtime_inventory_digest: str
+    skill_name: str
 
 
 @dataclass(frozen=True)

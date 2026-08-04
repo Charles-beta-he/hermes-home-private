@@ -160,7 +160,7 @@ def test_exact_launcher_fd_contract_binds_roles_directions_cloexec_and_excludes_
             WorkerFd("result", result_write, "write"),
             WorkerFd("diagnostics", diagnostic_write, "write"),
             WorkerFd("challenge", challenge_read, "read"),
-            WorkerFd("attestation-control", child_socket.fileno(), "write"),
+            WorkerFd("attestation-control", child_socket.fileno(), "control"),
             WorkerFd("retained-executable", interpreter, "read"),
             WorkerFd("version-root", version, "read"),
             WorkerFd("manifest", manifest, "read"),

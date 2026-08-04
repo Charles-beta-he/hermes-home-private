@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, FrozenSet, Mapping, Protocol, Tuple
 
 from .broker_coordinator import CommittedCandidate, FixedCandidateTransaction, LiveGate, TransactionBinding, accept_worker_candidate
+from .candidate_payload import CandidatePayloadError, canonical_candidate_payload
 from .canonical import canonical_bytes, with_self_digest
 from .darwin_launchd_transport import ReceivedFdBundle, receive_fd_bundle, send_fd_bundle
 from .darwin_peer import validate_launchd_worker_peer, validate_root_broker_peer
@@ -56,6 +57,7 @@ def run_root_broker_session(*, sock: socket.socket, launchd_worker_pid: int,
                             descriptors: Mapping[str, int], binding: TransactionBinding,
                             expected_descriptor_identities: Mapping[str, Tuple[int, int]],
                             mutation_root_identities: FrozenSet[Tuple[int, int]],
+                            runtime_root_identity: Tuple[int, int] | None,
                             gate: LiveGate, transaction: FixedCandidateTransaction,
                             timeout_seconds: float = 10.0) -> CommittedCandidate:
     effective_broker_uid = os.geteuid()
@@ -75,11 +77,13 @@ def run_root_broker_session(*, sock: socket.socket, launchd_worker_pid: int,
         send_fd_bundle(
             sock,
             transaction_uuid=binding.transaction_uuid,
+            skill_name=binding.skill_name,
             broker_pid=os.getpid(),
             nonce=nonce,
             descriptors=descriptors,
             expected_identities=expected_descriptor_identities,
             mutation_root_identities=mutation_root_identities,
+            allowed_version_root_ancestor_identity=runtime_root_identity,
         )
         sock.shutdown(socket.SHUT_WR)
         receipt = receive_launch_receipt(
@@ -131,14 +135,28 @@ def run_launchd_worker_session(*, sock: socket.socket, executor: WorkerExecutor,
         if isinstance(outcome.child_pid, bool) or not isinstance(outcome.child_pid, int) or outcome.child_pid <= 0:
             raise DarwinBrokerWorkerError("worker executor child PID is invalid")
         _validate_handshake_ack(outcome.handshake_ack, nonce=bundle.nonce, child_pid=outcome.child_pid)
-        record = build_worker_result(
-            nonce=bundle.nonce,
+        candidate_envelope = canonical_candidate_payload(
+            run_id=bundle.transaction_uuid,
+            skill_name=bundle.skill_name,
+            source_sha256=outcome.source_digest,
+            candidate_bytes=outcome.candidate_bytes,
+        )
+        wrapped = WorkerExecution(
             child_pid=outcome.child_pid,
-            transaction_uuid=bundle.transaction_uuid,
+            handshake_ack=outcome.handshake_ack,
             source_digest=outcome.source_digest,
             runtime_manifest_digest=outcome.runtime_manifest_digest,
             runtime_inventory_digest=outcome.runtime_inventory_digest,
-            candidate_bytes=outcome.candidate_bytes,
+            candidate_bytes=candidate_envelope,
+        )
+        record = build_worker_result(
+            nonce=bundle.nonce,
+            child_pid=wrapped.child_pid,
+            transaction_uuid=bundle.transaction_uuid,
+            source_digest=wrapped.source_digest,
+            runtime_manifest_digest=wrapped.runtime_manifest_digest,
+            runtime_inventory_digest=wrapped.runtime_inventory_digest,
+            candidate_bytes=wrapped.candidate_bytes,
         )
         send_launch_receipt(
             sock,
@@ -147,9 +165,9 @@ def run_launchd_worker_session(*, sock: socket.socket, executor: WorkerExecutor,
             launcher_pid=os.getpid(),
             child_pid=outcome.child_pid,
         )
-        send_worker_result(sock, record=record, candidate_bytes=outcome.candidate_bytes)
-        return outcome
-    except (OSError, DarwinSessionError) as exc:
+        send_worker_result(sock, record=record, candidate_bytes=wrapped.candidate_bytes)
+        return wrapped
+    except (OSError, DarwinSessionError, CandidatePayloadError) as exc:
         if isinstance(exc, DarwinBrokerWorkerError):
             raise
         raise DarwinBrokerWorkerError("launchd worker session failed closed") from exc

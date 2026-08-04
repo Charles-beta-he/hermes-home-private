@@ -33,6 +33,7 @@ _MAX_FRAME = 65_536
 @dataclass(frozen=True)
 class ReceivedFdBundle:
     transaction_uuid: str
+    skill_name: str
     broker_pid: int
     nonce: str
     descriptors: Mapping[str, int]
@@ -46,18 +47,22 @@ class ReceivedFdBundle:
                 pass
 
 
-def _record(*, transaction_uuid: str, broker_pid: int, nonce: str) -> Dict[str, object]:
+def _record(*, transaction_uuid: str, skill_name: str, broker_pid: int,
+            nonce: str) -> Dict[str, object]:
     try:
         validate_uuid(transaction_uuid)
     except (ProtocolValidationError, TypeError) as exc:
         raise DarwinLaunchdTransportError("bundle transaction UUID is invalid") from exc
+    if not isinstance(skill_name, str) or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,80}", skill_name) is None:
+        raise DarwinLaunchdTransportError("bundle skill identity is invalid")
     if (isinstance(broker_pid, bool) or not isinstance(broker_pid, int) or broker_pid <= 0):
         raise DarwinLaunchdTransportError("bundle broker PID is invalid")
     if not isinstance(nonce, str) or re.fullmatch(r"[0-9a-f]{64}", nonce) is None:
         raise DarwinLaunchdTransportError("bundle nonce is invalid")
     value = {
-        "schema": 1,
+        "schema": 2,
         "transaction_uuid": transaction_uuid,
+        "skill_name": skill_name,
         "broker_pid": broker_pid,
         "nonce": nonce,
         "roles": list(PROTECTED_ROLES),
@@ -72,14 +77,16 @@ def _record(*, transaction_uuid: str, broker_pid: int, nonce: str) -> Dict[str, 
     return finalized
 
 
-def _directory_is_within(fd: int, forbidden: FrozenSet[Tuple[int, int]]) -> bool:
+def _directory_ancestor_mutation_identities(
+        fd: int, forbidden: FrozenSet[Tuple[int, int]]) -> FrozenSet[Tuple[int, int]]:
     current = os.dup(fd)
+    encountered = set()
     try:
         for _ in range(256):
             status = os.fstat(current)
             identity = (status.st_dev, status.st_ino)
             if identity in forbidden:
-                return True
+                encountered.add(identity)
             parent = os.open(
                 "..", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
                 dir_fd=current,
@@ -87,7 +94,7 @@ def _directory_is_within(fd: int, forbidden: FrozenSet[Tuple[int, int]]) -> bool
             parent_status = os.fstat(parent)
             if (parent_status.st_dev, parent_status.st_ino) == identity:
                 os.close(parent)
-                return False
+                return frozenset(encountered)
             os.close(current)
             current = parent
         raise DarwinLaunchdTransportError("version-root ancestry exceeds fixed bound")
@@ -95,10 +102,12 @@ def _directory_is_within(fd: int, forbidden: FrozenSet[Tuple[int, int]]) -> bool
         os.close(current)
 
 
-def send_fd_bundle(sock: socket.socket, *, transaction_uuid: str, broker_pid: int,
-                   nonce: str, descriptors: Mapping[str, int],
+def send_fd_bundle(sock: socket.socket, *, transaction_uuid: str, skill_name: str,
+                   broker_pid: int, nonce: str, descriptors: Mapping[str, int],
                    expected_identities: Mapping[str, Tuple[int, int]],
-                   mutation_root_identities: FrozenSet[Tuple[int, int]]) -> Mapping[str, object]:
+                   mutation_root_identities: FrozenSet[Tuple[int, int]],
+                   allowed_version_root_ancestor_identity: Tuple[int, int] | None = None,
+                   ) -> Mapping[str, object]:
     if (not isinstance(sock, socket.socket) or sock.family != socket.AF_UNIX
             or (sock.type & 0xF) != socket.SOCK_STREAM):
         raise DarwinLaunchdTransportError("bundle channel is not AF_UNIX stream")
@@ -108,6 +117,15 @@ def send_fd_bundle(sock: socket.socket, *, transaction_uuid: str, broker_pid: in
         raise DarwinLaunchdTransportError("protected descriptor identity contract is not exact")
     if not isinstance(mutation_root_identities, frozenset):
         raise DarwinLaunchdTransportError("mutation-root identity set is not frozen")
+    if allowed_version_root_ancestor_identity is not None:
+        if (
+            not isinstance(allowed_version_root_ancestor_identity, tuple)
+            or len(allowed_version_root_ancestor_identity) != 2
+            or any(isinstance(item, bool) or not isinstance(item, int) or item < 0
+                   for item in allowed_version_root_ancestor_identity)
+            or allowed_version_root_ancestor_identity not in mutation_root_identities
+        ):
+            raise DarwinLaunchdTransportError("allowed version-root ancestor identity is invalid")
     ordered = []
     identities = set()
     for role in PROTECTED_ROLES:
@@ -125,13 +143,29 @@ def send_fd_bundle(sock: socket.socket, *, transaction_uuid: str, broker_pid: in
             raise DarwinLaunchdTransportError(f"{role} descriptor type is invalid")
         if identity in mutation_root_identities:
             raise DarwinLaunchdTransportError(f"{role} descriptor is a canonical mutation root")
-        if role == "version-root" and _directory_is_within(fd, mutation_root_identities):
-            raise DarwinLaunchdTransportError("version-root is beneath a canonical mutation root")
+        if role == "version-root":
+            encountered = _directory_ancestor_mutation_identities(fd, mutation_root_identities)
+            allowed = (
+                frozenset()
+                if allowed_version_root_ancestor_identity is None
+                else frozenset({allowed_version_root_ancestor_identity})
+            )
+            if encountered != allowed and encountered:
+                raise DarwinLaunchdTransportError(
+                    "version-root is beneath a non-authorized canonical mutation root"
+                )
+            if allowed and encountered != allowed:
+                raise DarwinLaunchdTransportError(
+                    "version-root is not beneath the authorized runtime mutation root"
+                )
         if identity in identities:
             raise DarwinLaunchdTransportError("protected descriptor inode alias")
         identities.add(identity)
         ordered.append(fd)
-    record = _record(transaction_uuid=transaction_uuid, broker_pid=broker_pid, nonce=nonce)
+    record = _record(
+        transaction_uuid=transaction_uuid, skill_name=skill_name,
+        broker_pid=broker_pid, nonce=nonce,
+    )
     payload = canonical_bytes(record)
     frame = struct.pack(">I", len(payload)) + payload
     rights = array.array("i", ordered)
@@ -199,14 +233,17 @@ def receive_fd_bundle(sock: socket.socket) -> ReceivedFdBundle:
         if not isinstance(value, dict):
             raise DarwinLaunchdTransportError("bundle record is not an object")
         transaction_uuid_value = value.get("transaction_uuid")
+        skill_name_value = value.get("skill_name")
         broker_pid_value = value.get("broker_pid")
         nonce_value = value.get("nonce")
         if (not isinstance(transaction_uuid_value, str)
+                or not isinstance(skill_name_value, str)
                 or isinstance(broker_pid_value, bool) or not isinstance(broker_pid_value, int)
                 or not isinstance(nonce_value, str)):
             raise DarwinLaunchdTransportError("bundle identity fields are invalid")
         expected = _record(
             transaction_uuid=transaction_uuid_value,
+            skill_name=skill_name_value,
             broker_pid=broker_pid_value,
             nonce=nonce_value,
         )
@@ -218,6 +255,7 @@ def receive_fd_bundle(sock: socket.socket) -> ReceivedFdBundle:
         received = []
         return ReceivedFdBundle(
             transaction_uuid=transaction_uuid_value,
+            skill_name=skill_name_value,
             broker_pid=broker_pid_value,
             nonce=nonce_value,
             descriptors=descriptors,

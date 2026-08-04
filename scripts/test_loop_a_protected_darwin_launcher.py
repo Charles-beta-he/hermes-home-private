@@ -154,55 +154,40 @@ def test_adjacent_readback_rejects_in_place_byte_mutation_even_when_mode_is_rest
         os.close(version_fd)
 
 
-def test_low_level_posix_spawn_uses_fixed_fd_map_argv_environment_and_closes_other_fds(monkeypatch):
+def test_low_level_native_spawn_uses_fixed_fd_map_argv_and_environment():
     import loop_a_protected.darwin_launcher as launcher
 
     version = "a" * 64
     interpreter = f"/private/var/db/hermes-loop-a/runtime/versions/{version}/bin/python3"
     source_fds = []
     captured = {}
-    extra_read = extra_write = None
     try:
         for _ in range(10):
             read_fd, write_fd = os.pipe()
             os.close(write_fd)
             source_fds.append(read_fd)
-        extra_read, extra_write = os.pipe()
-        os.set_inheritable(extra_read, False)
-        os.set_inheritable(extra_write, False)
 
-        def fake_spawn(path, argv, env, *, file_actions):
-            captured.update(path=path, argv=argv, env=env, file_actions=file_actions)
-            return 43210
+        class FakeNativeSpawner:
+            def spawn(self, path, argv, environment, ordered_fds):
+                captured.update(path=path, argv=argv, environment=environment,
+                                ordered_fds=ordered_fds)
+                return 43210
 
-        monkeypatch.setattr(launcher.os, "posix_spawn", fake_spawn)
-        monkeypatch.setattr(launcher, "_open_fd_numbers", lambda: set(
-            source_fds + [10, extra_read, extra_write]
-        ))
-        pending = launcher._posix_spawn_pending(interpreter, tuple(source_fds))
+        pending = launcher._posix_spawn_pending(
+            interpreter, tuple(source_fds), FakeNativeSpawner()
+        )
 
         assert pending == 43210
         assert captured["path"] == interpreter
         assert captured["argv"] == (interpreter, "-I", "-S", "-B", "-")
-        assert captured["env"] == launcher.build_spawn_environment()
-        dup_targets = [action[2] for action in captured["file_actions"] if action[0] == os.POSIX_SPAWN_DUP2]
-        assert dup_targets == list(range(10))
-        close_fds = [action[1] for action in captured["file_actions"] if action[0] == os.POSIX_SPAWN_CLOSE]
-        assert extra_read in close_fds
-        assert extra_write in close_fds
-        assert 10 in close_fds
+        assert captured["environment"] == launcher.build_spawn_environment()
+        assert captured["ordered_fds"] == tuple(source_fds)
     finally:
         for fd in source_fds:
             try:
                 os.close(fd)
             except OSError:
                 pass
-        for fd in (extra_read, extra_write):
-            if fd is not None:
-                try:
-                    os.close(fd)
-                except OSError:
-                    pass
 
 
 def test_real_darwin_posix_spawn_harness_uses_stdin_script_and_duplex_handshake_fds(monkeypatch, tmp_path):
@@ -240,7 +225,11 @@ def test_real_darwin_posix_spawn_harness_uses_stdin_script_and_duplex_handshake_
         os.close(script_write)
         all_fds.remove(script_write)
         monkeypatch.setattr(launcher, "_FIXED_INTERPRETER", re.compile(r"^/usr/bin/python3$"))
-        pid = launcher._posix_spawn_pending("/usr/bin/python3", child_sources)
+        from loop_a_protected.darwin_native_spawn import DarwinNativeSpawner, compile_native_library
+        native_library = compile_native_library(tmp_path / "libloop_a_darwin_spawn.dylib")
+        pid = launcher._posix_spawn_pending(
+            "/usr/bin/python3", child_sources, DarwinNativeSpawner(native_library)
+        )
         for fd in (script_read, stdout_write, stderr_write, challenge_read, response_write,
                    executable_fd, version_fd, manifest_fd, inventory_fd, source_fd):
             os.close(fd)
@@ -328,7 +317,7 @@ def test_high_level_launcher_places_no_caller_action_between_readback_and_spawn(
             interpreter, (retained_stat.st_dev, retained_stat.st_ino), 1, "0" * 64,
         )
 
-    def fake_spawn(path, source_fds):
+    def fake_spawn(path, source_fds, native_spawner):
         assert events == ["fd-contract", "ancestors", "verify"]
         events.append("spawn")
         captured["path"] = path
@@ -338,11 +327,23 @@ def test_high_level_launcher_places_no_caller_action_between_readback_and_spawn(
     monkeypatch.setattr(launcher, "validate_exact_launcher_fd_contract", fake_fd_contract)
     monkeypatch.setattr(launcher, "verify_physical_spawn_ancestors", fake_ancestors)
     monkeypatch.setattr(launcher, "verify_adjacent_executable", fake_verify)
+    monkeypatch.setattr(
+        launcher,
+        "verify_adjacent_runtime_file",
+        lambda **kwargs: launcher.RuntimeFileReadback(
+            f"/private/var/db/hermes-loop-a/runtime/versions/{version}/libexec/libloop_a_darwin_spawn.dylib",
+            (99, 100), 1, "6" * 64,
+        ),
+    )
+    monkeypatch.setattr(launcher, "DarwinNativeSpawner", lambda path: object())
     monkeypatch.setattr(launcher, "_posix_spawn_pending", fake_spawn)
     pending = None
     try:
         pending = launcher.spawn_pending_handshake_after_adjacent_executable(
             canonical_interpreter_path=f"/private/var/db/hermes-loop-a/runtime/versions/{'b' * 64}/bin/python3",
+            native_library_path=f"/private/var/db/hermes-loop-a/runtime/versions/{version}/libexec/libloop_a_darwin_spawn.dylib",
+            expected_native_library_size=1,
+            expected_native_library_sha256="6" * 64,
             version_root_fd=fds[4], retained_executable_fd=fds[3],
             version_root_path=f"/private/var/db/hermes-loop-a/runtime/versions/{version}",
             expected_executable_size=1, expected_executable_sha256="0" * 64,
@@ -369,3 +370,45 @@ def test_high_level_launcher_places_no_caller_action_between_readback_and_spawn(
             pending.handshake.close()
         for fd in fds:
             os.close(fd)
+
+
+def test_native_library_is_held_fd_manifest_and_canonical_path_bound(tmp_path):
+    import hashlib
+    from loop_a_protected.darwin_launcher import (
+        DarwinLauncherError, verify_adjacent_runtime_file,
+    )
+
+    libexec = tmp_path / "libexec"
+    libexec.mkdir()
+    library = libexec / "libloop_a_darwin_spawn.dylib"
+    payload = b"native-library-bytes"
+    library.write_bytes(payload)
+    os.chmod(library, 0o444)
+    os.chmod(libexec, 0o555)
+    os.chmod(tmp_path, 0o555)
+    root_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        result = verify_adjacent_runtime_file(
+            version_root_fd=root_fd,
+            version_root_path=str(tmp_path),
+            relative_path="libexec/libloop_a_darwin_spawn.dylib",
+            expected_size=len(payload),
+            expected_sha256=hashlib.sha256(payload).hexdigest(),
+            uid=os.getuid(), gid=os.getgid(), metadata=TestMetadata(),
+        )
+        assert result.canonical_path == str(library)
+        assert result.sha256 == hashlib.sha256(payload).hexdigest()
+        with pytest.raises(DarwinLauncherError, match="digest"):
+            verify_adjacent_runtime_file(
+                version_root_fd=root_fd,
+                version_root_path=str(tmp_path),
+                relative_path="libexec/libloop_a_darwin_spawn.dylib",
+                expected_size=len(payload),
+                expected_sha256="0" * 64,
+                uid=os.getuid(), gid=os.getgid(), metadata=TestMetadata(),
+            )
+    finally:
+        os.close(root_fd)
+        os.chmod(tmp_path, 0o755)
+        os.chmod(libexec, 0o755)
+        os.chmod(library, 0o644)

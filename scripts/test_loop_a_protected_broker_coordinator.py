@@ -76,6 +76,7 @@ def _binding():
         source_digest=SOURCE,
         runtime_manifest_digest=MANIFEST,
         runtime_inventory_digest=INVENTORY,
+        skill_name="demo-skill",
     )
 
 

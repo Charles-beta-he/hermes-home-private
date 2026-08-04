@@ -9,6 +9,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, FrozenSet, Mapping, Sequence, Tuple
 
+from .candidate_payload import canonical_candidate_payload
 from .canonical import CanonicalJSONError, parse_canonical_bytes
 from .darwin_broker_worker import WorkerExecution
 from .darwin_launchd_transport import PROTECTED_ROLES, ReceivedFdBundle
@@ -204,6 +205,9 @@ class DarwinLauncherExecutor:
             raise DarwinExecutorError("worker runtime manifest kind is invalid")
         entrypoint_entry = _file_entry(inventory, self.plan.entrypoint_relative_path)
         executable_entry = _file_entry(inventory, _FIXED_INTERPRETER_ENTRY)
+        native_library_entry = _file_entry(
+            inventory, "libexec/libloop_a_darwin_spawn.dylib"
+        )
         _verify_file_descriptor(
             descriptors["entrypoint"], entrypoint_entry, entrypoint_bytes, label="entrypoint"
         )
@@ -216,6 +220,7 @@ class DarwinLauncherExecutor:
             not isinstance(protected_roles, list)
             or self.plan.entrypoint_relative_path not in protected_roles
             or _FIXED_INTERPRETER_ENTRY not in protected_roles
+            or "libexec/libloop_a_darwin_spawn.dylib" not in protected_roles
         ):
             raise DarwinExecutorError("runtime execution closure omits launcher inputs")
 
@@ -231,8 +236,15 @@ class DarwinLauncherExecutor:
             for fd in (entry_read, entry_write, result_read, result_write, diagnostics_read, diagnostics_write):
                 os.set_inheritable(fd, False)
             pending = spawn_pending_handshake_after_adjacent_executable(
-                canonical_interpreter_path=os.path.join(self.plan.version_root_path, _FIXED_INTERPRETER_ENTRY),
-                version_root_fd=descriptors["version-root"],
+                canonical_interpreter_path=os.path.join(
+                    self.plan.version_root_path, _FIXED_INTERPRETER_ENTRY
+                ),
+                native_library_path=os.path.join(
+                    self.plan.version_root_path, "libexec", "libloop_a_darwin_spawn.dylib"
+                ),
+                expected_native_library_size=native_library_entry["size"],
+                expected_native_library_sha256=native_library_entry["sha256"],
+                version_root_fd=bundle.descriptors["version-root"],
                 retained_executable_fd=descriptors["retained-executable"],
                 version_root_path=self.plan.version_root_path,
                 expected_executable_size=len(executable_bytes),
@@ -277,14 +289,23 @@ class DarwinLauncherExecutor:
                     child_pid = -1
                     executor_owns_child = False
                 raise
-            candidate = _drain_child(result_read, diagnostics_read, deadline=deadline)
+            candidate_content = _drain_child(result_read, diagnostics_read, deadline=deadline)
             _wait_success(child_pid, deadline=deadline)
             child_pid = -1
             executor_owns_child = False
+            source_digest = hashlib.sha256(source_bytes).hexdigest()
+            candidate = canonical_candidate_payload(
+                run_id=bundle.transaction_uuid,
+                skill_name=bundle.skill_name,
+                source_sha256=source_digest,
+                candidate_bytes=candidate_content,
+            )
+            if len(candidate) > _MAX_CANDIDATE:
+                raise DarwinExecutorError("canonical candidate envelope exceeded its fixed bound")
             return WorkerExecution(
                 child_pid=pending.pid,
                 handshake_ack=ack,
-                source_digest=hashlib.sha256(source_bytes).hexdigest(),
+                source_digest=source_digest,
                 runtime_manifest_digest=manifest["version_digest"],
                 runtime_inventory_digest=inventory["inventory_digest"],
                 candidate_bytes=candidate,

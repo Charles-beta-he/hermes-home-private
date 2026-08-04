@@ -17,6 +17,7 @@ DRAFT = "https://json-schema.org/draft/2020-12/schema"
 DIGEST = {"type": "string", "pattern": "^[0-9a-f]{64}$"}
 UUID = {"type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"}
 TOKEN = {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"}
+SKILL_NAME = {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$"}
 TIMESTAMP = {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"}
 UTC_MINUTE = {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:00Z$"}
 POSITIVE = {"type": "integer", "minimum": 1, "maximum": 9007199254740991}
@@ -201,8 +202,8 @@ FIELDS: Dict[str, Dict[str, Any]] = {
         "result_digest": DIGEST,
     },
     "launchd-fd-bundle": {
-        "schema": {"const": 1}, "transaction_uuid": UUID, "broker_pid": POSITIVE,
-        "nonce": DIGEST,
+        "schema": {"const": 2}, "transaction_uuid": UUID, "skill_name": SKILL_NAME,
+        "broker_pid": POSITIVE, "nonce": DIGEST,
         "roles": {"const": ["entrypoint", "retained-executable", "version-root",
                             "runtime-manifest", "runtime-inventory", "source"]},
         "capability": {"const": "read-only-input-bundle"}, "record_digest": DIGEST,

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import fcntl
 import hashlib
 import os
 import re
@@ -12,6 +11,7 @@ from typing import Any, Dict, FrozenSet, Optional, Sequence, Tuple
 
 from .broker_isolation import WorkerFd, validate_exact_launcher_fd_contract
 from .darwin_handshake import HandshakeExpectation, PendingHandshake
+from .darwin_native_spawn import DarwinNativeSpawner, DarwinNativeSpawnError
 from .fd_gateway import CleanMetadataAdapter, FdGatewayError, _validate_metadata
 
 
@@ -55,6 +55,61 @@ class ExecutableReadback:
     identity: Tuple[int, int]
     byte_count: int
     sha256: str
+
+
+@dataclass(frozen=True)
+class RuntimeFileReadback:
+    canonical_path: str
+    identity: Tuple[int, int]
+    byte_count: int
+    sha256: str
+
+
+def verify_adjacent_runtime_file(*, version_root_fd: int, version_root_path: str,
+                                 relative_path: str, expected_size: int,
+                                 expected_sha256: str, uid: int, gid: int,
+                                 metadata: CleanMetadataAdapter) -> RuntimeFileReadback:
+    if relative_path != "libexec/libloop_a_darwin_spawn.dylib":
+        raise DarwinLauncherError("native runtime file path is not protocol-fixed")
+    if (isinstance(expected_size, bool) or not isinstance(expected_size, int)
+            or not 1 <= expected_size <= 16_777_216):
+        raise DarwinLauncherError("native runtime file byte count is outside the bound")
+    if not isinstance(expected_sha256, str) or re.fullmatch(r"[0-9a-f]{64}", expected_sha256) is None:
+        raise DarwinLauncherError("native runtime file digest is invalid")
+    directory_fd = file_fd = -1
+    try:
+        root = _validate_metadata(version_root_fd, "directory", os.fstat(version_root_fd).st_dev,
+                                  uid, gid, 0o555, metadata)
+        directory_fd = os.open("libexec", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                               dir_fd=version_root_fd)
+        directory = _validate_metadata(directory_fd, "directory", root.st_dev, uid, gid, 0o555, metadata)
+        file_fd = os.open("libloop_a_darwin_spawn.dylib", os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                          dir_fd=directory_fd)
+        leaf = _validate_metadata(file_fd, "regular file", root.st_dev, uid, gid, 0o444, metadata)
+        if leaf.st_nlink != 1:
+            raise DarwinLauncherError("native runtime file link count is not one")
+        data = _read_exact_fd(file_fd, expected_size)
+        digest = hashlib.sha256(data).hexdigest()
+        if digest != expected_sha256:
+            raise DarwinLauncherError("native runtime file digest differs from manifest")
+        canonical_path = os.path.join(version_root_path, relative_path)
+        named = os.stat(canonical_path, follow_symlinks=False)
+        if (not stat.S_ISREG(named.st_mode)
+                or (named.st_dev, named.st_ino) != (leaf.st_dev, leaf.st_ino)
+                or (leaf.st_dev, leaf.st_ino) in {
+                    (root.st_dev, root.st_ino), (directory.st_dev, directory.st_ino)
+                }):
+            raise DarwinLauncherError("native runtime pathname identity differs from adjacent FD")
+        return RuntimeFileReadback(canonical_path, (leaf.st_dev, leaf.st_ino), expected_size, digest)
+    except (FdGatewayError, OSError) as exc:
+        if isinstance(exc, DarwinLauncherError):
+            raise
+        raise DarwinLauncherError(getattr(exc, "errno", None), "native runtime verification failed") from exc
+    finally:
+        if file_fd >= 0:
+            os.close(file_fd)
+        if directory_fd >= 0:
+            os.close(directory_fd)
 
 
 @dataclass(frozen=True)
@@ -167,55 +222,24 @@ def verify_adjacent_executable(*, version_root_fd: int, retained_executable_fd: 
             os.close(bin_fd)
 
 
-def _open_fd_numbers() -> set[int]:
-    result = set()
-    for name in os.listdir("/dev/fd"):
-        if name.isdecimal():
-            fd = int(name)
-            try:
-                os.fstat(fd)
-            except OSError:
-                continue
-            result.add(fd)
-    return result
-
-
-def _posix_spawn_pending(canonical_interpreter_path: str, source_fds: Tuple[int, ...]) -> int:
-    """Low-level, no-callback spawn primitive; callers must complete adjacent verification first."""
+def _posix_spawn_pending(canonical_interpreter_path: str, source_fds: Tuple[int, ...],
+                         native_spawner: Any) -> int:
+    """Invoke the native CLOEXEC-default spawn boundary after adjacent verification."""
     if len(source_fds) != 10 or any(isinstance(fd, bool) or not isinstance(fd, int) or fd < 0 for fd in source_fds):
         raise DarwinLauncherError("spawn requires exactly ten ordered source FDs")
     if len(set(source_fds)) != 10:
         raise DarwinLauncherError("spawn source FDs must be distinct")
-    argv = build_spawn_argv(canonical_interpreter_path)
-    normalized = []
     try:
         for fd in source_fds:
             os.fstat(fd)
-            normalized.append(fcntl.fcntl(fd, fcntl.F_DUPFD_CLOEXEC, 10))
-        open_fds = _open_fd_numbers()
-        file_actions: list = [
-            (os.POSIX_SPAWN_DUP2, source_fd, target_fd)
-            for target_fd, source_fd in enumerate(normalized)
-        ]
-        file_actions.extend(
-            (os.POSIX_SPAWN_CLOSE, fd)
-            for fd in sorted(open_fds)
-            if fd >= 10
-        )
-        return os.posix_spawn(
+        return native_spawner.spawn(
             canonical_interpreter_path,
-            argv,
+            build_spawn_argv(canonical_interpreter_path),
             build_spawn_environment(),
-            file_actions=file_actions,
+            source_fds,
         )
-    except OSError as exc:
-        raise DarwinLauncherError(getattr(exc, "errno", None), "posix_spawn failed closed") from exc
-    finally:
-        for fd in normalized:
-            try:
-                os.close(fd)
-            except OSError:
-                pass
+    except (OSError, DarwinNativeSpawnError) as exc:
+        raise DarwinLauncherError(getattr(exc, "errno", None), "native posix_spawn failed closed") from exc
 
 
 @dataclass(frozen=True)
@@ -243,7 +267,9 @@ def _fd_inventory_item(role: str, target_fd: int, source_fd: int,
 
 
 def spawn_pending_handshake_after_adjacent_executable(
-        *, canonical_interpreter_path: str, version_root_fd: int,
+        *, canonical_interpreter_path: str, native_library_path: str,
+        expected_native_library_size: int, expected_native_library_sha256: str,
+        version_root_fd: int,
         retained_executable_fd: int, version_root_path: str,
         expected_executable_size: int, expected_executable_sha256: str,
         uid: int, gid: int, metadata: CleanMetadataAdapter,
@@ -274,7 +300,7 @@ def spawn_pending_handshake_after_adjacent_executable(
             ("retained-executable", expected_executable_sha256), ("version-root", None),
             ("manifest", manifest_digest), ("inventory", inventory_digest), ("source", source_digest),
         )
-        directions = ("read", "write", "write", "read", "write", "read", "read", "read", "read", "read")
+        directions = ("read", "write", "write", "read", "control", "read", "read", "read", "read", "read")
         validate_exact_launcher_fd_contract(
             tuple(WorkerFd(role, source_fd, direction) for source_fd, (role, _), direction
                   in zip(source_fds, roles, directions)),
@@ -304,10 +330,23 @@ def spawn_pending_handshake_after_adjacent_executable(
             gid=gid,
             metadata=metadata,
         )
+        native_readback = verify_adjacent_runtime_file(
+            version_root_fd=version_root_fd,
+            version_root_path=version_root_path,
+            relative_path="libexec/libloop_a_darwin_spawn.dylib",
+            expected_size=expected_native_library_size,
+            expected_sha256=expected_native_library_sha256,
+            uid=uid,
+            gid=gid,
+            metadata=metadata,
+        )
+        if native_library_path != native_readback.canonical_path:
+            raise DarwinLauncherError("native spawn library is not the verified runtime path")
+        native_spawner = DarwinNativeSpawner(native_readback.canonical_path)
         # Spawn only the pathname proven adjacent to the retained executable FD.
         # The caller-supplied path is retained for API compatibility but is not an
         # independent authority source.
-        pid = _posix_spawn_pending(readback.canonical_path, source_fds)
+        pid = _posix_spawn_pending(readback.canonical_path, source_fds, native_spawner)
         os.close(challenge_read)
         challenge_read = -1
         child_socket.close()

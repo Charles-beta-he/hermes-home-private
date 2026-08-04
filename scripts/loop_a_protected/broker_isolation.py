@@ -109,6 +109,8 @@ def validate_worker_fd_map(*, worker_fds: Sequence[WorkerFd],
             raise BrokerIsolationError(f"read-only worker FD {item.role} is writable")
         if item.direction == "write" and access == os.O_RDONLY:
             raise BrokerIsolationError(f"write worker FD {item.role} is not writable")
+        if item.direction == "control" and access != os.O_RDWR:
+            raise BrokerIsolationError(f"control worker FD {item.role} is not duplex")
         roles.add(item.role)
         numbers.add(item.fd)
         result.append(item)
@@ -120,7 +122,7 @@ _EXACT_LAUNCHER_FD_CONTRACT = (
     ("result", "write", stat.S_ISFIFO),
     ("diagnostics", "write", stat.S_ISFIFO),
     ("challenge", "read", stat.S_ISFIFO),
-    ("attestation-control", "write", stat.S_ISSOCK),
+    ("attestation-control", "control", stat.S_ISSOCK),
     ("retained-executable", "read", stat.S_ISREG),
     ("version-root", "read", stat.S_ISDIR),
     ("manifest", "read", stat.S_ISREG),

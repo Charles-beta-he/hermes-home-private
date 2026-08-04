@@ -14,6 +14,7 @@ class DarwinLaunchdError(RuntimeError):
 
 
 _LABEL = "com.nous.hermes-loop-a.worker"
+_ROOT_BROKER_LABEL = "com.nous.hermes-loop-a.root-broker"
 _SOCKET_NAME = "Broker"
 _SOCKET_PATH = "/private/var/run/hermes-loop-a/worker.sock"
 _EXACT_ENVIRONMENT = {
@@ -91,6 +92,68 @@ def serialize_worker_plist(value: Mapping[str, Any]) -> bytes:
     encoded = plistlib.dumps(expected, fmt=plistlib.FMT_XML, sort_keys=True)
     if plistlib.loads(encoded) != expected:
         raise DarwinLaunchdError("launchd worker plist roundtrip differs")
+    return encoded
+
+
+def build_root_broker_plist(*, interpreter_path: str, entrypoint_path: str) -> dict[str, Any]:
+    prefix = "/private/var/db/hermes-loop-a/runtime/versions/"
+    suffix = "/bin/python3"
+    if (
+        not isinstance(interpreter_path, str)
+        or not interpreter_path.startswith(prefix)
+        or not interpreter_path.endswith(suffix)
+        or re.fullmatch(
+            r"[0-9a-f]{64}", interpreter_path[len(prefix):-len(suffix)]
+        ) is None
+    ):
+        raise DarwinLaunchdError(
+            "root broker interpreter path is not an exact digest version"
+        )
+    version_root = interpreter_path[:-len(suffix)]
+    version_relative_entrypoint = entrypoint_path[len(version_root) + 1:] if isinstance(entrypoint_path, str) else ""
+    if (
+        not isinstance(entrypoint_path, str)
+        or not entrypoint_path.startswith(version_root + "/")
+        or any(component in {"", ".", ".."} for component in version_relative_entrypoint.split("/"))
+        or entrypoint_path.endswith("/")
+    ):
+        raise DarwinLaunchdError(
+            "root broker entrypoint path is not canonical protected form"
+        )
+    return {
+        "Label": _ROOT_BROKER_LABEL,
+        "ProgramArguments": [interpreter_path, "-I", "-S", "-B", "-"],
+        "StandardInPath": entrypoint_path,
+        "StandardOutPath": "/dev/null",
+        "StandardErrorPath": "/dev/null",
+        "UserName": "root",
+        "GroupName": "wheel",
+        "EnvironmentVariables": dict(_EXACT_ENVIRONMENT),
+        "ProcessType": "Background",
+        "StartCalendarInterval": {"Hour": 2, "Minute": 0},
+        "RunAtLoad": False,
+        "KeepAlive": False,
+        "Umask": 0o077,
+    }
+
+
+def serialize_root_broker_plist(value: Mapping[str, Any]) -> bytes:
+    if not isinstance(value, Mapping):
+        raise DarwinLaunchdError("root broker plist is not a mapping")
+    arguments = value.get("ProgramArguments")
+    interpreter = arguments[0] if isinstance(arguments, list) and arguments else ""
+    entrypoint = value.get("StandardInPath")
+    if not isinstance(interpreter, str) or not isinstance(entrypoint, str):
+        raise DarwinLaunchdError("root broker plist path fields are invalid")
+    expected = build_root_broker_plist(
+        interpreter_path=interpreter,
+        entrypoint_path=entrypoint,
+    )
+    if dict(value) != expected:
+        raise DarwinLaunchdError("root broker plist fields are not exact")
+    encoded = plistlib.dumps(expected, fmt=plistlib.FMT_XML, sort_keys=True)
+    if plistlib.loads(encoded) != expected:
+        raise DarwinLaunchdError("root broker plist roundtrip differs")
     return encoded
 
 

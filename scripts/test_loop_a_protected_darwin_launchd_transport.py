@@ -33,7 +33,7 @@ def _descriptors(tmp_path):
 def _send(sock, descriptors):
     identities = {role: (os.fstat(fd).st_dev, os.fstat(fd).st_ino) for role, fd in descriptors.items()}
     return send_fd_bundle(
-        sock, transaction_uuid=TX, broker_pid=os.getpid(), nonce="a" * 64,
+        sock, transaction_uuid=TX, skill_name="demo-skill", broker_pid=os.getpid(), nonce="a" * 64,
         descriptors=descriptors, expected_identities=identities,
         mutation_root_identities=frozenset(),
     )
@@ -57,6 +57,7 @@ def test_stream_transport_transfers_exact_read_only_inventory_cloexec(tmp_path):
         assert record["capability"] == "read-only-input-bundle"
         bundle = receive_fd_bundle(right)
         assert bundle.transaction_uuid == TX
+        assert bundle.skill_name == "demo-skill"
         assert bundle.broker_pid == os.getpid()
         assert bundle.nonce == "a" * 64
         assert set(bundle.descriptors) == set(PROTECTED_ROLES)
@@ -124,7 +125,7 @@ def test_transport_rejects_wrong_type_identity_and_mutation_namespace_before_sen
         mismatched["source"] = identities["entrypoint"]
         with pytest.raises(DarwinLaunchdTransportError, match="approved handle"):
             send_fd_bundle(
-                left, transaction_uuid=TX, broker_pid=os.getpid(), nonce="a" * 64,
+                left, transaction_uuid=TX, skill_name="demo-skill", broker_pid=os.getpid(), nonce="a" * 64,
                 descriptors=source, expected_identities=mismatched,
                 mutation_root_identities=frozenset(),
             )
@@ -132,7 +133,7 @@ def test_transport_rejects_wrong_type_identity_and_mutation_namespace_before_sen
         version_identity = identities["version-root"]
         with pytest.raises(DarwinLaunchdTransportError, match="mutation root"):
             send_fd_bundle(
-                left, transaction_uuid=TX, broker_pid=os.getpid(), nonce="a" * 64,
+                left, transaction_uuid=TX, skill_name="demo-skill", broker_pid=os.getpid(), nonce="a" * 64,
                 descriptors=source, expected_identities=identities,
                 mutation_root_identities=frozenset({version_identity}),
             )
@@ -151,9 +152,28 @@ def test_transport_rejects_wrong_type_identity_and_mutation_namespace_before_sen
             mutation_identity = (os.fstat(mutation_fd).st_dev, os.fstat(mutation_fd).st_ino)
             with pytest.raises(DarwinLaunchdTransportError, match="beneath"):
                 send_fd_bundle(
-                    left, transaction_uuid=TX, broker_pid=os.getpid(), nonce="a" * 64,
+                    left, transaction_uuid=TX, skill_name="demo-skill", broker_pid=os.getpid(), nonce="a" * 64,
                     descriptors=beneath, expected_identities=beneath_identities,
                     mutation_root_identities=frozenset({mutation_identity}),
+                )
+
+            record = send_fd_bundle(
+                left, transaction_uuid=TX, skill_name="demo-skill", broker_pid=os.getpid(), nonce="a" * 64,
+                descriptors=beneath, expected_identities=beneath_identities,
+                mutation_root_identities=frozenset({mutation_identity}),
+                allowed_version_root_ancestor_identity=mutation_identity,
+            )
+            assert record["capability"] == "read-only-input-bundle"
+            received = receive_fd_bundle(right)
+            received.close()
+
+            wrong_allowed = (mutation_identity[0], mutation_identity[1] + 1)
+            with pytest.raises(DarwinLaunchdTransportError, match="allowed version-root ancestor"):
+                send_fd_bundle(
+                    left, transaction_uuid=TX, skill_name="demo-skill", broker_pid=os.getpid(), nonce="a" * 64,
+                    descriptors=beneath, expected_identities=beneath_identities,
+                    mutation_root_identities=frozenset({mutation_identity}),
+                    allowed_version_root_ancestor_identity=wrong_allowed,
                 )
         finally:
             os.close(nested_fd)

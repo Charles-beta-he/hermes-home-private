@@ -163,8 +163,9 @@ def test_schema_dispatcher_enforces_shape_phase_and_self_digest():
 
 def test_new_darwin_wire_schemas_are_exact_and_mutation_closed():
     bundle_record = with_self_digest({
-        "schema": 1,
+        "schema": 2,
         "transaction_uuid": "123e4567-e89b-42d3-a456-426614174000",
+        "skill_name": "demo-skill",
         "broker_pid": 10,
         "nonce": "a" * 64,
         "roles": ["entrypoint", "retained-executable", "version-root", "runtime-manifest",

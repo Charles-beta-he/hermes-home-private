@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "authority": "local-reversible-candidate-only",
+  "status": "source-and-local-artifacts-green; production-deploy-blocked-on-sudo-password",
+  "branch": "claude/dreaming-loop-20260801",
+  "verified_at": "2026-08-04T15:30:00Z",
+  "tests": {
+    "focused_darwin_slice": "108 passed in 10.69s",
+    "full_protected_suite": "417 passed in 134.18s",
+    "py_compile": "exit 0",
+    "git_diff_check": "exit 0"
+  },
+  "runtime_final": {
+    "path": "build/loop-a-runtime-v10-final.tar",
+    "archive_sha256": "b385c8066c1de38c174a75456402a0554b8da9285d9749abf1af1f3c9762a67b",
+    "archive_byte_count": 36270080,
+    "file_count": 851,
+    "runtime_manifest_digest": "9704bede9d31f4bf70a33ca3c2ba77a409a6ca339b80d2a0b58246baeafb6284",
+    "runtime_inventory_digest": "38dcde03eb306f597747d8056c542475d19c34186054df1aed4bfc51e687f5a4",
+    "python_sha256": "db30580518b84bad8052a966f9e817db7afb57dbce050885b39922fb81fca485",
+    "stdlib_digest": "469bb35470d76915ab13cd6252948b9a7c9e4ff0ed555b4582ed6b5928fdfaae",
+    "libpython_sha256": "3034380f208a8a9befd824f3df0f53900a684866ba33d0fc1ee04748dd149ff8",
+    "execution_closure_sha256": "c17582c9f38b7df6841ec9a70dac30b41e0ec74a5154cc1ce05b4f4dddda8110"
+  },
+  "deployment_bundle": {
+    "path": "build/loop-a-darwin-deployment-v10.bundle.tar",
+    "report_path": "build/loop-a-darwin-deployment-v10.report.json",
+    "deployment_artifact_sha256": "af5e7535608b2188abce45feb0f399843273c8d68d0ec653c1a2deaed53c41eb",
+    "deployment_artifact_byte_count": 36700160,
+    "plan_digest": "ee7472c54291930aa02935f1ba56a246d0b0ec970eb5f8e1d16fa9d871f493ef",
+    "preimage_receipt_digest": "2bb65af3af58ef5dd5eaa2ce3312381063db715ddd641de5b61dce19e9eee383",
+    "rollback_receipt_template_digest": "e1845432998ed330a3cc92b737c9133dc4688f2c41bd97a119320d86fc5eab19",
+    "target_root": "/private/var/db/hermes-loop-a",
+    "bundle_path": "/private/var/tmp/hermes-loop-a-deployment/loop-a-v10.bundle.tar",
+    "account_name": "_hermesloopa",
+    "authorized_uid": 309,
+    "authorized_gid": 309,
+    "fresh_install_preimage_required": true
+  },
+  "host_preimage": {
+    "user__hermesloopa": "absent",
+    "group__hermesloopa": "absent",
+    "uid_309_collision_search": "empty",
+    "gid_309_collision_search": "empty",
+    "production_root": "absent",
+    "worker_plist": "absent",
+    "root_broker_plist": "absent",
+    "deployment_staging_root": "absent",
+    "sudo_nopasswd": false
+  },
+  "non_goals_not_claimed": [
+    "production account creation",
+    "LaunchDaemon install",
+    "launchctl bootstrap",
+    "distinct-UID production smoke",
+    "production rollback execution",
+    "independent dual-model certification complete"
+  ]
+}

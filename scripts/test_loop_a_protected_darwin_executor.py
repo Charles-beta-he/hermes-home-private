@@ -6,6 +6,7 @@ import threading
 
 import pytest
 
+from loop_a_protected.candidate_payload import validate_candidate_payload
 from loop_a_protected.canonical import canonical_bytes, with_self_digest
 from loop_a_protected.darwin_broker_worker import WorkerExecution
 from loop_a_protected.darwin_executor import (
@@ -71,17 +72,21 @@ def _entry(path, data, executable=False):
 def _bundle(tmp_path):
     entrypoint = b"print('fixed worker')\n"
     executable = b"vendored-python"
+    native_library = b"darwin-native-spawn-library"
     entries = [
         {"relative_path": "bin", "type": "directory", "mode": 0o555, "uid": 0, "gid": 0,
          "size": None, "sha256": None, "executable": False},
         _entry("bin/python3", executable, executable=True),
         {"relative_path": "libexec", "type": "directory", "mode": 0o555, "uid": 0, "gid": 0,
          "size": None, "sha256": None, "executable": False},
+        _entry("libexec/libloop_a_darwin_spawn.dylib", native_library),
         _entry("libexec/worker.py", entrypoint),
     ]
     inventory = finalize_inventory("runtime", LINEAGE, 1, entries)
     closure = {
-        "protected_roles": ["bin/python3", "libexec/worker.py"],
+        "protected_roles": [
+            "bin/python3", "libexec/libloop_a_darwin_spawn.dylib", "libexec/worker.py"
+        ],
         "external_dependencies": [],
         "platform_build": "26A123",
         "snapshot_uuid": "123e4567-e89b-42d3-a456-426614174010",
@@ -110,7 +115,7 @@ def _bundle(tmp_path):
         else:
             path.write_bytes(values[role])
             descriptors[role] = os.open(path, os.O_RDONLY)
-    return ReceivedFdBundle(TX, os.getpid(), "a" * 64, descriptors, {}), entrypoint, manifest, inventory
+    return ReceivedFdBundle(TX, "demo-skill", os.getpid(), "a" * 64, descriptors, {}), entrypoint, manifest, inventory
 
 
 def _plan(tmp_path):
@@ -166,7 +171,13 @@ def test_executor_maps_exact_six_outer_inputs_to_launcher_and_reaps(monkeypatch,
         captured["thread"].join(timeout=2)
         assert isinstance(outcome, WorkerExecution)
         assert outcome.child_pid == 4321
-        assert outcome.candidate_bytes == candidate
+        validated_candidate = validate_candidate_payload(
+            outcome.candidate_bytes,
+            expected_run_id=TX,
+            expected_skill_name="demo-skill",
+            expected_source_sha256=hashlib.sha256(b"source skill bytes").hexdigest(),
+        )
+        assert validated_candidate.candidate_bytes == candidate
         assert outcome.handshake_ack["nonce"] == bundle.nonce
         assert captured["entrypoint_bytes"] == entrypoint
         assert captured["manifest_digest"] == manifest["version_digest"]
@@ -213,7 +224,7 @@ def test_executor_rejects_wrong_outer_order_and_entrypoint_inventory_mismatch(mo
     monkeypatch.setattr(module, "spawn_pending_handshake_after_adjacent_executable", lambda **kwargs: called.append(kwargs))
     try:
         reordered = dict(reversed(tuple(bundle.descriptors.items())))
-        wrong = ReceivedFdBundle(bundle.transaction_uuid, bundle.broker_pid, bundle.nonce, reordered, bundle.record)
+        wrong = ReceivedFdBundle(bundle.transaction_uuid, bundle.skill_name, bundle.broker_pid, bundle.nonce, reordered, bundle.record)
         with pytest.raises(DarwinExecutorError, match="order"):
             DarwinLauncherExecutor(_plan(tmp_path)).execute(wrong)
         _replace_role_bytes(bundle, tmp_path, "entrypoint", b"different-entrypoint\n")
@@ -310,7 +321,8 @@ def test_executor_rejects_manifest_inventory_mismatch_before_spawn(monkeypatch, 
     path.write_bytes(canonical_bytes(forged))
     descriptors["runtime-inventory"] = os.open(path, os.O_RDONLY)
     bundle = ReceivedFdBundle(
-        bundle.transaction_uuid, bundle.broker_pid, bundle.nonce, descriptors, bundle.record
+        bundle.transaction_uuid, bundle.skill_name, bundle.broker_pid,
+        bundle.nonce, descriptors, bundle.record
     )
     called = []
     monkeypatch.setattr(module, "spawn_pending_handshake_after_adjacent_executable", lambda **kwargs: called.append(kwargs))

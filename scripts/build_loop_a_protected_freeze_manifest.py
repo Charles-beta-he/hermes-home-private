@@ -8,12 +8,13 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = ROOT / "docs/private/dreaming-loop-a-hostile-uid-freeze-manifest-v9-candidate-20260803.json"
+DEFAULT_OUTPUT = ROOT / "docs/private/dreaming-loop-a-hostile-uid-freeze-manifest-v10-candidate-20260803.json"
 DOCS = (
     "docs/private/dreaming-loop-a-hostile-uid-protocol-v7-20260803.md",
     "docs/private/dreaming-loop-a-hostile-uid-protocol-v8-candidate-20260803.md",
     "docs/private/dreaming-loop-a-hostile-uid-v7-to-v8-normative-delta-20260803.md",
     "docs/private/dreaming-loop-a-hostile-uid-v8-to-v9-normative-delta-20260803.md",
+    "docs/private/dreaming-loop-a-hostile-uid-v9-to-v10-normative-delta-20260803.md",
     "docs/private/dreaming-loop-a-schema-bundle-v1.json",
 )
 BUILDERS = (
@@ -31,6 +32,10 @@ def candidate_paths() -> List[str]:
     paths.extend(
         item.relative_to(ROOT).as_posix()
         for item in (ROOT / "scripts/loop_a_protected").glob("*.py")
+    )
+    paths.extend(
+        item.relative_to(ROOT).as_posix()
+        for item in (ROOT / "scripts/loop_a_protected/native").glob("*.c")
     )
     paths.extend(
         item.relative_to(ROOT).as_posix()
@@ -57,9 +62,9 @@ def build_manifest() -> Dict[str, Any]:
     candidate_digest = hashlib.sha256(canonical_bytes(candidate_payload)).hexdigest()
     manifest = {
         "schema": 1,
-        "candidate_revision": 9,
+        "candidate_revision": 10,
         "status": "candidate-hold",
-        "authority": "local-reversible-only; no system mutation, cutover, commit, or push",
+        "authority": "local-reversible candidate; production root mutation requires exact digest-bound one-time authorization",
         "candidate_algorithm": candidate_payload["algorithm"],
         "candidate_entries": entries,
         "candidate_digest": candidate_digest,
@@ -71,7 +76,7 @@ def build_manifest() -> Dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build or verify the Loop A revision-9 candidate freeze manifest")
+    parser = argparse.ArgumentParser(description="Build or verify the Loop A revision-10 candidate freeze manifest")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
