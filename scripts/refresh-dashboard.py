@@ -5,8 +5,31 @@ Refresh Dashboard — 自动刷新进化仪表盘
 """
 
 import os, json, datetime, math
+import importlib.util
+import sys
+from pathlib import Path
 
-from hermes_evolution_store import default_store
+
+def _load_default_store():
+    """Load the sibling module without cwd-sensitive top-level discovery."""
+    module_name = "_hermes_evolution_store_local"
+    module = sys.modules.get(module_name)
+    if module is None:
+        module_path = Path(__file__).resolve().with_name("hermes_evolution_store.py")
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"cannot load evolution store: {module_path}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        try:
+            spec.loader.exec_module(module)
+        except Exception:
+            sys.modules.pop(module_name, None)
+            raise
+    return module.default_store
+
+
+default_store = _load_default_store()
 
 STORE = default_store()
 HEALTH_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/health-history.jsonl")
