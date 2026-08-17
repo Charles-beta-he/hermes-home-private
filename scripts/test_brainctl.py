@@ -69,6 +69,24 @@ class BrainctlTestCase(unittest.TestCase):
         self.assertEqual(len(digest), 64)
         self.assertIn("local brain", excerpt)
 
+    def test_reindex_skips_dataless_placeholder_without_reading_it(self):
+        placeholder = self.write_note("Cloud/Placeholder.md", "# Placeholder\n\nMust not be read.\n")
+        normal = self.write_note("Local/Available.md", "# Available\n\nIndexed local content.\n")
+        original_blocks_from_file = brainctl.blocks_from_file
+
+        def guarded_blocks_from_file(path, vault):
+            if path == placeholder:
+                raise AssertionError("dataless placeholder was read")
+            return original_blocks_from_file(path, vault)
+
+        with patch.object(brainctl, "is_dataless_file", side_effect=lambda path: path == placeholder):
+            with patch.object(brainctl, "blocks_from_file", side_effect=guarded_blocks_from_file):
+                result = brainctl.reindex(json_mode=True)
+
+        self.assertEqual(result["indexed_blocks"], 1)
+        self.assertEqual(result["skipped_dataless_files"], 1)
+        self.assertEqual([hit["path"] for hit in brainctl.search("Indexed local", json_mode=True)], [normal.relative_to(self.vault).as_posix()])
+
     def test_search_returns_evidence_fields_and_wal_without_raw_query_secret(self):
         self.write_note("Research/MemPalace.md", "# MemPalace\n\nEvidence drawer improves local brain recall.\n")
         brainctl.reindex(json_mode=True)

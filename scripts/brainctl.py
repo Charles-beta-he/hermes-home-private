@@ -45,6 +45,11 @@ DEFAULT_IGNORES = [
     "99-hermes-notes/.git/**",
 ]
 
+# macOS marks evicted iCloud files with SF_DATALESS. Python 3.9's stat module
+# does not expose the constant, so keep the Darwin value local and inert on
+# other platforms. Reading such a file can block while macOS hydrates it.
+SF_DATALESS = 0x40000000 if sys.platform == "darwin" else 0
+
 
 @dataclass(frozen=True)
 class Paths:
@@ -159,6 +164,16 @@ def iter_markdown_files(vault: Path, patterns: Sequence[str]) -> Iterator[Path]:
         if ignored(rel, patterns):
             continue
         yield path
+
+
+def is_dataless_file(path: Path) -> bool:
+    if not SF_DATALESS:
+        return False
+    try:
+        flags = getattr(path.stat(), "st_flags", 0)
+    except OSError:
+        return False
+    return bool(flags & SF_DATALESS)
 
 
 def heading_text(line: str) -> str | None:
@@ -282,12 +297,16 @@ def reindex(*, json_mode: bool = False) -> dict:
     indexed = 0
     skipped_secret = 0
     skipped_ignored = 0
+    skipped_dataless = 0
     try:
         reset_index(con)
         for md in iter_markdown_files(paths.vault, patterns):
             rel = md.relative_to(paths.vault).as_posix()
             if ignored(rel, patterns):
                 skipped_ignored += 1
+                continue
+            if is_dataless_file(md):
+                skipped_dataless += 1
                 continue
             blocks, skipped = blocks_from_file(md, paths.vault)
             skipped_secret += skipped
@@ -326,6 +345,7 @@ def reindex(*, json_mode: bool = False) -> dict:
         "indexed_blocks": indexed,
         "skipped_secret_blocks": skipped_secret,
         "skipped_ignored_files": skipped_ignored,
+        "skipped_dataless_files": skipped_dataless,
     }
     append_wal(
         "reindex",
@@ -334,6 +354,7 @@ def reindex(*, json_mode: bool = False) -> dict:
             "indexed_blocks": indexed,
             "skipped_secret_blocks": skipped_secret,
             "skipped_ignored_files": skipped_ignored,
+            "skipped_dataless_files": skipped_dataless,
         },
         paths=paths,
     )
