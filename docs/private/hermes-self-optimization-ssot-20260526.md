@@ -91,6 +91,108 @@ verification:
    - Background jobs should emit candidates pointing at the SSOT, not silently mutate skills/code from copied summaries.
    - If the SSOT cannot be found or is stale, fail closed and ask/queue for review.
 
+## Accepted minimal cross-session and multi-agent coordination model
+
+Status: accepted by the user on 2026-08-17.
+
+The coordination problem is limited to two required outcomes:
+
+1. A new session can resolve the current work object and effective decision source.
+2. Concurrent agents do not silently write the same surface from different baselines.
+
+Do not build a second all-purpose shared-memory or control-plane database for this. Reuse existing authorities and add only three scoped records when needed:
+
+### 1. Scope Manifest
+
+Identifies the work object without duplicating task progress:
+
+```yaml
+scope_id: <stable id>
+scope_type: project|system
+canonical_root: <real path>
+ssot: <canonical decision/spec path>
+repo: <canonical repository path or null>
+activation_surface: <runtime surface or null>
+```
+
+- `scope_type: project` covers ordinary project delivery.
+- `scope_type: system` covers Hermes self-update surfaces such as core, skills, plugins, config, gateway, cron, taskpool, profiles, and runtime activation.
+- Portfolio views are derived queries over scope manifests, not another registry.
+
+### 2. Work Claim
+
+The canonical task/taskpool record owns mutable coordination state:
+
+```yaml
+task_id: <id>
+scope_id: <scope id>
+owner: <single writer>
+base_commit: <sha or null>
+allowed_paths: [<bounded paths>]
+lease_expires_at: <timestamp or null>
+```
+
+- One write surface has one writer at a time; reviewers and other agents remain read-only on overlapping paths.
+- Claims are lease-bound rather than permanent locks.
+- A changed base commit, SSOT digest, owner, or overlapping claim requires fresh readback before work continues.
+- Agents and sessions do not inherit another actor's authority merely because they can read the claim.
+
+### 3. Completion Receipt
+
+Binds a result to the exact candidate and verification evidence:
+
+```yaml
+task_id: <id>
+candidate_commit: <sha or null>
+ssot_digest: <sha256>
+verification:
+  - command: <executed command>
+    result: <observed result>
+runtime_activation: not_attempted|staged|active|rolled_back
+```
+
+For Hermes runtime activation, also bind the previous runtime, requested candidate, fresh actual-runtime readback, and rollback reference. A validated source candidate is not an activated runtime.
+
+### Existing authority map
+
+Each fact has one canonical authority:
+
+| Fact | Canonical authority |
+|---|---|
+| Project direction and accepted decisions | Project/optimization SSOT document |
+| Source and candidate state | Git |
+| Task status, owner, lease, and write boundary | Taskpool/task record |
+| Current Hermes runtime | Fresh process, realpath, version, config, and health probes |
+| Historical execution evidence | Completion receipt; durable ledger only for complex/long/multi-agent runs |
+| Long-term mission and human decision gates | Mission only when the work requires durable autonomous continuation |
+| Historical conversation | Session history/search, as secondary context |
+| Stable user preference or environment fact | Persistent memory |
+
+Derived views must identify their source, observation time, and source digest where applicable. They must not become independent write authorities.
+
+### Required preflight and convergence
+
+Before a session or agent writes:
+
+1. Resolve `scope_id` and canonical real paths.
+2. Read the named SSOT.
+3. Probe fresh Git and, for `system` scope, actual runtime state.
+4. Check owner, lease, base commit, and path overlap.
+5. Return exactly one coordination result: `PROCEED`, `READ_ONLY_CONFLICT`, or `REBASE_REQUIRED`.
+
+At completion, release the claim only after the candidate and verification receipt are read back. Integration remains single-owner and serial even when candidate production is parallel.
+
+### Explicit non-goals
+
+- No global shared "agent brain" containing WIP.
+- No second portfolio/project/task/runtime database that mirrors existing authorities.
+- No persistent PID or runtime YAML treated as current truth; activation receipts are historical evidence only.
+- No mandatory durable run, Mission, event log, or multi-model round for ordinary scoped work.
+- No synchronization of private chain-of-thought or wholesale conversation transcripts.
+- No automatic runtime activation, push, deploy, external delivery, or authority inheritance.
+
+Expansion beyond this model requires concrete recurring conflict evidence and should proceed incrementally: scope identity, then path-level claims, then activation receipts, and only then a derived projection if query cost justifies it.
+
 ## Fail-closed checks
 
 Before claiming self-optimization is complete, answer yes to all applicable checks:
