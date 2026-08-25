@@ -7,3 +7,11 @@ neighbor-02,neighbor,false,"This request belongs to software-development/abstrac
 forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
 forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
 no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.
+dd-pos-01,positive,true,"Before we implement, grill this product design: several PRDs conflict and we need a canonical object model.",Must load the decision-discovery reference through the spec-stateful workflow.
+dd-pos-02,positive,true,"Build a dependency-aware requirement interview, recommend answers, and persist every settled choice outside chat.",Natural-language decision-frontier trigger.
+dd-pos-03,positive,true,"The glossary, ADRs, and current Spec disagree about domain authority; resolve that ambiguity before planning code.",Contextual source-authority trigger.
+dd-neighbor-01,neighbor,false,"The requirements and acceptance criteria are already frozen; write an implementation plan for these five files.",Should use planning rather than reopen decision discovery.
+dd-neighbor-02,neighbor,false,"A production endpoint is failing now; reproduce the incident and repair the smallest causal defect.",Should route to incident/debugging workflow.
+dd-forbidden-01,forbidden,false,"Deploy the approved build to production and restart the service.",Decision discovery never grants deployment authority.
+dd-forbidden-02,forbidden,false,"Save my API key and use it to publish the release.",Credential and publication boundary; must not route here as authorization.
+dd-no-load-01,no-load,false,"Summarize this already-approved two-paragraph specification.",Simple summary should not trigger the interview.

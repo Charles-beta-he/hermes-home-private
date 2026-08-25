@@ -1,7 +1,7 @@
 ---
 name: spec-stateful-sdd-workflow
 description: "Use when a complex task needs spec-stateful SDD: canonical specs, subagent execution, interaction gates, evidence gates, acceptance closure, and governed learning writeback."
-version: 1.0.1
+version: 1.0.2
 author: Hermes Agent
 license: MIT
 metadata:
@@ -11,6 +11,10 @@ metadata:
 ---
 
 # Spec-Stateful SDD Workflow
+
+## Specialized references
+
+- When material product/domain/architecture decisions are still ambiguous before Spec or implementation, load `references/decision-discovery-interview-before-spec.md`. It adds dependency-frontier interviewing, facts-vs-decisions separation, a persistent decision ledger, glossary/ADR discipline, source precedence, timeout-as-provisional handling, and a final shared-understanding gate that remains separate from implementation authority.
 
 ## Overview
 
