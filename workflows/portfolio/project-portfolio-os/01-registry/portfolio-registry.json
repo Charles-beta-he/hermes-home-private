@@ -573,6 +573,43 @@
       "status": "contract-ready/pilot-not-started",
       "type": "knowledge-system/reference-repo-evaluation",
       "updated_at": "2026-07-07T17:07:00+08:00"
+    },
+    {
+      "id": "ai-manga-drama-studio",
+      "portfolio_profile": true,
+      "profile": "/Users/charles/.hermes/project-profiles/ai-manga-drama-studio.json",
+      "progress_ledger": "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio/PROGRESS-LEDGER.md",
+      "ssot_root": "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio",
+      "role": "自用、开箱即用的本地 AI 漫剧生产工厂；React+Tailwind Web 与全能力 CLI 共用同一后端和 SSOT。",
+      "status": "frozen-awaiting-phase-0-start",
+      "type": "personal-creative-ai-production-tool",
+      "updated_at": "2026-08-29T01:02:55+08:00",
+      "current_components": {
+        "project_charter": "contract-ready",
+        "product_spec": "contract-ready",
+        "architecture": "planning-ready",
+        "source_evidence": "exact-commit-and-license-bytes-recorded-runtime-unvalidated",
+        "implementation": "not-started",
+        "runtime": "inactive"
+      },
+      "audit_semantics": {
+        "evidence_freshness_days": 14,
+        "maturity_verdict": "projectized_pre_start_only",
+        "next_audit_action": "require exact Phase 0 start, then revalidate sources and run real H3 spike before implementation claims"
+      },
+      "promotion_policy": "Evidence-gated: source popularity and upstream metadata are not runtime evidence; Phase 0 must produce exact clone/build/run/H3 receipts; later maturity requires Web/CLI parity, recovery and real media outputs.",
+      "relations": [
+        {
+          "relation": "governed_by",
+          "target": "project-portfolio-os",
+          "merge_policy": "portfolio_metadata_only"
+        },
+        {
+          "relation": "managed_by_agent_workflow",
+          "target": "hermes",
+          "merge_policy": "documentation_and_local_execution_only_no_runtime_authority_merge"
+        }
+      ]
     }
   ],
   "reference_absorption_policies": [

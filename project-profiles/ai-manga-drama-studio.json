@@ -1,0 +1,55 @@
+{
+  "profile_schema": "hermes_project_profile_v1",
+  "id": "ai-manga-drama-studio",
+  "project": "ai-manga-drama-studio",
+  "display_name": "AI 漫剧本地生产工厂",
+  "status": "frozen-awaiting-phase-0-start",
+  "project_type": "personal-creative-ai-production-tool",
+  "updated_at": "2026-08-29T01:02:55+08:00",
+  "portfolio_profile": true,
+  "role": "自用、开箱即用的本地 AI 漫剧生产工厂；React+Tailwind Web 与全能力 CLI 共用同一后端和 SSOT。",
+  "ssot_root": "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio",
+  "progress_ledger": "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio/PROGRESS-LEDGER.md",
+  "portfolio_evidence": [
+    "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio/PROJECT-STATE.json",
+    "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio/SOURCES.json",
+    "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio/ADR-0001-open-source-first-react-web-cli.md"
+  ],
+  "current_components": {
+    "project_charter": "contract-ready",
+    "product_spec": "contract-ready",
+    "architecture": "planning-ready",
+    "source_evidence": "exact-commit-and-license-bytes-recorded-runtime-unvalidated",
+    "implementation": "not-started",
+    "runtime": "inactive"
+  },
+  "audit_semantics": {
+    "evidence_freshness_days": 14,
+    "maturity_verdict": "projectized_pre_start_only",
+    "next_audit_action": "require exact Phase 0 start, then revalidate sources and run real H3 spike before implementation claims"
+  },
+  "promotion_policy": "Evidence-gated: source popularity and upstream metadata are not runtime evidence; Phase 0 must produce exact clone/build/run/H3 receipts; later maturity requires Web/CLI parity, recovery and real media outputs.",
+  "relations": [
+    {
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "relation": "managed_by_agent_workflow",
+      "target": "hermes",
+      "merge_policy": "documentation_and_local_execution_only_no_runtime_authority_merge"
+    }
+  ],
+  "execution_policy": {
+    "bucket": "personal-project/explicit-start",
+    "autonomous_advancement": false,
+    "activation": "仅在用户显式启动本项目具体 Phase 时推进"
+  },
+  "start_gate": {
+    "required": true,
+    "consumed": false,
+    "exact_phrase": "启动 AI 漫剧本地生产工厂 Phase 0",
+    "state_file": "/Users/charles/Documents/brain/05-实践与项目/projects/ai-manga-drama-studio/PROJECT-STATE.json"
+  }
+}
