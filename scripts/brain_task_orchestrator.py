@@ -550,6 +550,113 @@ def maybe_append_taskpool_mission_signal(event: str, *, task_id: str = "", reaso
         return {"status": "ERROR", "event": event, "task_id": task_id, "mission_id": mission_id, "error": str(exc)}
 
 
+EVENT_HOOK_V2_SCHEMA = "taskpool_event_hook_receipt_v2"
+
+
+def normalize_event_hook_v2_summary(summary: dict[str, Any]) -> dict[str, Any]:
+    """Project a successful typed tick summary onto the observer contract."""
+    if not isinstance(summary, dict) or summary.get("status") != "OK":
+        raise ValueError("successful summary with status OK is required")
+    multimodel = summary.get("multimodel_intervention", {})
+    auto_close = summary.get("auto_close_review", {})
+    if not isinstance(multimodel, dict) or not isinstance(auto_close, dict):
+        raise ValueError("invalid nested summary container")
+    normalized = {
+        "status": "OK",
+        "next_task_id": summary.get("next_task_id", ""),
+        "dispatchable": summary.get("dispatchable", False),
+        "error_count": summary.get("error_count", 0),
+        "reconcile_action_count": summary.get("reconcile_action_count", 0),
+        "ingested_count": summary.get("ingested_count", 0),
+        "multimodel_intervention": {
+            "task_id": multimodel.get("task_id", ""),
+            "queued_count": multimodel.get("queued_count", 0),
+        },
+        "auto_close_review": {
+            "closed_count": auto_close.get("closed_count", 0),
+            "error_count": auto_close.get("error_count", 0),
+        },
+    }
+    if type(normalized["next_task_id"]) is not str or type(normalized["dispatchable"]) is not bool:
+        raise ValueError("invalid summary scalar types")
+    if type(normalized["multimodel_intervention"]["task_id"]) is not str:
+        raise ValueError("invalid multimodel task_id")
+    count_paths = (
+        (normalized, "error_count"), (normalized, "reconcile_action_count"), (normalized, "ingested_count"),
+        (normalized["multimodel_intervention"], "queued_count"),
+        (normalized["auto_close_review"], "closed_count"), (normalized["auto_close_review"], "error_count"),
+    )
+    for container, field in count_paths:
+        if type(container[field]) is not int or container[field] < 0:
+            raise ValueError(f"invalid summary count: {field}")
+    if normalized["error_count"] != 0:
+        raise ValueError("summary contains errors")
+    return normalized
+
+
+def build_event_hook_v2_receipt(
+    *, event: str, task_id: str, started_at: str, finished_at: str,
+    returncode: int, summary: dict[str, Any],
+) -> dict[str, Any]:
+    receipt = {
+        "schema": EVENT_HOOK_V2_SCHEMA,
+        "status": "OK",
+        "event": event,
+        "task_id": task_id,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "returncode": returncode,
+        "summary": normalize_event_hook_v2_summary(summary),
+    }
+    encoded = json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    receipt["signature"] = hashlib.sha256(encoded).hexdigest()
+    return receipt
+
+
+def publish_event_hook_v2_receipt(payload: dict[str, Any], legacy_path: Path) -> Path | None:
+    """Atomically publish a distinct v2 sidecar for successful, valid results."""
+    if payload.get("status") != "OK" or payload.get("returncode") != 0:
+        return None
+    try:
+        receipt = build_event_hook_v2_receipt(
+            event=str(payload["event"]),
+            task_id=str(payload.get("task_id") or ""),
+            started_at=str(payload["started_at"]),
+            finished_at=str(payload["finished_at"]),
+            returncode=0,
+            summary=payload["summary"],
+        )
+    except (KeyError, TypeError, ValueError):
+        return None
+    if not legacy_path.name.startswith("event-") or legacy_path.name.startswith("event-v2-"):
+        raise ValueError("legacy receipt name must start with event-")
+    sidecar = legacy_path.with_name("event-v2-" + legacy_path.name[len("event-"):])
+    if sidecar == legacy_path:
+        raise ValueError("v2 sidecar must be distinct")
+    sidecar.parent.mkdir(parents=True, exist_ok=True)
+    rendered = json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    fd, temp_name = tempfile.mkstemp(prefix=f".{sidecar.name}.", suffix=".tmp", dir=sidecar.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(rendered)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.link(temp_name, sidecar, follow_symlinks=False)
+        os.unlink(temp_name)
+        parent_fd = os.open(sidecar.parent, os.O_RDONLY)
+        try:
+            os.fsync(parent_fd)
+        finally:
+            os.close(parent_fd)
+    except Exception:
+        try:
+            os.unlink(temp_name)
+        except FileNotFoundError:
+            pass
+        raise
+    return sidecar
+
+
 def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str = "") -> dict[str, Any]:
     """Run one bounded taskpool dispatch tick after local taskpool mutations.
 
@@ -642,6 +749,11 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
         except Exception as exc:
             payload["summary_parse_error"] = str(exc)
         log_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        try:
+            v2_log_path = publish_event_hook_v2_receipt(payload, log_path)
+        except OSError as exc:
+            v2_log_path = None
+            payload["v2_log_error"] = str(exc)[:300]
         _observe_selfcheck(
             payload["status"],
             f"taskpool event hook {event} finished status={payload['status']} returncode={proc.returncode}",
@@ -660,6 +772,7 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
             "next_task_id": (payload.get("summary") or {}).get("next_task_id"),
             "autorun": (payload.get("summary") or {}).get("autorun"),
             "error_count": (payload.get("summary") or {}).get("error_count"),
+            "v2_log": str(v2_log_path) if v2_log_path else None,
         }
     except subprocess.TimeoutExpired as exc:
         payload = {

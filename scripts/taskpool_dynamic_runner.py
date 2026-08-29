@@ -11,6 +11,7 @@ import fcntl
 import json
 import os
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -22,12 +23,14 @@ HOME = Path.home()
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(HOME / ".hermes"))).expanduser()
 STATE = HERMES_HOME / "state" / "taskpool_dynamic_runner.json"
 LOG = HERMES_HOME / "logs" / "taskpool_dynamic_runner.jsonl"
+V2_LOG = HERMES_HOME / "logs" / "taskpool_dynamic_runner_v2.jsonl"
 LOCK = HERMES_HOME / "state" / "taskpool_dynamic_runner.pid"
 TICK = HERMES_HOME / "scripts" / "brain_task_dispatch_tick.py"
 MM_DYNAMIC = HERMES_HOME / "scripts" / "multimodel_intervention_dynamic_step.py"
 NO_MULTIMODEL_SPAWN_ENV_FLAG = "HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN"
 ENV_TRUE_VALUES = {"1", "true", "yes", "on", "enabled", "force"}
 _LOCK_FD: int | None = None
+_LOCK_DIR_FD: int | None = None
 
 
 def env_flag_enabled(env: dict[str, str], name: str) -> bool:
@@ -93,46 +96,197 @@ def append(obj: dict[str, Any]) -> None:
         f.write(json.dumps(obj, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def normalize_dynamic_runner_v2_summary(summary: dict[str, Any]) -> dict[str, Any]:
+    """Project a successful typed tick summary onto the strict observer shape."""
+    if not isinstance(summary, dict) or summary.get("status") != "OK":
+        raise ValueError("successful summary with status OK is required")
+    multimodel = summary.get("multimodel_intervention", {})
+    auto_close = summary.get("auto_close_review", {})
+    if not isinstance(multimodel, dict) or not isinstance(auto_close, dict):
+        raise ValueError("invalid nested summary container")
+    normalized = {
+        "status": "OK",
+        "next_task_id": summary.get("next_task_id", ""),
+        "dispatchable": summary.get("dispatchable", False),
+        "error_count": summary.get("error_count", 0),
+        "reconcile_action_count": summary.get("reconcile_action_count", 0),
+        "ingested_count": summary.get("ingested_count", 0),
+        "multimodel_intervention": {
+            "task_id": multimodel.get("task_id", ""),
+            "queued_count": multimodel.get("queued_count", 0),
+        },
+        "auto_close_review": {
+            "closed_count": auto_close.get("closed_count", 0),
+            "error_count": auto_close.get("error_count", 0),
+        },
+    }
+    if type(normalized["next_task_id"]) is not str or type(normalized["dispatchable"]) is not bool:
+        raise ValueError("invalid summary scalar types")
+    if type(normalized["multimodel_intervention"]["task_id"]) is not str:
+        raise ValueError("invalid multimodel task_id")
+    count_paths = (
+        (normalized, "error_count"), (normalized, "reconcile_action_count"), (normalized, "ingested_count"),
+        (normalized["multimodel_intervention"], "queued_count"),
+        (normalized["auto_close_review"], "closed_count"), (normalized["auto_close_review"], "error_count"),
+    )
+    for container, field in count_paths:
+        if type(container[field]) is not int or container[field] < 0:
+            raise ValueError(f"invalid summary count: {field}")
+    if normalized["error_count"] != 0:
+        raise ValueError("summary contains errors")
+    return normalized
+
+
+def dynamic_runner_v2_signature(summary: dict[str, Any]) -> str:
+    """Exact compatibility with the strict observer runner signature."""
+    payload = {
+        "status": summary.get("status"),
+        "next": summary.get("next_task_id"),
+        "dispatchable": summary.get("dispatchable"),
+        "errors": summary.get("error_count"),
+        "reconcile": summary.get("reconcile_action_count"),
+        "ingested": summary.get("ingested_count"),
+        "mm": summary["multimodel_intervention"]["task_id"],
+        "mmq": summary["multimodel_intervention"]["queued_count"],
+        "auto_close_closed": summary["auto_close_review"]["closed_count"],
+        "auto_close_errors": summary["auto_close_review"]["error_count"],
+    }
+    return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+
+
+def build_dynamic_runner_v2_record(ts: str, summary: dict[str, Any]) -> dict[str, Any]:
+    normalized = normalize_dynamic_runner_v2_summary(summary)
+    return {
+        "schema": "taskpool_dynamic_runner_v2",
+        "ts": ts,
+        "summary": normalized,
+        "signature": dynamic_runner_v2_signature(normalized),
+    }
+
+
+def append_dynamic_runner_v2(ts: str, summary: dict[str, Any]) -> bool:
+    try:
+        record = build_dynamic_runner_v2_record(ts, summary)
+    except (TypeError, ValueError):
+        return False
+    V2_LOG.parent.mkdir(parents=True, exist_ok=True)
+    flags = os.O_CREAT | os.O_RDWR | os.O_APPEND
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(V2_LOG, flags, 0o600)
+    start = 0
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode):
+            raise OSError("v2 log is not a regular file")
+        os.fchmod(fd, 0o600)
+        start = os.lseek(fd, 0, os.SEEK_END)
+        if start and os.pread(fd, 1, start - 1) != b"\n":
+            raise OSError("v2 log has a truncated tail")
+        data = (json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+        written = 0
+        while written < len(data):
+            count = os.write(fd, data[written:])
+            if count <= 0:
+                raise OSError("short v2 log write")
+            written += count
+        os.fsync(fd)
+    except Exception:
+        try:
+            os.ftruncate(fd, start)
+            os.fsync(fd)
+        except OSError:
+            pass
+        raise
+    finally:
+        os.close(fd)
+    parent_fd = os.open(V2_LOG.parent, os.O_RDONLY)
+    try:
+        os.fsync(parent_fd)
+    finally:
+        os.close(parent_fd)
+    return True
+
+
+def try_append_dynamic_runner_v2(ts: str, summary: dict[str, Any]) -> bool:
+    """Keep the established v1 runner outcome independent of shadow-lane I/O."""
+    try:
+        return append_dynamic_runner_v2(ts, summary)
+    except OSError:
+        return False
+
+
 def alive(pid: int) -> bool:
     try: os.kill(pid, 0); return True
     except Exception: return False
 
 
 def acquire_lock() -> bool:
-    global _LOCK_FD
-    if _LOCK_FD is not None:
+    global _LOCK_FD, _LOCK_DIR_FD
+    if _LOCK_FD is not None or _LOCK_DIR_FD is not None:
         return False
     LOCK.parent.mkdir(parents=True, exist_ok=True)
-    fd = os.open(LOCK, os.O_CREAT | os.O_RDWR, 0o600)
+    dir_flags = os.O_RDONLY
+    if hasattr(os, "O_DIRECTORY"):
+        dir_flags |= os.O_DIRECTORY
+    if hasattr(os, "O_NOFOLLOW"):
+        dir_flags |= os.O_NOFOLLOW
+    dir_fd = os.open(LOCK.parent, dir_flags)
+    try:
+        fcntl.flock(dir_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        os.close(dir_fd)
+        return False
+    flags = os.O_CREAT | os.O_RDWR
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(LOCK, flags, 0o600)
+    except Exception:
+        fcntl.flock(dir_fd, fcntl.LOCK_UN)
+        os.close(dir_fd)
+        raise
     try:
         os.fchmod(fd, 0o600)
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        path_stat = os.lstat(LOCK)
+        fd_stat = os.fstat(fd)
+        if stat.S_ISLNK(path_stat.st_mode) or (path_stat.st_dev, path_stat.st_ino) != (fd_stat.st_dev, fd_stat.st_ino):
+            raise OSError("lock path identity changed")
         os.ftruncate(fd, 0)
         os.write(fd, str(os.getpid()).encode("ascii"))
         os.fsync(fd)
     except BlockingIOError:
         os.close(fd)
+        fcntl.flock(dir_fd, fcntl.LOCK_UN)
+        os.close(dir_fd)
         return False
     except Exception:
         os.close(fd)
+        fcntl.flock(dir_fd, fcntl.LOCK_UN)
+        os.close(dir_fd)
         raise
-    # Keep the descriptor open for the whole runner cycle. The stable lock file
-    # is intentionally not unlinked: unlink-on-unlock can split contenders
-    # across old and newly-created inodes and allow two owners.
+    _LOCK_DIR_FD = dir_fd
     _LOCK_FD = fd
     return True
 
 
 def release_lock() -> None:
-    global _LOCK_FD
+    global _LOCK_FD, _LOCK_DIR_FD
     fd = _LOCK_FD
-    if fd is None:
-        return
+    dir_fd = _LOCK_DIR_FD
     _LOCK_FD = None
-    try:
-        fcntl.flock(fd, fcntl.LOCK_UN)
-    finally:
-        os.close(fd)
+    _LOCK_DIR_FD = None
+    if fd is not None:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+        finally:
+            os.close(fd)
+    if dir_fd is not None:
+        try:
+            fcntl.flock(dir_fd, fcntl.LOCK_UN)
+        finally:
+            os.close(dir_fd)
 
 
 
@@ -379,6 +533,7 @@ def main() -> int:
                 event["signature"] = sig
                 save_state({"updated_at": event["ts"], "signature": sig, "last_mm_probe_epoch": prev.get("last_mm_probe_epoch", 0), "last_summary": event["summary"], "last_auto_close_review": {}})
                 append(event)
+                try_append_dynamic_runner_v2(event["ts"], event["summary"])
                 if event["changed"]:
                     print(json.dumps(event, ensure_ascii=False, indent=2, sort_keys=True))
                 return 0
@@ -407,6 +562,7 @@ def main() -> int:
                 event["signature"] = sig
                 save_state({"updated_at": event["ts"], "signature": sig, "last_mm_probe_epoch": prev.get("last_mm_probe_epoch", 0), "last_summary": event["summary"], "last_auto_close_review": {}})
                 append(event)
+                try_append_dynamic_runner_v2(event["ts"], event["summary"])
                 if event["changed"]:
                     print(json.dumps(event, ensure_ascii=False, indent=2, sort_keys=True))
                 return 0
@@ -451,7 +607,7 @@ def main() -> int:
             should_print = True if mm_dynamic.get("stdout") else should_print
             prev["last_mm_probe_epoch"] = time.time()
         state = {"updated_at": event["ts"], "signature": sig, "last_mm_probe_epoch": prev.get("last_mm_probe_epoch", 0), "last_summary": event["summary"], "last_auto_close_review": event["auto_close_review"]}
-        save_state(state); append(event)
+        save_state(state); append(event); try_append_dynamic_runner_v2(event["ts"], summary)
         if should_print:
             print(json.dumps(event, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if tick.get("returncode") in (0, "0") else 2
