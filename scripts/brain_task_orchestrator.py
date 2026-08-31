@@ -2,8 +2,9 @@
 """Local-brain task orchestrator.
 
 Hermes/Obsidian-native task control plane for ~/Documents/brain.
-Markdown task notes are canonical. Dashboards and queue views are derived.
-No network, no LLM, no arbitrary hooks.
+When the command gateway is configured, SQLite canonical state is authoritative
+and Markdown task notes are rebuildable projections. Dashboards and queue views
+are derived. No network, no LLM, no arbitrary hooks.
 """
 from __future__ import annotations
 
@@ -21,7 +22,7 @@ import sys
 import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 TZ = timezone(timedelta(hours=8))
 VAULT = Path(os.environ.get("HERMES_BRAIN_VAULT", os.environ.get("OBSIDIAN_VAULT_PATH", str(Path.home() / "Documents" / "brain")))).expanduser()
@@ -44,6 +45,14 @@ GOVERNANCE_RATCHET_PATH = AUTORUN_STATE_DIR / "governance_ratchet.json"
 MAX_T3_ROUNDS_BEFORE_THROTTLE = 3
 MAX_T3_ROUNDS_BEFORE_PAUSE = 5
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
+CURRENT_SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(CURRENT_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_SCRIPTS_DIR))
+TASKPOOL_COMMAND_GATEWAY_DB = (
+    Path(os.environ["HERMES_TASKPOOL_COMMAND_GATEWAY_DB"]).expanduser().absolute()
+    if os.environ.get("HERMES_TASKPOOL_COMMAND_GATEWAY_DB")
+    else None
+)
 PROJECT_PROFILES_DIR = Path(os.environ.get("HERMES_PROJECT_PROFILES_DIR", str(HERMES_HOME / "project-profiles"))).expanduser()
 BRAINS_DIR = Path(os.environ.get("HERMES_BRAINS_DIR", str(HERMES_HOME / "brains"))).expanduser()
 BRAIN_REGISTRY = Path(os.environ.get("HERMES_BRAIN_REGISTRY", str(BRAINS_DIR / "registry.yaml"))).expanduser()
@@ -52,7 +61,7 @@ BRAIN_SEMANTIC_CAPABILITIES = Path(
 ).expanduser()
 SCRIPTS_DIR = HERMES_HOME / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
+    sys.path.insert(1 if sys.path and sys.path[0] == str(CURRENT_SCRIPTS_DIR) else 0, str(SCRIPTS_DIR))
 HERMES_AGENT_DIR = Path(os.environ.get("HERMES_AGENT_DIR", str(HERMES_HOME / "hermes-agent"))).expanduser()
 if str(HERMES_AGENT_DIR) not in sys.path:
     sys.path.insert(0, str(HERMES_AGENT_DIR))
@@ -899,7 +908,8 @@ def evaluate_compound_loop_preflight(task: "Task") -> dict[str, Any]:
         scan = getattr(module, "scan", None)
         if not callable(scan):
             raise RuntimeError("scan() missing from compound_loop_preflight.py")
-        payload = scan(task.path.read_text(encoding="utf-8"))
+        task_note = render_frontmatter(task.fm) + "\n" + task.body.lstrip("\n")
+        payload = scan(task_note)
         if not isinstance(payload, dict):
             raise RuntimeError("compound_loop_preflight scan() returned non-dict payload")
         return {**payload, **result}
@@ -2150,7 +2160,108 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
     return "\n".join(out) + "\n"
 
 
-def atomic_write(path: Path, text: str) -> None:
+def _open_directory_beneath(parent_fd: int, name: str, *, create: bool) -> int:
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    try:
+        return os.open(name, flags, dir_fd=parent_fd)
+    except FileNotFoundError:
+        if not create:
+            raise
+        os.mkdir(name, mode=0o700, dir_fd=parent_fd)
+        return os.open(name, flags, dir_fd=parent_fd)
+
+
+def _atomic_write_beneath(root: Path, relative_path: str, text: str) -> None:
+    relative = Path(relative_path)
+    if (
+        relative.is_absolute()
+        or not relative.parts
+        or any(part in ("", ".", "..") for part in relative.parts)
+    ):
+        raise RuntimeError("canonical projection path changed during publication")
+    root.mkdir(parents=True, exist_ok=True)
+    root_fd = -1
+    parent_fd = -1
+    verification_fd = -1
+    temporary_name = ""
+    try:
+        root_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        parent_fd = os.dup(root_fd)
+        for component in relative.parts[:-1]:
+            next_fd = _open_directory_beneath(parent_fd, component, create=True)
+            os.close(parent_fd)
+            parent_fd = next_fd
+
+        target_name = relative.parts[-1]
+        temporary_name = f".{target_name}.{hashlib.sha256(os.urandom(32)).hexdigest()[:16]}.tmp"
+        output_fd = os.open(
+            temporary_name,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+            0o600,
+            dir_fd=parent_fd,
+        )
+        try:
+            with os.fdopen(output_fd, "w", encoding="utf-8") as output:
+                output.write(text)
+                output.flush()
+                os.fsync(output.fileno())
+        except Exception:
+            try:
+                os.close(output_fd)
+            except OSError:
+                pass
+            raise
+        os.replace(
+            temporary_name,
+            target_name,
+            src_dir_fd=parent_fd,
+            dst_dir_fd=parent_fd,
+        )
+        temporary_name = ""
+        os.fsync(parent_fd)
+
+        verification_fd = os.dup(root_fd)
+        for component in relative.parts[:-1]:
+            next_fd = _open_directory_beneath(verification_fd, component, create=False)
+            os.close(verification_fd)
+            verification_fd = next_fd
+        written = os.stat(target_name, dir_fd=parent_fd, follow_symlinks=False)
+        declared = os.stat(target_name, dir_fd=verification_fd, follow_symlinks=False)
+        if (written.st_dev, written.st_ino) != (declared.st_dev, declared.st_ino):
+            raise RuntimeError("canonical projection path changed during publication")
+    except RuntimeError:
+        raise
+    except OSError as exc:
+        raise RuntimeError("canonical projection path changed during publication") from exc
+    finally:
+        if temporary_name and parent_fd >= 0:
+            try:
+                os.unlink(temporary_name, dir_fd=parent_fd)
+            except FileNotFoundError:
+                pass
+        for descriptor in (verification_fd, parent_fd, root_fd):
+            if descriptor >= 0:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+
+
+def atomic_write(
+    path: Path,
+    text: str,
+    *,
+    beneath: Path | None = None,
+    relative_path: str | None = None,
+) -> None:
+    if beneath is not None or relative_path is not None:
+        if beneath is None or relative_path is None:
+            raise RuntimeError("canonical projection path changed during publication")
+        expected = beneath.absolute() / Path(relative_path)
+        if path.absolute() != expected:
+            raise RuntimeError("canonical projection path changed during publication")
+        _atomic_write_beneath(beneath, relative_path, text)
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=path.name + ".", dir=str(path.parent))
     try:
@@ -4072,7 +4183,57 @@ def markdown_table_cell(value: Any, limit: int | None = None) -> str:
     return text[:limit] if limit else text
 
 
+def _taskpool_command_gateway():
+    if TASKPOOL_COMMAND_GATEWAY_DB is None:
+        return None
+    from taskpool_command_gateway import TaskpoolCommandGateway
+
+    if not TASKPOOL_COMMAND_GATEWAY_DB.exists():
+        raise RuntimeError(
+            "configured taskpool command gateway database is missing; canonical bootstrap is required"
+        )
+    return TaskpoolCommandGateway(
+        TASKPOOL_COMMAND_GATEWAY_DB,
+        allowed_root=TASKPOOL_COMMAND_GATEWAY_DB.parent,
+    )
+
+
+def _validated_projection_relative_path(path: Path) -> str:
+    try:
+        relative = path.absolute().relative_to(VAULT.absolute())
+        path.resolve(strict=False).relative_to(VAULT.resolve(strict=False))
+    except ValueError as exc:
+        raise RuntimeError("canonical projection path is invalid") from exc
+    if relative.is_absolute() or ".." in relative.parts:
+        raise RuntimeError("canonical projection path is invalid")
+    return relative.as_posix()
+
+
 def iter_tasks(include_generated: bool = False) -> list[Task]:
+    gateway = _taskpool_command_gateway()
+    if gateway is not None:
+        tasks: list[Task] = []
+        skip = {"00-tasks索引.md", "任务收件箱.md", "任务池-排序.md"}
+        for record in gateway.iter_tasks():
+            state = record["state"]
+            projection = record["projection"]
+            if type(state) is not dict or set(state) != {"frontmatter", "body"}:
+                raise RuntimeError("canonical task state has an incompatible schema")
+            fm = state["frontmatter"]
+            body = state["body"]
+            if type(fm) is not dict or type(body) is not str:
+                raise RuntimeError("canonical task state has invalid field types")
+            relative_path = Path(str(projection["relative_path"]))
+            if relative_path.is_absolute() or ".." in relative_path.parts:
+                raise RuntimeError("canonical projection path is invalid")
+            path = VAULT / relative_path
+            _validated_projection_relative_path(path)
+            if not include_generated and path.name in skip:
+                continue
+            if fm.get("type") == "task":
+                tasks.append(Task(path, fm, body))
+        return tasks
+
     tasks: list[Task] = []
     if not TASKS_DIR.exists():
         return tasks
@@ -4111,7 +4272,52 @@ def find_task(task_id: str) -> Task:
 
 
 def save_task(task: Task) -> None:
-    atomic_write(task.path, render_frontmatter(task.fm) + "\n" + task.body.lstrip("\n"))
+    content = render_frontmatter(task.fm) + "\n" + task.body.lstrip("\n")
+    gateway = _taskpool_command_gateway()
+    if gateway is None:
+        atomic_write(task.path, content)
+        return
+
+    task_id = str(task.fm.get("id") or task.path.stem).strip()
+    if not task_id:
+        raise ValueError("task mutation requires a non-empty task id")
+    relative_path = _validated_projection_relative_path(task.path)
+    admission = gateway.admit_projection(
+        task_id=task_id,
+        state={"frontmatter": task.fm, "body": task.body},
+        relative_path=relative_path,
+        event_payload={
+            "reason": "save_task",
+            "status": str(task.fm.get("status") or ""),
+        },
+        now=datetime.now(timezone.utc).timestamp(),
+    )
+    canonical = gateway.read_task(task_id)
+    expected_projection_sha256 = hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+    def publish_with_receipt() -> dict[str, Any]:
+        atomic_write(
+            task.path,
+            content,
+            beneath=VAULT,
+            relative_path=relative_path,
+        )
+        return {
+            "status": "projection_written",
+            "task_id": task_id,
+            "revision": admission["revision"],
+            "canonical_sha256": canonical["state_sha256"],
+            "relative_path": relative_path,
+            "projection_sha256": expected_projection_sha256,
+        }
+
+    gateway.publish_projection(
+        task_id=task_id,
+        revision=admission["revision"],
+        canonical_sha256=canonical["state_sha256"],
+        publisher=publish_with_receipt,
+        projection_reader=task.path.read_bytes,
+    )
 
 
 def append_taskpool_run_envelope(
@@ -4330,7 +4536,7 @@ def create_task_note(
         "",
     ])
     body = "\n".join(sections)
-    atomic_write(path, render_frontmatter(fm) + "\n" + body)
+    save_task(Task(path, fm, body))
     return {"status": "OK", "created": str(path), "id": path.stem, "link": obsidian_link(path)}
 
 
@@ -6080,7 +6286,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "",
     ])
     body = f"# Task - {title}\n\n## Objective\n\n{args.objective or title}\n\n{recall_section}\n## Acceptance Criteria\n\n- [ ] {args.accept or 'Observable result is recorded in Proof Log.'}\n\n## Plan / Workpad\n\n- [ ] Reconcile current state, dependency order, and architecture boundaries before execution.\n- [ ] Advance the long-term maintainable mainline plan with the next bounded step and staged evidence.\n- [ ] Record proof, status, and any next dependency or handoff required.\n\n## Validation\n\n| Command / Check | Status | Evidence |\n|---|---|---|\n| brain_task_orchestrator list | pending | |\n\n## Proof Log\n\n- {iso(created)}: Task created from local-brain control point.\n\n## Blockers / Confusions\n\n- None.\n\n## Final Handoff\n\n- Status:\n- Evidence:\n- Residual risk:\n"
-    atomic_write(path, render_frontmatter(fm) + "\n" + body)
+    save_task(Task(path, fm, body))
     derived_refresh = refresh_derived_task_views("add")
     event_hook = maybe_fire_taskpool_event_hook("task_added", task_id=path.stem, reason="command_add")
     return {"status": "OK", "created": str(path), "id": path.stem, "link": obsidian_link(path), "derived_refresh": derived_refresh, "event_hook": event_hook}
@@ -6216,7 +6422,7 @@ def command_add_repo_capability_absorption(args: argparse.Namespace) -> dict[str
     body = append_markdown_section_lines_unique(body, "Proof Log", [
         f"- {iso()}: Repo capability absorption task standardized; no runtime integration opened by creation command.",
     ])
-    atomic_write(path, render_frontmatter(fm) + "\n" + body)
+    save_task(Task(path, fm, body))
     result["derived_refresh_after_standardization"] = refresh_derived_task_views("add-repo-capability-absorption")
     result["absorption_type"] = "repo_capability_absorption"
     result["source_url"] = args.source_url
@@ -9601,10 +9807,25 @@ def command_execution_flow_dry_run(args: argparse.Namespace) -> dict[str, Any]:
 
     task_ids = list(getattr(args, "task", []) or [])
     if task_ids:
-        paths = [find_task(task_id).path for task_id in task_ids]
+        tasks = [find_task(task_id) for task_id in task_ids]
     else:
-        paths = flow.iter_task_files(TASKS_DIR, int(getattr(args, "limit", 5) or 5))
-    evaluations = [flow.evaluate(path) for path in paths if path.exists()]
+        tasks = iter_tasks()[: int(getattr(args, "limit", 5) or 5)]
+
+    class CanonicalTaskEvaluationPath:
+        def __init__(self, task: Task):
+            self.task = task
+            self.stem = task.path.stem
+
+        def exists(self) -> bool:
+            return True
+
+        def read_text(self, *args: Any, **kwargs: Any) -> str:
+            return render_frontmatter(self.task.fm) + "\n" + self.task.body.lstrip("\n")
+
+        def __str__(self) -> str:
+            return str(self.task.path)
+
+    evaluations = [flow.evaluate(cast(Any, CanonicalTaskEvaluationPath(task))) for task in tasks]
     payload = flow.build_payload(evaluations)
     payload["status"] = "OK"
     payload["taskpool_entrypoint"] = "brain_task_orchestrator.py execution-flow-dry-run"

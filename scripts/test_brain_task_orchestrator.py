@@ -14,7 +14,12 @@ import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
-SCRIPT = Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"
+SCRIPT = Path(
+    os.environ.get(
+        "HERMES_BRAIN_ORCHESTRATOR_SCRIPT",
+        Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py",
+    )
+)
 RAILWAY_GATE_SCRIPT = Path.home() / ".hermes" / "scripts" / "railway_deploy_gate.py"
 
 

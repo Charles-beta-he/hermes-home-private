@@ -235,7 +235,7 @@ class DurableTaskpoolEventOutbox:
             if version not in (0, SCHEMA_VERSION):
                 raise OutboxError(f"unsupported schema version: {version}")
             if version == SCHEMA_VERSION:
-                self._validate_schema(connection)
+                self._validate_schema(connection, self._allowed_schema_extension_sets())
                 return self._read_store_id(connection)
             connection.executescript(
                 """
@@ -286,10 +286,14 @@ class DurableTaskpoolEventOutbox:
                 (store_id,),
             )
             connection.commit()
-            self._validate_schema(connection)
+            self._validate_schema(connection, self._allowed_schema_extension_sets())
             return store_id
         finally:
             connection.close()
+
+    def _allowed_schema_extension_sets(self) -> tuple[frozenset[tuple], ...]:
+        """Exact optional schema object sets accepted by a trusted subclass."""
+        return ()
 
     @staticmethod
     def _read_store_id(connection: sqlite3.Connection) -> str:
@@ -301,7 +305,10 @@ class DurableTaskpoolEventOutbox:
         return row[0]
 
     @staticmethod
-    def _validate_schema(connection: sqlite3.Connection) -> None:
+    def _validate_schema(
+        connection: sqlite3.Connection,
+        allowed_extension_sets: tuple[frozenset[tuple], ...] = (),
+    ) -> None:
         expected_sql = {
             "outbox_events": """CREATE TABLE outbox_events (
                 schema_version INTEGER NOT NULL, event_id TEXT PRIMARY KEY,
@@ -351,7 +358,12 @@ class DurableTaskpoolEventOutbox:
                 "SELECT type,name,tbl_name,sql FROM sqlite_master"
             )
         }
-        if actual_objects != expected_objects:
+        valid_object_sets = {frozenset(expected_objects)}
+        valid_object_sets.update(
+            frozenset(expected_objects | set(extension_objects))
+            for extension_objects in allowed_extension_sets
+        )
+        if frozenset(actual_objects) not in valid_object_sets:
             raise OutboxError("incompatible schema object inventory")
         for name, expected in expected_sql.items():
             row = connection.execute(
