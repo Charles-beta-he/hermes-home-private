@@ -1,0 +1,32 @@
+{
+  "schema": "hermes_workflow_loop_evaluation_v1",
+  "evaluator": "workflow_loop_evaluator_v1",
+  "generator": "workflow_kernel_loop_v2",
+  "independent_module": true,
+  "status": "PASS",
+  "veto": false,
+  "score_percent": 100.0,
+  "diagnostic_score_percent": 100.0,
+  "issues": [],
+  "procedure_validation": {
+    "state": "attention_required",
+    "registry_present": true,
+    "inventory_complete": false,
+    "can_claim_complete": false,
+    "counts": {
+      "required_procedures": 12,
+      "fully_connected": 4,
+      "pending": 8,
+      "stale": 8,
+      "failed": 0,
+      "blocked_by_authority": 0,
+      "operationally_degraded": 0
+    },
+    "certification_semantics": "necessary_not_sufficient"
+  },
+  "claims_evaluated": {
+    "global_certification": false,
+    "canonical_ratchet_promotion": false
+  },
+  "would_execute_anything": false
+}

@@ -1,0 +1,39 @@
+{
+  "status": "local_loop_repaired_and_advanced",
+  "registry": "/Users/charles/.hermes/workflows/workflow-kernel-loop/module-pool/module_registry.json",
+  "plan_selected_modules": [
+    "intent_normalization_kernel",
+    "landing_zone_kernel",
+    "authority_evidence_gate_kernel",
+    "lifecycle_promotion_cleanup_kernel"
+  ],
+  "plan_missing_capability_needs": [],
+  "latest_run_dir": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e",
+  "latest_asset_workdir": "/Users/charles/.hermes/workflows/workflow-kernel-loop/assets/wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+  "synthesis_candidate_count": 0,
+  "verification": [
+    {
+      "cmd": "/Users/charles/.hermes/releases/hermes-agent/c07p2gw/.venv/bin/python /Users/charles/.hermes/scripts/workflow_module_pool.py validate --module /Users/charles/.hermes/workflows/workflow-kernel-loop/module-pool/modules/authority_evidence_gate_kernel.json",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"issues\": []\n}\n",
+      "stderr": ""
+    },
+    {
+      "cmd": "/Users/charles/.hermes/releases/hermes-agent/c07p2gw/.venv/bin/python /Users/charles/.hermes/scripts/test_workflow_module_pool.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".......\n----------------------------------------------------------------------\nRan 7 tests in 0.013s\n\nOK\n"
+    },
+    {
+      "cmd": "/Users/charles/.hermes/releases/hermes-agent/c07p2gw/.venv/bin/python -m py_compile /Users/charles/.hermes/scripts/workflow_module_pool.py /Users/charles/.hermes/scripts/workflow_kernel_loop.py /Users/charles/.hermes/scripts/workflow_kernel_loop_v2.py /Users/charles/.hermes/scripts/workflow_asset_decision.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "side_effect_boundary": "local_write_only; no memory/cron/taskpool/AgentOS/external/push/deploy/destructive actions",
+  "changed_kernel_scripts": [
+    "/Users/charles/.hermes/scripts/workflow_module_pool.py",
+    "/Users/charles/.hermes/scripts/test_workflow_module_pool.py"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "hermes_workflow_asset_eval_cases_v1",
+  "asset_id": "wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+  "positive": [
+    "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。"
+  ],
+  "negative": [
+    "创建工作流：今天把这三个文件整理一下"
+  ],
+  "neighbor": [],
+  "forbidden": [
+    "the word workflow alone",
+    "temporary task progress"
+  ]
+}

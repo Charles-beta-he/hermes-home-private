@@ -1,0 +1,12 @@
+{
+  "schema": "hermes_workflow_asset_state_v1",
+  "asset_id": "wfa-human-gated-acceptance-proxy-loo-2ce7688f36",
+  "maturity": "candidate",
+  "retention": "project_scoped",
+  "status": "candidate_after_local_verification",
+  "created_at": "2026-07-23T11:53:45Z",
+  "external_side_effects_enabled": false,
+  "cron_enabled": false,
+  "taskpool_lifecycle_mutation_enabled": false,
+  "agentos_runtime_mutation_enabled": false
+}

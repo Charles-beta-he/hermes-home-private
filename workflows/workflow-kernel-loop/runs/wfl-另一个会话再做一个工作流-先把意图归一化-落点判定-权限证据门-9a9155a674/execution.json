@@ -1,0 +1,12 @@
+{
+  "schema": "hermes_workflow_loop_execution_v1",
+  "status": "PASS",
+  "action": "local_asset_scaffold",
+  "asset_workdir": "/Users/charles/.hermes/workflows/workflow-kernel-loop/assets/wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  }
+}

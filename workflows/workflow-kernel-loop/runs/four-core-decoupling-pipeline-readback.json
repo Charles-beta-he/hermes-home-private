@@ -1,0 +1,96 @@
+{
+  "schema": "hermes_four_core_kernel_pipeline_receipt_v1",
+  "status": "ok",
+  "created_at": "2026-09-04T03:23:24Z",
+  "seed": {
+    "schema": "hermes_four_core_kernel_workflow_seed_v1",
+    "id": "seed-loop推进四个内核解耦完成-e64ce7faa31f",
+    "source": {
+      "user_request": "loop推进四个内核解耦完成",
+      "source_refs": []
+    },
+    "goal": "loop推进四个内核解耦完成",
+    "non_goals": [
+      "do not treat original prose as execution authority",
+      "do not persist to memory/skill/project state from normalization",
+      "do not create cron/taskpool/AgentOS/external effects"
+    ],
+    "active_context_keys": [],
+    "authority_boundary": "local_only",
+    "risk_level": "medium",
+    "expected_artifact": "reusable_kernel_candidate",
+    "ask_user_only_when": [
+      "authority boundary",
+      "durable preference conflict",
+      "irreversible side effect"
+    ],
+    "normalization_warnings": []
+  },
+  "landing": {
+    "schema": "hermes_four_core_kernel_landing_decision_v1",
+    "seed_id": "seed-loop推进四个内核解耦完成-e64ce7faa31f",
+    "decisions": [
+      {
+        "claim": "loop推进四个内核解耦完成",
+        "target": "skill_or_workflow_candidate",
+        "scope": "inferred",
+        "reason": "landing_policy_classification",
+        "forbidden_targets": [
+          "global_memory_body",
+          "cron_without_authority",
+          "taskpool_without_authority"
+        ],
+        "evidence_required": [
+          "source_ref",
+          "scope",
+          "fresh_readback_before_claim"
+        ]
+      }
+    ],
+    "forbidden_global_effects": [
+      "memory_pollution",
+      "skill_bloat",
+      "workflow_keyword_auto_create"
+    ]
+  },
+  "authority_evidence": {
+    "schema": "hermes_four_core_kernel_authority_evidence_decision_v1",
+    "proposed_action": "materialize_local_candidate",
+    "target": "workflow-kernel-loop",
+    "side_effect_class": "local_write",
+    "status": "allowed",
+    "reason": "within_local_autonomous_boundary",
+    "required_receipt": true,
+    "required_readback": true,
+    "evidence_contract": {
+      "command_or_api_exit_is_not_enough": true,
+      "fresh_current_task_evidence_required": true,
+      "negative_requirements_need_negative_evidence": true,
+      "old_summary_is_not_evidence": true
+    },
+    "prohibited_without_exact_authority": [
+      "credential_payment_secret",
+      "destructive",
+      "external_read",
+      "external_write",
+      "publish_deploy_push",
+      "scheduler_cron",
+      "taskpool_lifecycle"
+    ]
+  },
+  "lifecycle": {
+    "schema": "hermes_four_core_kernel_lifecycle_transition_v1",
+    "module_identity": "four_core_kernel_candidate",
+    "current_maturity": "candidate",
+    "action": "promote_one_step",
+    "next_maturity": "validated",
+    "missing_evidence": [],
+    "finalizers_required": [
+      "reference_scan",
+      "absorbed_into_or_superseded_by_when_removed",
+      "receipt_archive"
+    ],
+    "canonical_guard": "never_promote_to_canonical_from_one_local_success"
+  },
+  "side_effect_boundary": "local_transform_only; optional CLI --out local write only"
+}

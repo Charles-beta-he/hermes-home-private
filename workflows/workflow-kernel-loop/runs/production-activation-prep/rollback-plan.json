@@ -1,0 +1,30 @@
+{
+  "created_at": "2026-09-04T03:41:50Z",
+  "not_covered_without_exact_target": [
+    "unknown registry/runtime files",
+    "gateway/launchctl state",
+    "cron/taskpool/AgentOS state"
+  ],
+  "pre_activation_preconditions": [
+    "recompute candidate_manifest sha256",
+    "re-run core tests and module pool tests",
+    "capture git status for exact allowed path set",
+    "capture preimage for each target file if mutating existing runtime/registry files"
+  ],
+  "readback_after_rollback": [
+    "git -C /Users/charles/.hermes status --short -- <candidate paths>",
+    "python3 /Users/charles/.hermes/scripts/test_workflow_module_pool.py"
+  ],
+  "rollback_commands_templates": [
+    "git -C /Users/charles/.hermes checkout -- scripts/workflow_module_pool.py scripts/test_workflow_module_pool.py",
+    "rm -f /Users/charles/.hermes/workflows/workflow-kernel-loop/core/four_core_kernels.py /Users/charles/.hermes/workflows/workflow-kernel-loop/core/test_four_core_kernels.py",
+    "rm -f /Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-final-summary.json /Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json /Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json"
+  ],
+  "rollback_methods": {
+    "git_commit_if_later_authorized": "git revert <activation_commit> after reading back commit identity",
+    "local_candidate_files": "remove untracked candidate files listed in manifest or restore from git for modified tracked candidate files",
+    "runtime_activation_if_later_authorized": "restore preimage/config pointer, restart only the exact affected local service if restart was part of grant, then run post-rollback readback"
+  },
+  "schema": "hermes_four_core_kernel_activation_rollback_plan_v1",
+  "scope": "candidate files only; this is a plan, not an executed rollback"
+}

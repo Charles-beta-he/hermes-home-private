@@ -1,0 +1,204 @@
+{
+  "schema": "hermes_workflow_asset_v1",
+  "id": "wfa-human-gated-acceptance-proxy-loo-2ce7688f36",
+  "title": "Human-Gated Acceptance Proxy Remediation Loop",
+  "version": 1,
+  "source": {
+    "user_seed": "Human-gated acceptance proxy loop: when a required human gate is unavailable, use independent multi-model review plus official standards and competitor evidence only as a fail-closed proxy audit; separate source facts, model dissent, engineering verification, and authority; never convert consensus into human PASS; turn findings into TDD remediation slices, generate a new immutable candidate digest after code changes, rerun affected automated/runtime/visual gates, and stop at qualified-human acceptance.",
+    "source_refs": [
+      "/Users/charles/hermes-pocket/evidence/ui-acceptance/20260723/runtime-release-66ed3b744e94/MODEL_ASSISTED_VOICEOVER_PROXY_REPORT.md",
+      "https://developer.apple.com/design/human-interface-guidelines/voiceover",
+      "https://reactnative.dev/docs/accessibilityinfo",
+      "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html"
+    ],
+    "decision": {
+      "schema": "hermes_workflow_asset_decision_v1",
+      "id": "wfd-human-gated-acceptance-proxy-loo-2ce7688f36",
+      "seed": "Human-gated acceptance proxy loop: when a required human gate is unavailable, use independent multi-model review plus official standards and competitor evidence only as a fail-closed proxy audit; separate source facts, model dissent, engineering verification, and authority; never convert consensus into human PASS; turn findings into TDD remediation slices, generate a new immutable candidate digest after code changes, rerun affected automated/runtime/visual gates, and stop at qualified-human acceptance.",
+      "score": 5,
+      "decision": "project_scoped_candidate",
+      "landing": [
+        "workflow_workspace"
+      ],
+      "reasons": [
+        "reuse_value",
+        "evidence_gap"
+      ],
+      "warnings": [],
+      "side_effect_class": "local_read_write_only",
+      "stop_only_on": [
+        "missing_evidence_after_attempt",
+        "user_preference_conflict"
+      ],
+      "created_at": "2026-07-23T11:53:45Z",
+      "policy": {
+        "keyword_trigger_sufficient": false,
+        "model_consensus_is_proof": false,
+        "external_side_effects_enabled": false,
+        "memory_workflow_body_write_enabled": false
+      }
+    },
+    "module_plan_ref": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/module-plan.json",
+    "module_ids": [],
+    "missing_capability_needs": [
+      "source_evidence_collector",
+      "business_analysis",
+      "evidence_gate"
+    ]
+  },
+  "classification": {
+    "workflow_type": "hybrid",
+    "scope": "project",
+    "maturity": "candidate",
+    "retention": "project_scoped"
+  },
+  "intent_model": {
+    "user_goal": "Human-gated acceptance proxy loop: when a required human gate is unavailable, use independent multi-model review plus official standards and competitor evidence only as a fail-closed proxy audit; separate source facts, model dissent, engineering verification, and authority; never convert consensus into human PASS; turn findings into TDD remediation slices, generate a new immutable candidate digest after code changes, rerun affected automated/runtime/visual gates, and stop at qualified-human acceptance.",
+    "success_criteria": [
+      "safe local dry-run succeeds",
+      "objective evidence is attached"
+    ],
+    "non_goals": [
+      "external dispatch without exact authority",
+      "canonical promotion from a seed"
+    ],
+    "assumptions": [],
+    "ask_user_only_when": [
+      "authority boundary",
+      "durable preference conflict",
+      "irreversible side effect"
+    ]
+  },
+  "routing": {
+    "applies_when": [
+      "repeated or long-term process pattern with evidence/governance need"
+    ],
+    "does_not_apply_when": [
+      "one-off task",
+      "simple answer",
+      "keyword-only workflow request with weak reuse"
+    ],
+    "neighbor_workflows": [],
+    "forbidden_triggers": [
+      "the word workflow alone",
+      "temporary task progress"
+    ],
+    "examples_positive": [
+      "Human-gated acceptance proxy loop: when a required human gate is unavailable, use independent multi-model review plus official standards and competitor evidence only as a fail-closed proxy audit; separate source facts, model dissent, engineering verification, and authority; never convert consensus into human PASS; turn findings into TDD remediation slices, generate a new immutable candidate digest after code changes, rerun affected automated/runtime/visual gates, and stop at qualified-human acceptance."
+    ],
+    "examples_negative": [
+      "创建工作流：今天把这三个文件整理一下"
+    ]
+  },
+  "output_contract": {
+    "allowed_formats": [
+      "json",
+      "markdown"
+    ],
+    "default_format": "json",
+    "ordering_rule": "risk and reuse value before convenience",
+    "dedupe_rule": "merge same seed digest and same routing boundary",
+    "overlap_rule": "prefer existing narrower workflow; avoid broad umbrella steal",
+    "evidence_required": true,
+    "confidence_required": true,
+    "next_action_required": true
+  },
+  "gates": [
+    {
+      "id": "assetization_decision_gate",
+      "pass": "reuse/risk/evidence/governability score justifies candidate",
+      "warn": "weak signal; keep as output fragment or project-scoped candidate",
+      "fail": "one-off or no durable value; no asset write",
+      "blocked": "retrieve context or evidence before promotion"
+    },
+    {
+      "id": "authority_boundary_gate",
+      "pass": "local reversible read/write only or exact authority present",
+      "warn": "future automation mentioned but not authorized",
+      "fail": "external/destructive/publish/credential boundary without authority",
+      "blocked": "emit minimal authorization request; do not execute"
+    }
+  ],
+  "model_routing": {
+    "default_tier": "T1",
+    "specialist_lanes": [
+      "architecture",
+      "verification"
+    ],
+    "multimodel_required_when": [
+      "canonical promotion",
+      "global routing",
+      "external side effect",
+      "cron/taskpool/AgentOS enablement"
+    ]
+  },
+  "evidence": {
+    "required_refs": [],
+    "verification_commands": []
+  },
+  "lifecycle_policy": {
+    "promote_when": [
+      "route eval passes",
+      "real or dry-run evidence attached",
+      "negative/neighbor cases pass"
+    ],
+    "demote_when": [
+      "false trigger",
+      "stale evidence",
+      "user correction",
+      "validation failure"
+    ],
+    "cleanup_when": [
+      "no usage",
+      "superseded",
+      "low evidence",
+      "sprawl risk"
+    ],
+    "protect_when": [
+      "canonical with regression evidence",
+      "pinned by user"
+    ],
+    "superseded_by": null
+  },
+  "procedure": [
+    "Freeze the goal, human-gate contract, candidate digest, non-goals, and evidence boundary.",
+    "Collect official sources plus current code, runtime, test, and UI evidence before model consultation.",
+    "Run independent reviewers; preserve dissent and separate source facts, inference, recommendations, engineering verification, and authority.",
+    "Issue only PASS_AUTOMATED_WITH_LIMITS, HOLD, or BLOCKED from proxy evidence; never emit HUMAN_PASS.",
+    "Convert confirmed engineering findings into dependency-ordered RED to GREEN remediation slices.",
+    "After any product-byte change, mint a new immutable candidate digest and invalidate stale receipts.",
+    "When a UI-test command rebuilds or reinstalls the target app, compute the candidate digest from the actually tested installed app immediately after the run; do not bind its screenshots or logs to a prior standalone build. Preserve that tested bundle or an immutable archive for later human execution.",
+    "Rerun every materially affected automated, runtime, API, route, accessibility, and visual gate, including negative cases.",
+    "Continue safe local remediation while actionable non-human gaps remain.",
+    "Stop at the exact qualified-human or external-authority boundary and attach only a real provenance-bound receipt."
+  ],
+  "evidence_ledgers": {
+    "source_evidence": ["verified", "uncertain", "missing"],
+    "model_dissent": ["participant", "claim", "objection", "confidence"],
+    "engineering_verification": ["artifact", "command", "result", "candidate_digest"],
+    "authority": ["required_class", "actor", "receipt", "status"]
+  },
+  "hard_invariants": [
+    "multi-model consensus is advisory and cannot satisfy a qualified-human gate",
+    "competitor research is a benchmark, not proof that the target product was tested",
+    "old-digest evidence cannot certify new product bytes",
+    "UI-test evidence belongs to the app bytes actually installed and exercised by that run, not to an earlier nominally equivalent build",
+    "no push, deploy, publish, credential entry, destructive action, or production mutation without exact authority"
+  ],
+  "loop_policy": {
+    "self_advance": true,
+    "max_autonomous_iterations": 10,
+    "continue_while": [
+      "safe local remediation remains",
+      "focused or regression evidence is missing",
+      "current-digest independent review has not converged"
+    ],
+    "stop_only_on": [
+      "qualified-human acceptance is the only remaining gate",
+      "external, destructive, publish, credential, or production authority is required",
+      "missing_evidence_after bounded alternative attempts",
+      "user_preference_conflict"
+    ],
+    "on_new_bytes": "mint a new candidate digest and rerun affected evidence; never patch an old receipt into validity"
+  }
+}
