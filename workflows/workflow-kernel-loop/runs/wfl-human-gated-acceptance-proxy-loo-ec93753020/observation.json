@@ -1,0 +1,7 @@
+{
+  "schema": "hermes_workflow_loop_observation_v1",
+  "seed": "Human-gated acceptance proxy loop: when a required human gate is unavailable, use independent multi-model review plus official standards and competitor evidence only as a fail-closed proxy audit; separate source facts, model dissent, engineering verification, and authority; never convert consensus into human PASS; turn findings into TDD remediation slices, generate a new immutable candidate digest after code changes, rerun affected automated/runtime/visual gates, and stop at qualified-human acceptance.",
+  "observed_repetition": 2,
+  "task_scope": "unknown",
+  "observed_at": "2026-07-23T11:53:45Z"
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "hermes_four_core_decoupling_summary_v1",
+  "created_at": "2026-09-04T03:24:17Z",
+  "scope": "local files only; no memory/cron/taskpool/AgentOS/external dispatch/push/deploy/destructive/credential actions",
+  "completed_definition": [
+    "four kernels exist as separately callable pure functions/contracts",
+    "planner extension seam is registry routing, not only static keyword rules",
+    "route ordering and missing needs are regression-tested",
+    "negative cases prove progress does not enter global memory/skill and external_write blocks without exact authority",
+    "readback receipts bind local pipeline and convergence evidence"
+  ],
+  "evidence": {
+    "full_receipt": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json",
+    "pipeline_receipt": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json",
+    "test_results": "core 9 tests OK; module pool 8 tests OK; py_compile OK",
+    "four_core_order": [
+      "intent_normalization_kernel",
+      "landing_zone_kernel",
+      "authority_evidence_gate_kernel",
+      "lifecycle_promotion_cleanup_kernel"
+    ],
+    "skill_reference_updated": true
+  },
+  "file_readback": [
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/four_core_kernels.py",
+      "size": 11453,
+      "sha256": "8204a67b5fe0e81690241e1bd014cc885005afa10eb9c8cced0ceb27026f1d60"
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/test_four_core_kernels.py",
+      "size": 5489,
+      "sha256": "54612eee3719c7a5ffbc930d19516b386b506d41d3505ab999ae7055e06f7683"
+    },
+    {
+      "path": "/Users/charles/.hermes/scripts/workflow_module_pool.py",
+      "size": 16970,
+      "sha256": "a82cd6ab857229023774440df56b0019239b1e3c12de3b1381bd8c9e3e3e6d3d"
+    },
+    {
+      "path": "/Users/charles/.hermes/scripts/test_workflow_module_pool.py",
+      "size": 6573,
+      "sha256": "6cbb3010de752bbb33fab20acc7cbd1606f16d03976bc03d092cce31e2665d9a"
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json",
+      "size": 3145,
+      "sha256": "2cb0f497337b33c09c21ccc12c0291c4047078e382fcdf40e379e537215ff191"
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json",
+      "size": 300772,
+      "sha256": "32ab0d62443eb8c3fa18a7973b0c4175042260bfbf17999bd1bcd23ee5807746"
+    },
+    {
+      "path": "/Users/charles/.hermes/skills/software-development/workflow-capability-graph/references/four-core-workflow-kernel-loop-ratchet.md",
+      "size": 5150,
+      "sha256": "449aa540b8ed51c88010bf567e57de171275a69ccfe3fa9689d29ca308e1b2f8"
+    }
+  ]
+}

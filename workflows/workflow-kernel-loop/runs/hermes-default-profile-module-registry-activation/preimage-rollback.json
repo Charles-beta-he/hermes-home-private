@@ -1,0 +1,35 @@
+{
+  "schema": "hermes_default_profile_module_registry_activation_preimage_v1",
+  "created_at": "2026-09-04T04:08:17Z",
+  "authorized_target": "hermes_default_profile_module_registry",
+  "scope": "only authorized local files; no push/deploy/restart/cron/taskpool/AgentOS/external/destructive/credential",
+  "preimages": [
+    {
+      "path": "/Users/charles/.hermes/scripts/workflow_module_pool.py",
+      "exists": true,
+      "sha256": "a82cd6ab857229023774440df56b0019239b1e3c12de3b1381bd8c9e3e3e6d3d",
+      "size": 16970,
+      "preimage_copy": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/scripts/workflow_module_pool.py"
+    },
+    {
+      "path": "/Users/charles/.hermes/scripts/test_workflow_module_pool.py",
+      "exists": true,
+      "sha256": "6cbb3010de752bbb33fab20acc7cbd1606f16d03976bc03d092cce31e2665d9a",
+      "size": 6573,
+      "preimage_copy": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/scripts/test_workflow_module_pool.py"
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/module-pool/module_registry.json",
+      "exists": true,
+      "sha256": "9bf8890aa71d46a2133387b15ea0cfd63a751366ac7f8279c2bbb6bd8fb52442",
+      "size": 14808,
+      "preimage_copy": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/workflows/workflow-kernel-loop/module-pool/module_registry.json"
+    }
+  ],
+  "git_status_scoped": {
+    "returncode": 0,
+    "stdout": " M scripts/test_workflow_module_pool.py\n M scripts/workflow_module_pool.py\n?? workflows/workflow-kernel-loop/\n",
+    "stderr": ""
+  },
+  "rollback_method": "copy preimage files back over their original paths, then rerun core tests/module pool tests/planner readback; remove only activation receipt files from this run directory if desired"
+}

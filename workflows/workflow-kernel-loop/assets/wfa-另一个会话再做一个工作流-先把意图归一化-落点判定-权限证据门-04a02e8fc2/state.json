@@ -1,0 +1,12 @@
+{
+  "schema": "hermes_workflow_asset_state_v1",
+  "asset_id": "wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+  "maturity": "candidate",
+  "retention": "domain_reusable",
+  "status": "candidate_after_local_verification",
+  "created_at": "2026-09-04T03:13:11Z",
+  "external_side_effects_enabled": false,
+  "cron_enabled": false,
+  "taskpool_lifecycle_mutation_enabled": false,
+  "agentos_runtime_mutation_enabled": false
+}

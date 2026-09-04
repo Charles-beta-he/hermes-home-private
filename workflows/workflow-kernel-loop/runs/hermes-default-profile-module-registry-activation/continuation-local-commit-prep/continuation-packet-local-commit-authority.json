@@ -1,0 +1,484 @@
+{
+  "schema": "hermes_workflow_kernel_loop_continuation_packet_v1",
+  "created_at": "2026-09-04T07:27:44Z",
+  "requested_by": "user: 授权，loop推进",
+  "objective": "continue from activated local default module registry to the next safe boundary: exact local commit authority preparation, without committing",
+  "baseline": {
+    "repo": "/Users/charles/.hermes",
+    "head": "bda9a4827e8a5b90c978ab840749a9e0dc687f66",
+    "tree": "820022cf121271cfc4c57fe4cce52f1fc02cf54b"
+  },
+  "current_state": {
+    "activation_status": "activated_local_registry",
+    "manifest_file_count": 78,
+    "manifest_digest": "df2b89f44bbdccde11550c9dddcff44a75b2aa4017acb56d2daa86ed89e704ca",
+    "scoped_status_stdout": " M scripts/test_workflow_module_pool.py\n M scripts/workflow_module_pool.py\n?? workflows/workflow-kernel-loop/\n",
+    "scoped_diff_stat_stdout": " scripts/test_workflow_module_pool.py | 71 ++++++++++++++++++++++++++++++++++++\n scripts/workflow_module_pool.py      | 46 +++++++++++++++++++----\n 2 files changed, 110 insertions(+), 7 deletions(-)\n",
+    "diff_check_returncode": 0,
+    "diff_check_stderr": ""
+  },
+  "verification": {
+    "core_tests_rc": 0,
+    "core_tests_stderr": ".........\n----------------------------------------------------------------------\nRan 9 tests in 0.094s\n\nOK\n",
+    "module_pool_tests_rc": 0,
+    "module_pool_tests_stderr": "..........\n----------------------------------------------------------------------\nRan 10 tests in 0.008s\n\nOK\n",
+    "py_compile_rc": 0,
+    "planner_positive_rc": 0,
+    "planner_positive_selected": [
+      "intent_normalization_kernel",
+      "landing_zone_kernel",
+      "authority_evidence_gate_kernel",
+      "lifecycle_promotion_cleanup_kernel"
+    ],
+    "planner_positive_missing": [],
+    "planner_positive_authority_boundary": "local_only",
+    "negative_progress_rc": 0,
+    "negative_progress_selected": [],
+    "negative_progress_missing": [
+      "intent_seed_capture",
+      "output_contract_builder"
+    ],
+    "negative_external_rc": 0,
+    "negative_external_side_effects": {
+      "external": true,
+      "cron": false,
+      "taskpool": false,
+      "agentos": false
+    },
+    "negative_external_authority_boundary": "exact_authority_required"
+  },
+  "proposed_next_authority_gate": {
+    "status": "waiting_exact_local_commit_authority",
+    "requested_action": "local git commit only, if user authorizes the exact packet/digest after reviewing current scoped diff/manifest",
+    "allowed_paths_if_authorized": [
+      "scripts/workflow_module_pool.py",
+      "scripts/test_workflow_module_pool.py",
+      "workflows/workflow-kernel-loop/**"
+    ],
+    "prohibited_effects": [
+      "push",
+      "deploy",
+      "restart",
+      "cron",
+      "taskpool",
+      "AgentOS",
+      "external",
+      "destructive",
+      "credential",
+      "tag",
+      "release",
+      "merge"
+    ],
+    "required_pre_commit_readback": [
+      "fresh scoped status",
+      "fresh scoped diff --check",
+      "stage only allowlist",
+      "git diff --cached --name-only exact allowlist",
+      "post-commit parent/tree/status readback"
+    ]
+  },
+  "closed_effects_readback": {
+    "push": false,
+    "deploy": false,
+    "restart": false,
+    "cron": false,
+    "taskpool": false,
+    "AgentOS": false,
+    "external": false,
+    "destructive": false,
+    "credential": false,
+    "git_commit": false
+  },
+  "manifest": [
+    {
+      "path": "scripts/workflow_module_pool.py",
+      "bytes": 17403,
+      "sha256": "853e1505619a007f73dbf5e74b18fe6d35865fa7d56964cc57d71e18dd66bc11"
+    },
+    {
+      "path": "scripts/test_workflow_module_pool.py",
+      "bytes": 8168,
+      "sha256": "204beb1d03e3cd90078de5f1b5359b88b1abd68c07aa44a16c9419883a3ab86f"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-human-gated-acceptance-proxy-loo-2ce7688f36/eval-cases.json",
+      "bytes": 2516,
+      "sha256": "79200a4d4e00c15670aab7836263bff757aefb5f996f70cb41d586612f5fd6d6"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-human-gated-acceptance-proxy-loo-2ce7688f36/evidence.jsonl",
+      "bytes": 148,
+      "sha256": "d428fc70202be73995f70f2825f56ea9b0f0cb7cdb77403e7c69bc455f1d48e0"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-human-gated-acceptance-proxy-loo-2ce7688f36/state.json",
+      "bytes": 424,
+      "sha256": "a6fed300e8b9ec2af36d1173c46731a6b53f1929ef0f6320d0518cdf3ddc7406"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-human-gated-acceptance-proxy-loo-2ce7688f36/workflow.json",
+      "bytes": 9677,
+      "sha256": "f3014bf8d5079bc4a59db4b004436b31e1c70aeb20afc04f8f5427bace6f4813"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2/eval-cases.json",
+      "bytes": 604,
+      "sha256": "a65aed0918422db2b554cd3d861c8318e3263691a13b06848b898ec5c76301b8"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2/evidence.jsonl",
+      "bytes": 406,
+      "sha256": "a2dd93d44ac4c39c1cd1c945d062f40bc9a475b015fafffbbbc781652f0a3769"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2/state.json",
+      "bytes": 480,
+      "sha256": "d45536c984ed6e0efe098dc5199457869f671a5343fb4dce76c187da49c77329"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/assets/wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2/workflow.json",
+      "bytes": 5842,
+      "sha256": "e480ef66985ededac275a8bb2a253a6ace71f7bba085b7a604684977e3498c42"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/core/four_core_kernels.py",
+      "bytes": 11453,
+      "sha256": "8204a67b5fe0e81690241e1bd014cc885005afa10eb9c8cced0ceb27026f1d60"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/core/test_four_core_kernels.py",
+      "bytes": 5489,
+      "sha256": "54612eee3719c7a5ffbc930d19516b386b506d41d3505ab999ae7055e06f7683"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/four-core-kernels-loop-receipt.json",
+      "bytes": 2213,
+      "sha256": "d4a628c0001f0bafe1b3a06d21fb038e5ce5ee965b18b9284bcc350a8e492e23"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/module_registry.json",
+      "bytes": 14808,
+      "sha256": "9bf8890aa71d46a2133387b15ea0cfd63a751366ac7f8279c2bbb6bd8fb52442"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/modules/authority_evidence_gate_kernel.json",
+      "bytes": 3245,
+      "sha256": "47b9f44241efd87132ce2255a51d0e41fa3ee4aa789c871357580edbb1a96555"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/modules/intent_normalization_kernel.json",
+      "bytes": 3148,
+      "sha256": "489c08da94b0e68b1b6c7bdb4b0af74680302d3b8e4992105b9ff502096d5f94"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/modules/landing_zone_kernel.json",
+      "bytes": 3109,
+      "sha256": "1c167e46e9741a765ae995bbd7a9d375cd7934ab7d06cd46f7bac04905d95a96"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/modules/lifecycle_promotion_cleanup_kernel.json",
+      "bytes": 3204,
+      "sha256": "e4dfd7f017328a12e0d5e97df53370bbde08dd740d3ec71463eed0e36adb83bf"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/synthesis-candidates.json",
+      "bytes": 334,
+      "sha256": "2823271dcaabcaaa90aa39cde98f54521b2c2d5202daf258e9eb887e0a85c155"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/module-pool/usage_ledger.jsonl",
+      "bytes": 1327,
+      "sha256": "2d9fa4cb8ec057df474220cc2537a4bc3cb9e449a6b02f7d60b1fc5ffd736986"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json",
+      "bytes": 300772,
+      "sha256": "32ab0d62443eb8c3fa18a7973b0c4175042260bfbf17999bd1bcd23ee5807746"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/four-core-decoupling-final-summary.json",
+      "bytes": 2827,
+      "sha256": "87aa3aa49e6980a32df23629efc06e8f14357022ab33c276d7c55f3d275ffd3e"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json",
+      "bytes": 3145,
+      "sha256": "2cb0f497337b33c09c21ccc12c0291c4047078e382fcdf40e379e537215ff191"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-receipt.json",
+      "bytes": 3095,
+      "sha256": "25e98cb7ecf9b3b07d2d7cd9f4bc3285fbf0300e2e20fbcfd158033832229005"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/activation-receipt.json",
+      "bytes": 10200,
+      "sha256": "37a30be8593f333909e69f782c52ffd6316a02c74f6ac59b7d21460f7bd8b012"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/scripts/test_workflow_module_pool.py",
+      "bytes": 6573,
+      "sha256": "6cbb3010de752bbb33fab20acc7cbd1606f16d03976bc03d092cce31e2665d9a"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/scripts/workflow_module_pool.py",
+      "bytes": 16970,
+      "sha256": "a82cd6ab857229023774440df56b0019239b1e3c12de3b1381bd8c9e3e3e6d3d"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/workflows/workflow-kernel-loop/module-pool/module_registry.json",
+      "bytes": 14808,
+      "sha256": "9bf8890aa71d46a2133387b15ea0cfd63a751366ac7f8279c2bbb6bd8fb52442"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage-rollback.json",
+      "bytes": 1965,
+      "sha256": "8282fef864dbf0f4c5de38394ff6df9e043fec386ddebb26afbb651af34f2614"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/production-activation-prep/activation-prep-receipt.json",
+      "bytes": 3834,
+      "sha256": "8e3555a5b114e147314e52d1d9edf7ca67c308e42fbfbda90af36f607073efdd"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/production-activation-prep/activation-readback-checklist.json",
+      "bytes": 990,
+      "sha256": "d08a2ded23b3960035b6e7372fc2e791c7ab40c120ac5b2d863ef5c40786bd99"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/production-activation-prep/activation-target.json",
+      "bytes": 3711,
+      "sha256": "59a1469072499170aafdbd70d73caf5a3f14f04795ebcc214ea288185d0f3a0d"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/production-activation-prep/rollback-plan.json",
+      "bytes": 1917,
+      "sha256": "e3932233cf0538149e8378ef28ce8c6d24c91467310b05035e5ef4c505f425cd"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/asset-receipt.json",
+      "bytes": 358,
+      "sha256": "212a0300a7a326b144f7f6bbf638e6f04eb28c1a6ec4dfb963825a4019d4586f"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/cleanup.json",
+      "bytes": 134,
+      "sha256": "f216b6e84c2fe6e2ef19f5210b94a4e2b356e6a4bee883d4efb990b3dfb85ece"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/compile.json",
+      "bytes": 115,
+      "sha256": "ac8629d3847da926afe2694ada38130b550d87168d378e2a3bd93843c2839245"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/decision.json",
+      "bytes": 1182,
+      "sha256": "ef0c820d0cd39ef096c73c928983f15424de89ebeb7710e0aaefa66f6a3d5073"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/evaluation.json",
+      "bytes": 856,
+      "sha256": "e73d85b21951089c53cd5017f25987715d4dbada777c278542fe1a26a9be9e5c"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/execution.json",
+      "bytes": 350,
+      "sha256": "98ff019a7eef52e52003bc1de5108332e73618214e8f5a1ec2d0c559d1b675a0"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/loop-receipt.json",
+      "bytes": 8687,
+      "sha256": "a4c14fc8882a723de272183fba1e1529783b09f09959f9030bb4630bfa63ca8d"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/metrics.json",
+      "bytes": 193,
+      "sha256": "51ed7f887a08a16baa6b7ef8cf71cfa36edd1005471b5e931b1c3d9b2f864ff1"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/module-plan.json",
+      "bytes": 1759,
+      "sha256": "dcbeab4bb4844cd5dc7dbb2990c6c7d5ad9f775a81e8dbce250b2a01114d19db"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/observation.json",
+      "bytes": 671,
+      "sha256": "a67cb0d11f2026a902925250f7f43a2485026f05213a5aa7a3829d6d08e02e80"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/ratchet.json",
+      "bytes": 172,
+      "sha256": "088c5e9b8b1e070cdfee0e9a9343b5fdf81d1b3b90937037d2bbccad85997ab2"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/scheduling-boundary.json",
+      "bytes": 200,
+      "sha256": "21c000b39455816053feaf6d935a0a8abceb8a4985375cfc5b66244e599b4bcc"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/simulation.json",
+      "bytes": 209,
+      "sha256": "ed74c75add9e93ae181f5887893bf988fc6aa2656fa62f351dbb4c00d069003a"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/system-parts-boundary.json",
+      "bytes": 266,
+      "sha256": "9078ddaf4ce4e640f0af91f3d361e5067f5eb94c18b01f7d46dc525baea27c42"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-human-gated-acceptance-proxy-loo-ec93753020/verification.json",
+      "bytes": 182,
+      "sha256": "7e32b3bf2181cf633b20d381d4edb7b00002780657e44bf628923593aae85f58"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/asset-receipt.json",
+      "bytes": 413,
+      "sha256": "df10be8f752fc03b39c85d570fa00a9cf56ec386add855e458883f560971ca15"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/cleanup.json",
+      "bytes": 134,
+      "sha256": "f216b6e84c2fe6e2ef19f5210b94a4e2b356e6a4bee883d4efb990b3dfb85ece"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/compile.json",
+      "bytes": 170,
+      "sha256": "8294bb022aa1448d9ea3c90536013940a6acb2083e04137ac1829efb5c0e9cdc"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/decision.json",
+      "bytes": 1038,
+      "sha256": "565a110d41e98272a66ef7a43bf9de747ac908847cf1ceb56dc08cd354e8f749"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/evaluation.json",
+      "bytes": 856,
+      "sha256": "c8b171d1db308250c10841644432029f2c53b555667f84e9bc07eb420729bbed"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/execution.json",
+      "bytes": 405,
+      "sha256": "487e5316516ca11776b9c17fed9a090f14666d292c2d589cf289fba6f62ebfb7"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/loop-receipt.json",
+      "bytes": 9878,
+      "sha256": "ced731aa195ac651abfcc78524267f8976ddcd3241bce8887aa0076c331f84af"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/metrics.json",
+      "bytes": 193,
+      "sha256": "51ed7f887a08a16baa6b7ef8cf71cfa36edd1005471b5e931b1c3d9b2f864ff1"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/module-plan.json",
+      "bytes": 1983,
+      "sha256": "f0a18bb853899532619688154f8870782421a7640e2428dc504993ef8e52a51c"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/observation.json",
+      "bytes": 383,
+      "sha256": "3ce3f7a07cf3b00becc2ba19989d7ea478781d993944b0afafc4e3cff59d6db9"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/ratchet.json",
+      "bytes": 172,
+      "sha256": "088c5e9b8b1e070cdfee0e9a9343b5fdf81d1b3b90937037d2bbccad85997ab2"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/scheduling-boundary.json",
+      "bytes": 200,
+      "sha256": "21c000b39455816053feaf6d935a0a8abceb8a4985375cfc5b66244e599b4bcc"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/simulation.json",
+      "bytes": 203,
+      "sha256": "d92bc6717db983844c90b0a8e73bd2a15c700f8b22f4b81516a3c73db3a86b0c"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/system-parts-boundary.json",
+      "bytes": 266,
+      "sha256": "9078ddaf4ce4e640f0af91f3d361e5067f5eb94c18b01f7d46dc525baea27c42"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/verification.json",
+      "bytes": 182,
+      "sha256": "7e32b3bf2181cf633b20d381d4edb7b00002780657e44bf628923593aae85f58"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/asset-receipt.json",
+      "bytes": 413,
+      "sha256": "df10be8f752fc03b39c85d570fa00a9cf56ec386add855e458883f560971ca15"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/cleanup.json",
+      "bytes": 134,
+      "sha256": "f216b6e84c2fe6e2ef19f5210b94a4e2b356e6a4bee883d4efb990b3dfb85ece"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/compile.json",
+      "bytes": 170,
+      "sha256": "8294bb022aa1448d9ea3c90536013940a6acb2083e04137ac1829efb5c0e9cdc"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/decision.json",
+      "bytes": 1038,
+      "sha256": "3786d59ec5762049da77365bad2cf5da2c45f1ff67723ae1a36c3e6c7edef60a"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/evaluation.json",
+      "bytes": 856,
+      "sha256": "c8b171d1db308250c10841644432029f2c53b555667f84e9bc07eb420729bbed"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/execution.json",
+      "bytes": 405,
+      "sha256": "487e5316516ca11776b9c17fed9a090f14666d292c2d589cf289fba6f62ebfb7"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/loop-receipt.json",
+      "bytes": 9878,
+      "sha256": "c57d048241cf862f6fb22b158e610f59d92add014c67387b2162e25ff3bfb2ae"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/metrics.json",
+      "bytes": 193,
+      "sha256": "51ed7f887a08a16baa6b7ef8cf71cfa36edd1005471b5e931b1c3d9b2f864ff1"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/module-plan.json",
+      "bytes": 1115,
+      "sha256": "044ee7d0ddd1dcb910423ec304f201cd4c1f9bebc5cd1e0ff87e7e42a1a3bfc2"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/observation.json",
+      "bytes": 383,
+      "sha256": "837407ee25c493e3b657acb62be725d23fc8586bfc11f53fea788c51d8c805fd"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/ratchet.json",
+      "bytes": 172,
+      "sha256": "088c5e9b8b1e070cdfee0e9a9343b5fdf81d1b3b90937037d2bbccad85997ab2"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/scheduling-boundary.json",
+      "bytes": 200,
+      "sha256": "21c000b39455816053feaf6d935a0a8abceb8a4985375cfc5b66244e599b4bcc"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/simulation.json",
+      "bytes": 203,
+      "sha256": "d92bc6717db983844c90b0a8e73bd2a15c700f8b22f4b81516a3c73db3a86b0c"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/system-parts-boundary.json",
+      "bytes": 266,
+      "sha256": "9078ddaf4ce4e640f0af91f3d361e5067f5eb94c18b01f7d46dc525baea27c42"
+    },
+    {
+      "path": "workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/verification.json",
+      "bytes": 182,
+      "sha256": "7e32b3bf2181cf633b20d381d4edb7b00002780657e44bf628923593aae85f58"
+    }
+  ]
+}

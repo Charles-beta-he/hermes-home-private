@@ -1,0 +1,72 @@
+{
+  "schema": "hermes_workflow_module_plan_v1",
+  "seed": "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。",
+  "capability_needs": [
+    "intent_normalization_kernel",
+    "landing_zone_kernel",
+    "authority_evidence_gate_kernel",
+    "lifecycle_promotion_cleanup_kernel"
+  ],
+  "selected_modules": [
+    "intent_normalization_kernel",
+    "landing_zone_kernel",
+    "authority_evidence_gate_kernel",
+    "lifecycle_promotion_cleanup_kernel"
+  ],
+  "missing_capability_needs": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "intent_normalization_kernel",
+        "need": "intent_normalization_kernel",
+        "status": "matched",
+        "depends_on": []
+      },
+      {
+        "id": "landing_zone_kernel",
+        "need": "landing_zone_kernel",
+        "status": "matched",
+        "depends_on": [
+          "intent_normalization_kernel"
+        ]
+      },
+      {
+        "id": "authority_evidence_gate_kernel",
+        "need": "authority_evidence_gate_kernel",
+        "status": "matched",
+        "depends_on": [
+          "landing_zone_kernel"
+        ]
+      },
+      {
+        "id": "lifecycle_promotion_cleanup_kernel",
+        "need": "lifecycle_promotion_cleanup_kernel",
+        "status": "matched",
+        "depends_on": [
+          "authority_evidence_gate_kernel"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "intent_normalization_kernel",
+        "to": "landing_zone_kernel"
+      },
+      {
+        "from": "landing_zone_kernel",
+        "to": "authority_evidence_gate_kernel"
+      },
+      {
+        "from": "authority_evidence_gate_kernel",
+        "to": "lifecycle_promotion_cleanup_kernel"
+      }
+    ]
+  },
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  },
+  "authority_boundary": "local_only"
+}

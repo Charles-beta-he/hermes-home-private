@@ -1,0 +1,16 @@
+{
+  "status": "ok",
+  "workdir": "/Users/charles/.hermes/workflows/workflow-kernel-loop/assets/wfa-human-gated-acceptance-proxy-loo-2ce7688f36",
+  "files": [
+    "workflow.json",
+    "state.json",
+    "eval-cases.json",
+    "evidence.jsonl"
+  ],
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  }
+}

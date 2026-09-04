@@ -1,0 +1,58 @@
+{
+  "schema": "hermes_workflow_module_plan_v1",
+  "seed": "Human-gated acceptance proxy loop: when a required human gate is unavailable, use independent multi-model review plus official standards and competitor evidence only as a fail-closed proxy audit; separate source facts, model dissent, engineering verification, and authority; never convert consensus into human PASS; turn findings into TDD remediation slices, generate a new immutable candidate digest after code changes, rerun affected automated/runtime/visual gates, and stop at qualified-human acceptance.",
+  "capability_needs": [
+    "source_evidence_collector",
+    "business_analysis",
+    "evidence_gate"
+  ],
+  "selected_modules": [],
+  "missing_capability_needs": [
+    "source_evidence_collector",
+    "business_analysis",
+    "evidence_gate"
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "source_evidence_collector",
+        "need": "source_evidence_collector",
+        "status": "missing_candidate",
+        "depends_on": []
+      },
+      {
+        "id": "business_analysis",
+        "need": "business_analysis",
+        "status": "missing_candidate",
+        "depends_on": [
+          "source_evidence_collector"
+        ]
+      },
+      {
+        "id": "evidence_gate",
+        "need": "evidence_gate",
+        "status": "missing_candidate",
+        "depends_on": [
+          "business_analysis"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "source_evidence_collector",
+        "to": "business_analysis"
+      },
+      {
+        "from": "business_analysis",
+        "to": "evidence_gate"
+      }
+    ]
+  },
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  },
+  "authority_boundary": "local_only"
+}

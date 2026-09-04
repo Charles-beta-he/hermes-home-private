@@ -1,0 +1,12 @@
+{
+  "schema": "hermes_workflow_loop_execution_v1",
+  "status": "PASS",
+  "action": "local_asset_scaffold",
+  "asset_workdir": "/Users/charles/.hermes/workflows/workflow-kernel-loop/assets/wfa-human-gated-acceptance-proxy-loo-2ce7688f36",
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  }
+}

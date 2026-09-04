@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-09-04T03:41:50Z",
+  "git_diff_stat_relevant": {
+    "cmd": [
+      "git",
+      "diff",
+      "--stat",
+      "--",
+      "scripts/workflow_module_pool.py",
+      "scripts/test_workflow_module_pool.py",
+      "workflows/workflow-kernel-loop/core/four_core_kernels.py",
+      "workflows/workflow-kernel-loop/core/test_four_core_kernels.py",
+      "workflows/workflow-kernel-loop/runs/four-core-decoupling-final-summary.json",
+      "workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json",
+      "workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": " scripts/test_workflow_module_pool.py | 35 +++++++++++++++++++++++++++++++++++\n scripts/workflow_module_pool.py      | 31 ++++++++++++++++++++++++++-----\n 2 files changed, 61 insertions(+), 5 deletions(-)\n"
+  },
+  "git_status_full_line_count": 3058,
+  "git_status_relevant": {
+    "cmd": [
+      "git",
+      "status",
+      "--short",
+      "--",
+      "scripts/workflow_module_pool.py",
+      "scripts/test_workflow_module_pool.py",
+      "workflows/workflow-kernel-loop/core/four_core_kernels.py",
+      "workflows/workflow-kernel-loop/core/test_four_core_kernels.py",
+      "workflows/workflow-kernel-loop/runs/four-core-decoupling-final-summary.json",
+      "workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json",
+      "workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": " M scripts/test_workflow_module_pool.py\n M scripts/workflow_module_pool.py\n?? workflows/workflow-kernel-loop/core/four_core_kernels.py\n?? workflows/workflow-kernel-loop/core/test_four_core_kernels.py\n?? workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json\n?? workflows/workflow-kernel-loop/runs/four-core-decoupling-final-summary.json\n?? workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json\n"
+  },
+  "next_gate": "User must choose exact activation target and grant exact authority before any production mutation.",
+  "packets": [
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/production-activation-prep/activation-target.json",
+      "sha256": "59a1469072499170aafdbd70d73caf5a3f14f04795ebcc214ea288185d0f3a0d",
+      "size": 3711
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/production-activation-prep/rollback-plan.json",
+      "sha256": "e3932233cf0538149e8378ef28ce8c6d24c91467310b05035e5ef4c505f425cd",
+      "size": 1917
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/production-activation-prep/activation-readback-checklist.json",
+      "sha256": "d08a2ded23b3960035b6e7372fc2e791c7ab40c120ac5b2d863ef5c40786bd99",
+      "size": 990
+    }
+  ],
+  "schema": "hermes_four_core_kernel_activation_prep_receipt_v1",
+  "scope": "local preparation only; no production activation, no commit, no push/deploy, no cron/taskpool/AgentOS/external effects",
+  "status": "waiting_authority",
+  "tests": {
+    "core": {
+      "cmd": [
+        "python3",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/test_four_core_kernels.py"
+      ],
+      "returncode": 0,
+      "stderr": ".........\n----------------------------------------------------------------------\nRan 9 tests in 0.088s\n\nOK\n",
+      "stdout": ""
+    },
+    "module_pool": {
+      "cmd": [
+        "python3",
+        "/Users/charles/.hermes/scripts/test_workflow_module_pool.py"
+      ],
+      "returncode": 0,
+      "stderr": "........\n----------------------------------------------------------------------\nRan 8 tests in 0.007s\n\nOK\n",
+      "stdout": ""
+    }
+  }
+}

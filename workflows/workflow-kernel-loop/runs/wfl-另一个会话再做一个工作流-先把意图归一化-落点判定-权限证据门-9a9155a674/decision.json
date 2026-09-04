@@ -1,0 +1,30 @@
+{
+  "schema": "hermes_workflow_asset_decision_v1",
+  "id": "wfd-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+  "seed": "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。",
+  "score": 8,
+  "decision": "reusable_candidate",
+  "landing": [
+    "workflow_workspace",
+    "skill_reference_candidate"
+  ],
+  "reasons": [
+    "reuse_value",
+    "multi_step_complexity",
+    "evidence_gap",
+    "workflow_word_signal_only"
+  ],
+  "warnings": [],
+  "side_effect_class": "local_read_write_only",
+  "stop_only_on": [
+    "missing_evidence_after_attempt",
+    "user_preference_conflict"
+  ],
+  "created_at": "2026-09-04T03:11:48Z",
+  "policy": {
+    "keyword_trigger_sufficient": false,
+    "model_consensus_is_proof": false,
+    "external_side_effects_enabled": false,
+    "memory_workflow_body_write_enabled": false
+  }
+}

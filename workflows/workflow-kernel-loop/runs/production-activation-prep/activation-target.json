@@ -1,0 +1,92 @@
+{
+  "activation_target_choices": [
+    {
+      "authority_needed": "none beyond local_write for receipts",
+      "effect": "Keep as local module-pool/core candidate; no production runtime route change.",
+      "id": "module_pool_candidate_only",
+      "recommended_next": "safe default"
+    },
+    {
+      "authority_needed": "exact local mutation grant naming registry files and allowed paths",
+      "effect": "Promote/connect four kernels to the default profile workflow/module registry for ordinary planning use.",
+      "id": "hermes_default_profile_module_registry",
+      "requires": [
+        "clean scoped diff or exact dirty-tree allowlist",
+        "rollback preimage",
+        "post-activation planner readback"
+      ]
+    },
+    {
+      "authority_needed": "exact production activation grant with target runtime, rollback, restart policy, readback, and independent review",
+      "effect": "Activate in live Hermes runtime/control-plane routing.",
+      "id": "hermes_runtime_route_or_agent_os",
+      "requires": [
+        "separate high-side-effect review",
+        "runtime/supervisor prestate",
+        "no unrelated dirty-tree coupling"
+      ]
+    }
+  ],
+  "allowed_preparation_effects": [
+    "write local JSON packets under workflows/workflow-kernel-loop/runs/production-activation-prep/",
+    "run local deterministic tests/readbacks"
+  ],
+  "authority_state": "waiting_exact_activation_target_for_any_production_mutation",
+  "candidate_manifest": [
+    {
+      "path": "/Users/charles/.hermes/scripts/workflow_module_pool.py",
+      "sha256": "a82cd6ab857229023774440df56b0019239b1e3c12de3b1381bd8c9e3e3e6d3d",
+      "size": 16970
+    },
+    {
+      "path": "/Users/charles/.hermes/scripts/test_workflow_module_pool.py",
+      "sha256": "6cbb3010de752bbb33fab20acc7cbd1606f16d03976bc03d092cce31e2665d9a",
+      "size": 6573
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/four_core_kernels.py",
+      "sha256": "8204a67b5fe0e81690241e1bd014cc885005afa10eb9c8cced0ceb27026f1d60",
+      "size": 11453
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/test_four_core_kernels.py",
+      "sha256": "54612eee3719c7a5ffbc930d19516b386b506d41d3505ab999ae7055e06f7683",
+      "size": 5489
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-final-summary.json",
+      "sha256": "87aa3aa49e6980a32df23629efc06e8f14357022ab33c276d7c55f3d275ffd3e",
+      "size": 2827
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-final-convergence-receipt.json",
+      "sha256": "32ab0d62443eb8c3fa18a7973b0c4175042260bfbf17999bd1bcd23ee5807746",
+      "size": 300772
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/four-core-decoupling-pipeline-readback.json",
+      "sha256": "2cb0f497337b33c09c21ccc12c0291c4047078e382fcdf40e379e537215ff191",
+      "size": 3145
+    }
+  ],
+  "closed_effects_without_later_exact_authority": [
+    "git_commit",
+    "git_push",
+    "deploy",
+    "runtime_config_change",
+    "gateway_restart",
+    "launchctl",
+    "cron_scheduler_write",
+    "taskpool_lifecycle_write",
+    "AgentOS lifecycle write",
+    "external_dispatch",
+    "destructive",
+    "credential_or_secret_entry"
+  ],
+  "created_at": "2026-09-04T03:41:50Z",
+  "current_maturity": "validated_local_candidate",
+  "recommended_choice_before_user_grant": "module_pool_candidate_only",
+  "requested_by": "user: loop推进",
+  "schema": "hermes_four_core_kernel_production_activation_target_v1",
+  "side_effect_boundary": "local_write_only_preparation; no runtime activation performed"
+}

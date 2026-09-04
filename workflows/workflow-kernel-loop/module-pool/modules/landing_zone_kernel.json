@@ -1,0 +1,124 @@
+{
+  "schema": "hermes_capability_module_v1",
+  "id": "landing_zone_kernel",
+  "title": "Landing Zone Kernel",
+  "version": 1,
+  "kind": "gate",
+  "responsibility": "Classify where each durable claim belongs and prevent memory/skill/workflow pollution.",
+  "contracts": {
+    "consumes": [
+      "workflow_seed",
+      "candidate_claims"
+    ],
+    "produces": [
+      "landing_decision",
+      "forbidden_targets"
+    ],
+    "input_contract": {
+      "required": [
+        "workflow_seed",
+        "candidate_claims"
+      ],
+      "optional": []
+    },
+    "output_contract": {
+      "produces": [
+        "landing_decision",
+        "forbidden_targets"
+      ],
+      "evidence_required": true,
+      "confidence_required": true
+    },
+    "presentation_contract": {
+      "surfaces": [
+        "cli",
+        "markdown"
+      ],
+      "style": "concise_evidence_first"
+    }
+  },
+  "routing": {
+    "applies_when": [
+      "落点判定",
+      "memory skill project SSOT ADR taskpool cron 分流",
+      "防止 skill 膨胀",
+      "landing zone",
+      "Classify where each durable claim belongs and prevent memory/skill/workflow pollution."
+    ],
+    "does_not_apply_when": [
+      "一次性进度状态",
+      "PR号/commit号持久记忆",
+      "项目事实写全局memory",
+      "未分scope就建workflow"
+    ],
+    "positive_examples": [
+      "落点判定",
+      "memory skill project SSOT ADR taskpool cron 分流",
+      "防止 skill 膨胀",
+      "landing zone"
+    ],
+    "negative_examples": [
+      "一次性进度状态",
+      "PR号/commit号持久记忆",
+      "项目事实写全局memory",
+      "未分scope就建workflow"
+    ],
+    "neighbor_modules": [
+      "intent_normalization_kernel",
+      "lifecycle_promotion_cleanup_kernel"
+    ],
+    "forbidden_triggers": [
+      "workflow keyword alone",
+      "temporary progress update",
+      "single successful run without evidence"
+    ]
+  },
+  "authority": {
+    "side_effects": "none",
+    "required_authority": [],
+    "can_run_autonomously": true,
+    "prohibited_side_effects": [
+      "memory_write",
+      "cron_write",
+      "taskpool_lifecycle",
+      "external_dispatch",
+      "publish_deploy_push",
+      "destructive",
+      "credential_entry"
+    ]
+  },
+  "lifecycle": {
+    "maturity": "candidate",
+    "retention": "global_reusable_candidate",
+    "promotion_requires": [
+      "route_eval_positive_negative",
+      "fresh_evidence_contract",
+      "neighbor_collision_scan",
+      "cleanup_policy"
+    ],
+    "cleanup_policy": "quarantine_on_false_trigger; archive_or_absorb_when_superseded"
+  },
+  "metrics": {
+    "usage_count": 0,
+    "success_count": 0,
+    "evidence_pass_rate": 0.0,
+    "false_trigger_count": 0,
+    "human_intervention_rate": 0.0
+  },
+  "promotion_policy": {
+    "promote_when": [
+      "successful_runs >= 2",
+      "evidence_pass_rate >= 0.8",
+      "negative_cases_pass"
+    ],
+    "demote_when": [
+      "false_trigger",
+      "stale_evidence",
+      "user_correction"
+    ],
+    "cleanup_when": [
+      "no_usage_for_ttl",
+      "superseded_by_better_module"
+    ]
+  }
+}

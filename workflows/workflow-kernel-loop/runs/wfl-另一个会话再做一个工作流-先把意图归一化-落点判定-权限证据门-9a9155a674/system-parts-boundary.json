@@ -1,0 +1,14 @@
+{
+  "schema": "hermes_workflow_loop_system_parts_v1",
+  "parts": [
+    "automations",
+    "worktrees",
+    "skills",
+    "connectors",
+    "subagents",
+    "memory"
+  ],
+  "local_only": true,
+  "external_connectors_enabled": false,
+  "memory_write_enabled": false
+}

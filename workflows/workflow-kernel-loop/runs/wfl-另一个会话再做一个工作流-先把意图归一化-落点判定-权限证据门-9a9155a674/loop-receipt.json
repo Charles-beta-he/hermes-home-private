@@ -1,0 +1,227 @@
+{
+  "schema": "hermes_workflow_kernel_loop_receipt_v2",
+  "generator": "workflow_kernel_loop_v2",
+  "status": "ok",
+  "seed": "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。",
+  "decision": "reusable_candidate",
+  "run_dir": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674",
+  "asset_workdir": "/Users/charles/.hermes/workflows/workflow-kernel-loop/assets/wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+  "module_plan_ref": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/module-plan.json",
+  "usage_ledger": "/Users/charles/.hermes/workflows/workflow-kernel-loop/module-pool/usage_ledger.jsonl",
+  "stages": [
+    {
+      "id": "observe",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/observation.json"
+      ]
+    },
+    {
+      "id": "orient",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/module-plan.json"
+      ]
+    },
+    {
+      "id": "compile",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/compile.json"
+      ]
+    },
+    {
+      "id": "simulate",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/simulation.json"
+      ]
+    },
+    {
+      "id": "execute",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/execution.json"
+      ]
+    },
+    {
+      "id": "verify",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/verification.json"
+      ]
+    },
+    {
+      "id": "ratchet",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/ratchet.json"
+      ]
+    },
+    {
+      "id": "monitor",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/metrics.json"
+      ]
+    },
+    {
+      "id": "cleanup",
+      "status": "PASS",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/cleanup.json"
+      ]
+    }
+  ],
+  "control_moves": {
+    "discovery": {
+      "status": "covered",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/observation.json",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/module-plan.json"
+      ]
+    },
+    "handoff": {
+      "status": "covered",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/compile.json",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/execution.json"
+      ]
+    },
+    "verification": {
+      "status": "covered",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/simulation.json",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/verification.json"
+      ]
+    },
+    "persistence": {
+      "status": "covered",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/module-pool/usage_ledger.jsonl"
+      ]
+    },
+    "scheduling": {
+      "status": "covered",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/scheduling-boundary.json"
+      ]
+    }
+  },
+  "system_parts": {
+    "automations": {
+      "status": "disabled",
+      "reason": "run-once only; no scheduler authority",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/system-parts-boundary.json",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/scheduling-boundary.json"
+      ]
+    },
+    "worktrees": {
+      "status": "not_applicable",
+      "reason": "asset scaffold does not edit a source repository",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/system-parts-boundary.json"
+      ]
+    },
+    "skills": {
+      "status": "enabled",
+      "reason": "local decision and module capabilities are loaded",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/decision.json",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/module-plan.json"
+      ]
+    },
+    "connectors": {
+      "status": "disabled",
+      "reason": "external connectors are outside local authority",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/system-parts-boundary.json"
+      ]
+    },
+    "subagents": {
+      "status": "not_applicable",
+      "reason": "deterministic local evaluation needs no delegation",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/system-parts-boundary.json"
+      ]
+    },
+    "memory": {
+      "status": "disabled",
+      "reason": "workflow bodies and progress never write always-on memory",
+      "evidence_refs": [
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-9a9155a674/system-parts-boundary.json"
+      ]
+    }
+  },
+  "engineering_coverage": {
+    "kernel_stages": {
+      "covered": 9,
+      "total": 9,
+      "percent": 100.0
+    },
+    "control_moves": {
+      "covered": 5,
+      "total": 5,
+      "percent": 100.0
+    },
+    "system_parts": {
+      "covered": 6,
+      "total": 6,
+      "percent": 100.0
+    },
+    "overall_percent": 100.0,
+    "semantics": "contract coverage; operational health is separate"
+  },
+  "budgets": {
+    "max_iterations": 3,
+    "max_runtime_seconds": 120,
+    "max_retries": 2,
+    "max_evidence_files": 64
+  },
+  "kill_switch": "HERMES_WORKFLOW_LOOP_DISABLE",
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  },
+  "created_at": "2026-09-04T03:11:48Z",
+  "claims": {
+    "global_certification": false,
+    "canonical_ratchet_promotion": false
+  },
+  "procedure_validation_ref": "/Users/charles/.hermes/state/selfcheck/procedure_validation_registry.json",
+  "evaluation": {
+    "schema": "hermes_workflow_loop_evaluation_v1",
+    "evaluator": "workflow_loop_evaluator_v1",
+    "generator": "workflow_kernel_loop_v2",
+    "independent_module": true,
+    "status": "PASS",
+    "veto": false,
+    "score_percent": 100.0,
+    "diagnostic_score_percent": 100.0,
+    "issues": [],
+    "procedure_validation": {
+      "state": "attention_required",
+      "registry_present": true,
+      "inventory_complete": false,
+      "can_claim_complete": false,
+      "counts": {
+        "required_procedures": 12,
+        "fully_connected": 4,
+        "pending": 8,
+        "stale": 8,
+        "failed": 0,
+        "blocked_by_authority": 0,
+        "operationally_degraded": 0
+      },
+      "certification_semantics": "necessary_not_sufficient"
+    },
+    "claims_evaluated": {
+      "global_certification": false,
+      "canonical_ratchet_promotion": false
+    },
+    "would_execute_anything": false
+  }
+}

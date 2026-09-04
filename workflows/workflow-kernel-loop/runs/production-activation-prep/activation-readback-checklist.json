@@ -1,0 +1,24 @@
+{
+  "candidate_readback_required": [
+    "manifest sha256 matches live bytes",
+    "core tests pass",
+    "module pool tests pass",
+    "planner selects four kernels in order",
+    "external_write negative case blocks with needs_exact_authority"
+  ],
+  "created_at": "2026-09-04T03:41:50Z",
+  "current_known_blockers": [
+    "production target not selected",
+    "repo has large unrelated dirty/untracked state outside candidate paths",
+    "no independent current-digest verifier vote",
+    "no exact production AuthorityGrant"
+  ],
+  "production_readback_required_if_later_activated": [
+    "exact target file/config changed and only allowed paths changed",
+    "runtime route uses four-kernel order",
+    "negative side-effect classes still fail closed",
+    "rollback command tested or at least dry-run/readback scoped",
+    "receipt written with activation target, action, result, and post-action readback"
+  ],
+  "schema": "hermes_four_core_kernel_activation_readback_checklist_v1"
+}

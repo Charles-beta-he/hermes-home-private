@@ -1,0 +1,126 @@
+{
+  "schema": "hermes_capability_module_v1",
+  "id": "intent_normalization_kernel",
+  "title": "Intent Normalization Kernel",
+  "version": 1,
+  "kind": "atomic_module",
+  "responsibility": "Normalize fuzzy user language into a structured WorkflowSeed without executing or persisting side effects.",
+  "contracts": {
+    "consumes": [
+      "user_request",
+      "source_refs",
+      "active_context"
+    ],
+    "produces": [
+      "workflow_seed",
+      "normalization_warnings"
+    ],
+    "input_contract": {
+      "required": [
+        "user_request",
+        "source_refs",
+        "active_context"
+      ],
+      "optional": []
+    },
+    "output_contract": {
+      "produces": [
+        "workflow_seed",
+        "normalization_warnings"
+      ],
+      "evidence_required": true,
+      "confidence_required": true
+    },
+    "presentation_contract": {
+      "surfaces": [
+        "cli",
+        "markdown"
+      ],
+      "style": "concise_evidence_first"
+    }
+  },
+  "routing": {
+    "applies_when": [
+      "意图归一化",
+      "WorkflowSeed",
+      "把模糊需求转结构化 seed",
+      "intent normalization",
+      "Normalize fuzzy user language into a structured WorkflowSeed without executing or persisting side effects."
+    ],
+    "does_not_apply_when": [
+      "只回答一个简单问题",
+      "临时整理文件",
+      "用户明确不要固化",
+      "凭关键词直接执行"
+    ],
+    "positive_examples": [
+      "意图归一化",
+      "WorkflowSeed",
+      "把模糊需求转结构化 seed",
+      "intent normalization"
+    ],
+    "negative_examples": [
+      "只回答一个简单问题",
+      "临时整理文件",
+      "用户明确不要固化",
+      "凭关键词直接执行"
+    ],
+    "neighbor_modules": [
+      "landing_zone_kernel",
+      "capability_graph"
+    ],
+    "forbidden_triggers": [
+      "workflow keyword alone",
+      "temporary progress update",
+      "single successful run without evidence"
+    ]
+  },
+  "authority": {
+    "side_effects": "none",
+    "required_authority": [],
+    "can_run_autonomously": true,
+    "prohibited_side_effects": [
+      "memory_write",
+      "cron_write",
+      "taskpool_lifecycle",
+      "external_dispatch",
+      "publish_deploy_push",
+      "destructive",
+      "credential_entry"
+    ]
+  },
+  "lifecycle": {
+    "maturity": "candidate",
+    "retention": "global_reusable_candidate",
+    "promotion_requires": [
+      "route_eval_positive_negative",
+      "fresh_evidence_contract",
+      "neighbor_collision_scan",
+      "cleanup_policy"
+    ],
+    "cleanup_policy": "quarantine_on_false_trigger; archive_or_absorb_when_superseded"
+  },
+  "metrics": {
+    "usage_count": 0,
+    "success_count": 0,
+    "evidence_pass_rate": 0.0,
+    "false_trigger_count": 0,
+    "human_intervention_rate": 0.0
+  },
+  "promotion_policy": {
+    "promote_when": [
+      "successful_runs >= 2",
+      "evidence_pass_rate >= 0.8",
+      "negative_cases_pass"
+    ],
+    "demote_when": [
+      "false_trigger",
+      "stale_evidence",
+      "user_correction"
+    ],
+    "cleanup_when": [
+      "no_usage_for_ttl",
+      "superseded_by_better_module"
+    ]
+  }
+}

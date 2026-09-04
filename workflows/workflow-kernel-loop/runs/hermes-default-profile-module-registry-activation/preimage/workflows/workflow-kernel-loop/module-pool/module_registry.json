@@ -1,0 +1,511 @@
+{
+  "schema": "hermes_capability_module_registry_v1",
+  "modules": [
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "authority_evidence_gate_kernel",
+      "title": "Authority and Evidence Gate Kernel",
+      "version": 1,
+      "kind": "gate",
+      "responsibility": "Fail-closed side-effect authorization and evidence/readback contracts before action and completion claims.",
+      "contracts": {
+        "consumes": [
+          "proposed_action",
+          "target",
+          "side_effect_class",
+          "authority_context"
+        ],
+        "produces": [
+          "authority_decision",
+          "evidence_contract",
+          "readback_requirement"
+        ],
+        "input_contract": {
+          "required": [
+            "proposed_action",
+            "target",
+            "side_effect_class",
+            "authority_context"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "authority_decision",
+            "evidence_contract",
+            "readback_requirement"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "权限证据门",
+          "side effect gate",
+          "evidence contract",
+          "readback receipt",
+          "Fail-closed side-effect authorization and evidence/readback contracts before action and completion claims."
+        ],
+        "does_not_apply_when": [
+          "模型自称完成",
+          "无精确target的外部发送",
+          "凭旧证据声明完成",
+          "credential/payment entry"
+        ],
+        "positive_examples": [
+          "权限证据门",
+          "side effect gate",
+          "evidence contract",
+          "readback receipt"
+        ],
+        "negative_examples": [
+          "模型自称完成",
+          "无精确target的外部发送",
+          "凭旧证据声明完成",
+          "credential/payment entry"
+        ],
+        "neighbor_modules": [
+          "landing_zone_kernel",
+          "readback_receipt"
+        ],
+        "forbidden_triggers": [
+          "workflow keyword alone",
+          "temporary progress update",
+          "single successful run without evidence"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true,
+        "prohibited_side_effects": [
+          "memory_write",
+          "cron_write",
+          "taskpool_lifecycle",
+          "external_dispatch",
+          "publish_deploy_push",
+          "destructive",
+          "credential_entry"
+        ]
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "global_reusable_candidate",
+        "promotion_requires": [
+          "route_eval_positive_negative",
+          "fresh_evidence_contract",
+          "neighbor_collision_scan",
+          "cleanup_policy"
+        ],
+        "cleanup_policy": "quarantine_on_false_trigger; archive_or_absorb_when_superseded"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "successful_runs >= 2",
+          "evidence_pass_rate >= 0.8",
+          "negative_cases_pass"
+        ],
+        "demote_when": [
+          "false_trigger",
+          "stale_evidence",
+          "user_correction"
+        ],
+        "cleanup_when": [
+          "no_usage_for_ttl",
+          "superseded_by_better_module"
+        ]
+      }
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "intent_normalization_kernel",
+      "title": "Intent Normalization Kernel",
+      "version": 1,
+      "kind": "atomic_module",
+      "responsibility": "Normalize fuzzy user language into a structured WorkflowSeed without executing or persisting side effects.",
+      "contracts": {
+        "consumes": [
+          "user_request",
+          "source_refs",
+          "active_context"
+        ],
+        "produces": [
+          "workflow_seed",
+          "normalization_warnings"
+        ],
+        "input_contract": {
+          "required": [
+            "user_request",
+            "source_refs",
+            "active_context"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "workflow_seed",
+            "normalization_warnings"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "意图归一化",
+          "WorkflowSeed",
+          "把模糊需求转结构化 seed",
+          "intent normalization",
+          "Normalize fuzzy user language into a structured WorkflowSeed without executing or persisting side effects."
+        ],
+        "does_not_apply_when": [
+          "只回答一个简单问题",
+          "临时整理文件",
+          "用户明确不要固化",
+          "凭关键词直接执行"
+        ],
+        "positive_examples": [
+          "意图归一化",
+          "WorkflowSeed",
+          "把模糊需求转结构化 seed",
+          "intent normalization"
+        ],
+        "negative_examples": [
+          "只回答一个简单问题",
+          "临时整理文件",
+          "用户明确不要固化",
+          "凭关键词直接执行"
+        ],
+        "neighbor_modules": [
+          "landing_zone_kernel",
+          "capability_graph"
+        ],
+        "forbidden_triggers": [
+          "workflow keyword alone",
+          "temporary progress update",
+          "single successful run without evidence"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true,
+        "prohibited_side_effects": [
+          "memory_write",
+          "cron_write",
+          "taskpool_lifecycle",
+          "external_dispatch",
+          "publish_deploy_push",
+          "destructive",
+          "credential_entry"
+        ]
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "global_reusable_candidate",
+        "promotion_requires": [
+          "route_eval_positive_negative",
+          "fresh_evidence_contract",
+          "neighbor_collision_scan",
+          "cleanup_policy"
+        ],
+        "cleanup_policy": "quarantine_on_false_trigger; archive_or_absorb_when_superseded"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "successful_runs >= 2",
+          "evidence_pass_rate >= 0.8",
+          "negative_cases_pass"
+        ],
+        "demote_when": [
+          "false_trigger",
+          "stale_evidence",
+          "user_correction"
+        ],
+        "cleanup_when": [
+          "no_usage_for_ttl",
+          "superseded_by_better_module"
+        ]
+      }
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "landing_zone_kernel",
+      "title": "Landing Zone Kernel",
+      "version": 1,
+      "kind": "gate",
+      "responsibility": "Classify where each durable claim belongs and prevent memory/skill/workflow pollution.",
+      "contracts": {
+        "consumes": [
+          "workflow_seed",
+          "candidate_claims"
+        ],
+        "produces": [
+          "landing_decision",
+          "forbidden_targets"
+        ],
+        "input_contract": {
+          "required": [
+            "workflow_seed",
+            "candidate_claims"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "landing_decision",
+            "forbidden_targets"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "落点判定",
+          "memory skill project SSOT ADR taskpool cron 分流",
+          "防止 skill 膨胀",
+          "landing zone",
+          "Classify where each durable claim belongs and prevent memory/skill/workflow pollution."
+        ],
+        "does_not_apply_when": [
+          "一次性进度状态",
+          "PR号/commit号持久记忆",
+          "项目事实写全局memory",
+          "未分scope就建workflow"
+        ],
+        "positive_examples": [
+          "落点判定",
+          "memory skill project SSOT ADR taskpool cron 分流",
+          "防止 skill 膨胀",
+          "landing zone"
+        ],
+        "negative_examples": [
+          "一次性进度状态",
+          "PR号/commit号持久记忆",
+          "项目事实写全局memory",
+          "未分scope就建workflow"
+        ],
+        "neighbor_modules": [
+          "intent_normalization_kernel",
+          "lifecycle_promotion_cleanup_kernel"
+        ],
+        "forbidden_triggers": [
+          "workflow keyword alone",
+          "temporary progress update",
+          "single successful run without evidence"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true,
+        "prohibited_side_effects": [
+          "memory_write",
+          "cron_write",
+          "taskpool_lifecycle",
+          "external_dispatch",
+          "publish_deploy_push",
+          "destructive",
+          "credential_entry"
+        ]
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "global_reusable_candidate",
+        "promotion_requires": [
+          "route_eval_positive_negative",
+          "fresh_evidence_contract",
+          "neighbor_collision_scan",
+          "cleanup_policy"
+        ],
+        "cleanup_policy": "quarantine_on_false_trigger; archive_or_absorb_when_superseded"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "successful_runs >= 2",
+          "evidence_pass_rate >= 0.8",
+          "negative_cases_pass"
+        ],
+        "demote_when": [
+          "false_trigger",
+          "stale_evidence",
+          "user_correction"
+        ],
+        "cleanup_when": [
+          "no_usage_for_ttl",
+          "superseded_by_better_module"
+        ]
+      }
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "lifecycle_promotion_cleanup_kernel",
+      "title": "Lifecycle Promotion and Cleanup Kernel",
+      "version": 1,
+      "kind": "gate",
+      "responsibility": "Govern seed→draft→candidate→validated→common→canonical plus quarantine/deprecation/finalizers.",
+      "contracts": {
+        "consumes": [
+          "module_identity",
+          "evidence_ledger",
+          "route_eval_result"
+        ],
+        "produces": [
+          "lifecycle_transition_decision",
+          "cleanup_finalizers"
+        ],
+        "input_contract": {
+          "required": [
+            "module_identity",
+            "evidence_ledger",
+            "route_eval_result"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "lifecycle_transition_decision",
+            "cleanup_finalizers"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "生命周期晋级清理",
+          "promotion cleanup",
+          "candidate validated canonical",
+          "finalizer",
+          "Govern seed→draft→candidate→validated→common→canonical plus quarantine/deprecation/finalizers."
+        ],
+        "does_not_apply_when": [
+          "一次成功直接canonical",
+          "删除前不扫描引用",
+          "没有absorbed_into",
+          "晚到异议不裁定"
+        ],
+        "positive_examples": [
+          "生命周期晋级清理",
+          "promotion cleanup",
+          "candidate validated canonical",
+          "finalizer"
+        ],
+        "negative_examples": [
+          "一次成功直接canonical",
+          "删除前不扫描引用",
+          "没有absorbed_into",
+          "晚到异议不裁定"
+        ],
+        "neighbor_modules": [
+          "authority_evidence_gate_kernel",
+          "capability_graph"
+        ],
+        "forbidden_triggers": [
+          "workflow keyword alone",
+          "temporary progress update",
+          "single successful run without evidence"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true,
+        "prohibited_side_effects": [
+          "memory_write",
+          "cron_write",
+          "taskpool_lifecycle",
+          "external_dispatch",
+          "publish_deploy_push",
+          "destructive",
+          "credential_entry"
+        ]
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "global_reusable_candidate",
+        "promotion_requires": [
+          "route_eval_positive_negative",
+          "fresh_evidence_contract",
+          "neighbor_collision_scan",
+          "cleanup_policy"
+        ],
+        "cleanup_policy": "quarantine_on_false_trigger; archive_or_absorb_when_superseded"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "successful_runs >= 2",
+          "evidence_pass_rate >= 0.8",
+          "negative_cases_pass"
+        ],
+        "demote_when": [
+          "false_trigger",
+          "stale_evidence",
+          "user_correction"
+        ],
+        "cleanup_when": [
+          "no_usage_for_ttl",
+          "superseded_by_better_module"
+        ]
+      }
+    }
+  ]
+}

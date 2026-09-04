@@ -1,0 +1,218 @@
+{
+  "schema": "hermes_default_profile_module_registry_activation_receipt_v1",
+  "created_at": "2026-09-04T04:09:46Z",
+  "authorized_target": "hermes_default_profile_module_registry",
+  "authority_text_summary": "User authorized local activation only within workflow_module_pool.py, test_workflow_module_pool.py, workflows/workflow-kernel-loop/** and this loop module-pool registry; prohibited push/deploy/restart/cron/taskpool/AgentOS/external/destructive/credential.",
+  "activation_performed": {
+    "type": "local_default_registry_activation",
+    "effect": "workflow_module_pool.py CLI default --registry now resolves to ~/.hermes/workflows/workflow-kernel-loop/module-pool/module_registry.json, so default profile local planning consumes the four-core module registry without passing --registry.",
+    "runtime_restart_performed": false,
+    "external_side_effects_performed": false,
+    "git_commit_performed": false
+  },
+  "preimage_rollback": {
+    "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage-rollback.json",
+    "exists": true,
+    "size": 1965,
+    "sha256": "8282fef864dbf0f4c5de38394ff6df9e043fec386ddebb26afbb651af34f2614"
+  },
+  "postimage": [
+    {
+      "path": "/Users/charles/.hermes/scripts/workflow_module_pool.py",
+      "exists": true,
+      "size": 17403,
+      "sha256": "853e1505619a007f73dbf5e74b18fe6d35865fa7d56964cc57d71e18dd66bc11"
+    },
+    {
+      "path": "/Users/charles/.hermes/scripts/test_workflow_module_pool.py",
+      "exists": true,
+      "size": 8168,
+      "sha256": "204beb1d03e3cd90078de5f1b5359b88b1abd68c07aa44a16c9419883a3ab86f"
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/workflow-kernel-loop/module-pool/module_registry.json",
+      "exists": true,
+      "size": 14808,
+      "sha256": "9bf8890aa71d46a2133387b15ea0cfd63a751366ac7f8279c2bbb6bd8fb52442"
+    }
+  ],
+  "verification": {
+    "core_tests": {
+      "cmd": [
+        "python3",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/test_four_core_kernels.py"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".........\n----------------------------------------------------------------------\nRan 9 tests in 0.090s\n\nOK\n"
+    },
+    "module_pool_tests": {
+      "cmd": [
+        "python3",
+        "/Users/charles/.hermes/scripts/test_workflow_module_pool.py"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "..........\n----------------------------------------------------------------------\nRan 10 tests in 0.025s\n\nOK\n"
+    },
+    "py_compile": {
+      "cmd": [
+        "python3",
+        "-m",
+        "py_compile",
+        "/Users/charles/.hermes/scripts/workflow_module_pool.py",
+        "/Users/charles/.hermes/scripts/test_workflow_module_pool.py",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/four_core_kernels.py",
+        "/Users/charles/.hermes/workflows/workflow-kernel-loop/core/test_four_core_kernels.py"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "planner_readback_default_registry_no_registry_arg": {
+      "cmd": [
+        "python3",
+        "/Users/charles/.hermes/scripts/workflow_module_pool.py",
+        "plan",
+        "--seed",
+        "固化意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核"
+      ],
+      "returncode": 0,
+      "stdout": "{\n  \"schema\": \"hermes_workflow_module_plan_v1\",\n  \"seed\": \"固化意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核\",\n  \"capability_needs\": [\n    \"intent_normalization_kernel\",\n    \"landing_zone_kernel\",\n    \"authority_evidence_gate_kernel\",\n    \"lifecycle_promotion_cleanup_kernel\"\n  ],\n  \"selected_modules\": [\n    \"intent_normalization_kernel\",\n    \"landing_zone_kernel\",\n    \"authority_evidence_gate_kernel\",\n    \"lifecycle_promotion_cleanup_kernel\"\n  ],\n  \"missing_capability_needs\": [],\n  \"graph\": {\n    \"nodes\": [\n      {\n        \"id\": \"intent_normalization_kernel\",\n        \"need\": \"intent_normalization_kernel\",\n        \"status\": \"matched\",\n        \"depends_on\": []\n      },\n      {\n        \"id\": \"landing_zone_kernel\",\n        \"need\": \"landing_zone_kernel\",\n        \"status\": \"matched\",\n        \"depends_on\": [\n          \"intent_normalization_kernel\"\n        ]\n      },\n      {\n        \"id\": \"authority_evidence_gate_kernel\",\n        \"need\": \"authority_evidence_gate_kernel\",\n        \"status\": \"matched\",\n        \"depends_on\": [\n          \"landing_zone_kernel\"\n        ]\n      },\n      {\n        \"id\": \"lifecycle_promotion_cleanup_kernel\",\n        \"need\": \"lifecycle_promotion_cleanup_kernel\",\n        \"status\": \"matched\",\n        \"depends_on\": [\n          \"authority_evidence_gate_kernel\"\n        ]\n      }\n    ],\n    \"edges\": [\n      {\n        \"from\": \"intent_normalization_kernel\",\n        \"to\": \"landing_zone_kernel\"\n      },\n      {\n        \"from\": \"landing_zone_kernel\",\n        \"to\": \"authority_evidence_gate_kernel\"\n      },\n      {\n        \"from\": \"authority_evidence_gate_kernel\",\n        \"to\": \"lifecycle_promotion_cleanup_kernel\"\n      }\n    ]\n  },\n  \"side_effects\": {\n    \"external\": false,\n    \"cron\": false,\n    \"taskpool\": false,\n    \"agentos\": false\n  },\n  \"authority_boundary\": \"local_only\"\n}\n",
+      "stderr": ""
+    },
+    "planner_readback_parsed": {
+      "schema": "hermes_workflow_module_plan_v1",
+      "seed": "固化意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核",
+      "capability_needs": [
+        "intent_normalization_kernel",
+        "landing_zone_kernel",
+        "authority_evidence_gate_kernel",
+        "lifecycle_promotion_cleanup_kernel"
+      ],
+      "selected_modules": [
+        "intent_normalization_kernel",
+        "landing_zone_kernel",
+        "authority_evidence_gate_kernel",
+        "lifecycle_promotion_cleanup_kernel"
+      ],
+      "missing_capability_needs": [],
+      "graph": {
+        "nodes": [
+          {
+            "id": "intent_normalization_kernel",
+            "need": "intent_normalization_kernel",
+            "status": "matched",
+            "depends_on": []
+          },
+          {
+            "id": "landing_zone_kernel",
+            "need": "landing_zone_kernel",
+            "status": "matched",
+            "depends_on": [
+              "intent_normalization_kernel"
+            ]
+          },
+          {
+            "id": "authority_evidence_gate_kernel",
+            "need": "authority_evidence_gate_kernel",
+            "status": "matched",
+            "depends_on": [
+              "landing_zone_kernel"
+            ]
+          },
+          {
+            "id": "lifecycle_promotion_cleanup_kernel",
+            "need": "lifecycle_promotion_cleanup_kernel",
+            "status": "matched",
+            "depends_on": [
+              "authority_evidence_gate_kernel"
+            ]
+          }
+        ],
+        "edges": [
+          {
+            "from": "intent_normalization_kernel",
+            "to": "landing_zone_kernel"
+          },
+          {
+            "from": "landing_zone_kernel",
+            "to": "authority_evidence_gate_kernel"
+          },
+          {
+            "from": "authority_evidence_gate_kernel",
+            "to": "lifecycle_promotion_cleanup_kernel"
+          }
+        ]
+      },
+      "side_effects": {
+        "external": false,
+        "cron": false,
+        "taskpool": false,
+        "agentos": false
+      },
+      "authority_boundary": "local_only"
+    },
+    "git_status_scoped": {
+      "cmd": [
+        "git",
+        "-C",
+        "/Users/charles/.hermes",
+        "status",
+        "--short",
+        "--",
+        "scripts/workflow_module_pool.py",
+        "scripts/test_workflow_module_pool.py",
+        "workflows/workflow-kernel-loop"
+      ],
+      "returncode": 0,
+      "stdout": " M scripts/test_workflow_module_pool.py\n M scripts/workflow_module_pool.py\n?? workflows/workflow-kernel-loop/\n",
+      "stderr": ""
+    },
+    "git_diff_stat_scoped": {
+      "cmd": [
+        "git",
+        "-C",
+        "/Users/charles/.hermes",
+        "diff",
+        "--stat",
+        "--",
+        "scripts/workflow_module_pool.py",
+        "scripts/test_workflow_module_pool.py",
+        "workflows/workflow-kernel-loop/module-pool/module_registry.json"
+      ],
+      "returncode": 0,
+      "stdout": " scripts/test_workflow_module_pool.py | 71 ++++++++++++++++++++++++++++++++++++\n scripts/workflow_module_pool.py      | 46 +++++++++++++++++++----\n 2 files changed, 110 insertions(+), 7 deletions(-)\n",
+      "stderr": ""
+    }
+  },
+  "convergence": {
+    "selected_modules": [
+      "intent_normalization_kernel",
+      "landing_zone_kernel",
+      "authority_evidence_gate_kernel",
+      "lifecycle_promotion_cleanup_kernel"
+    ],
+    "expected_selected_modules": [
+      "intent_normalization_kernel",
+      "landing_zone_kernel",
+      "authority_evidence_gate_kernel",
+      "lifecycle_promotion_cleanup_kernel"
+    ],
+    "missing_capability_needs": [],
+    "authority_boundary": "local_only",
+    "status": "activated_local_registry"
+  },
+  "closed_effects": [
+    "push",
+    "deploy",
+    "restart",
+    "cron",
+    "taskpool",
+    "AgentOS",
+    "external",
+    "destructive",
+    "credential"
+  ],
+  "rollback_command": "cp -R /Users/charles/.hermes/workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/scripts/workflow_module_pool.py /Users/charles/.hermes/scripts/workflow_module_pool.py && cp -R /Users/charles/.hermes/workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/scripts/test_workflow_module_pool.py /Users/charles/.hermes/scripts/test_workflow_module_pool.py && cp -R /Users/charles/.hermes/workflows/workflow-kernel-loop/runs/hermes-default-profile-module-registry-activation/preimage/workflows/workflow-kernel-loop/module-pool/module_registry.json /Users/charles/.hermes/workflows/workflow-kernel-loop/module-pool/module_registry.json"
+}

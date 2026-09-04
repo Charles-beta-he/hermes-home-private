@@ -1,0 +1,170 @@
+{
+  "schema": "hermes_workflow_asset_v1",
+  "id": "wfa-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+  "title": "Workflow asset candidate",
+  "version": 1,
+  "source": {
+    "user_seed": "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。",
+    "source_refs": [],
+    "decision": {
+      "schema": "hermes_workflow_asset_decision_v1",
+      "id": "wfd-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-04a02e8fc2",
+      "seed": "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。",
+      "score": 8,
+      "decision": "reusable_candidate",
+      "landing": [
+        "workflow_workspace",
+        "skill_reference_candidate"
+      ],
+      "reasons": [
+        "reuse_value",
+        "multi_step_complexity",
+        "evidence_gap",
+        "workflow_word_signal_only"
+      ],
+      "warnings": [],
+      "side_effect_class": "local_read_write_only",
+      "stop_only_on": [
+        "missing_evidence_after_attempt",
+        "user_preference_conflict"
+      ],
+      "created_at": "2026-09-04T03:13:11Z",
+      "policy": {
+        "keyword_trigger_sufficient": false,
+        "model_consensus_is_proof": false,
+        "external_side_effects_enabled": false,
+        "memory_workflow_body_write_enabled": false
+      }
+    },
+    "module_plan_ref": "/Users/charles/.hermes/workflows/workflow-kernel-loop/runs/wfl-另一个会话再做一个工作流-先把意图归一化-落点判定-权限证据门-154a3add5e/module-plan.json",
+    "module_ids": [
+      "intent_normalization_kernel",
+      "landing_zone_kernel",
+      "authority_evidence_gate_kernel",
+      "lifecycle_promotion_cleanup_kernel"
+    ],
+    "missing_capability_needs": []
+  },
+  "classification": {
+    "workflow_type": "hybrid",
+    "scope": "domain",
+    "maturity": "candidate",
+    "retention": "domain_reusable"
+  },
+  "intent_model": {
+    "user_goal": "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。",
+    "success_criteria": [
+      "safe local dry-run succeeds",
+      "objective evidence is attached"
+    ],
+    "non_goals": [
+      "external dispatch without exact authority",
+      "canonical promotion from a seed"
+    ],
+    "assumptions": [],
+    "ask_user_only_when": [
+      "authority boundary",
+      "durable preference conflict",
+      "irreversible side effect"
+    ]
+  },
+  "routing": {
+    "applies_when": [
+      "repeated or long-term process pattern with evidence/governance need"
+    ],
+    "does_not_apply_when": [
+      "one-off task",
+      "simple answer",
+      "keyword-only workflow request with weak reuse"
+    ],
+    "neighbor_workflows": [],
+    "forbidden_triggers": [
+      "the word workflow alone",
+      "temporary task progress"
+    ],
+    "examples_positive": [
+      "另一个会话再做一个工作流：先把意图归一化、落点判定、权限证据门、生命周期晋级清理四个内核固化为可复用、可验证、低耦合模块，禁止外部执行和memory污染。"
+    ],
+    "examples_negative": [
+      "创建工作流：今天把这三个文件整理一下"
+    ]
+  },
+  "output_contract": {
+    "allowed_formats": [
+      "json",
+      "markdown"
+    ],
+    "default_format": "json",
+    "ordering_rule": "risk and reuse value before convenience",
+    "dedupe_rule": "merge same seed digest and same routing boundary",
+    "overlap_rule": "prefer existing narrower workflow; avoid broad umbrella steal",
+    "evidence_required": true,
+    "confidence_required": true,
+    "next_action_required": true
+  },
+  "gates": [
+    {
+      "id": "assetization_decision_gate",
+      "pass": "reuse/risk/evidence/governability score justifies candidate",
+      "warn": "weak signal; keep as output fragment or project-scoped candidate",
+      "fail": "one-off or no durable value; no asset write",
+      "blocked": "retrieve context or evidence before promotion"
+    },
+    {
+      "id": "authority_boundary_gate",
+      "pass": "local reversible read/write only or exact authority present",
+      "warn": "future automation mentioned but not authorized",
+      "fail": "external/destructive/publish/credential boundary without authority",
+      "blocked": "emit minimal authorization request; do not execute"
+    }
+  ],
+  "model_routing": {
+    "default_tier": "T1",
+    "specialist_lanes": [
+      "architecture",
+      "verification"
+    ],
+    "multimodel_required_when": [
+      "canonical promotion",
+      "global routing",
+      "external side effect",
+      "cron/taskpool/AgentOS enablement"
+    ]
+  },
+  "evidence": {
+    "required_refs": [],
+    "verification_commands": []
+  },
+  "lifecycle_policy": {
+    "promote_when": [
+      "route eval passes",
+      "real or dry-run evidence attached",
+      "negative/neighbor cases pass"
+    ],
+    "demote_when": [
+      "false trigger",
+      "stale evidence",
+      "user correction",
+      "validation failure"
+    ],
+    "cleanup_when": [
+      "no usage",
+      "superseded",
+      "low evidence",
+      "sprawl risk"
+    ],
+    "protect_when": [
+      "canonical with regression evidence",
+      "pinned by user"
+    ],
+    "superseded_by": null
+  },
+  "loop_policy": {
+    "self_advance": true,
+    "max_autonomous_iterations": 3,
+    "stop_only_on": [
+      "missing_evidence_after_attempt",
+      "user_preference_conflict"
+    ]
+  }
+}

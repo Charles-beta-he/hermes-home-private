@@ -1,0 +1,8 @@
+{
+  "schema": "hermes_workflow_loop_verification_v1",
+  "status": "PASS",
+  "readback_count": 10,
+  "missing_files": [],
+  "validation_issues": [],
+  "side_effects_disabled": true
+}
