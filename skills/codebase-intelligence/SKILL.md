@@ -30,6 +30,8 @@ metadata:
 
 # codebase-intelligence
 
+Conditional reference: for agent-facing component contracts, CLI/MCP knowledge drift, theme/behavior/business boundaries or generated-UI oracle audits, read [design-system contract audit](references/agent-facing-design-system-contracts.md). Skip for ordinary styling or unrelated API work; this reference grants no upstream execution or adoption authority.
+
 ## Overview
 
 
